@@ -272,15 +272,15 @@ const soy = {
 soy.sojaTO = soy.soja.map(v => Math.round(v*0.957*100)/100);
 /* KPIS-START */
 let kpis = [
-  { id:"dolar", label:"Dólar", value:"5,19", unit:"R$/US$", variation:0, trend:"stable", alert:"ok", threshold:"> R$ 5,60", spark:macro.dolar },
+  { id:"dolar", label:"Dólar", value:"5,06", unit:"R$/US$", variation:-2.5, trend:"down", alert:"ok", threshold:"> R$ 5,60", spark:macro.dolar },
   { id:"ureia", label:"Ureia FOB", value:"491", unit:"US$/t", variation:0, trend:"stable", alert:"critical", threshold:"> US$ 430/t", spark:fert.ureia },
   { id:"map", label:"MAP FOB", value:"640", unit:"US$/t", variation:0, trend:"stable", alert:"ok", threshold:"> US$ 650/t", spark:fert.map },
   { id:"gas", label:"Gás Natural", value:"3,10", unit:"US$/MMBtu", variation:0, trend:"stable", alert:"warning", threshold:"> US$ 3,00", spark:macro.gas },
-  { id:"bdi", label:"Frete Marítimo (BDI)", value:"2.670", unit:"pontos", variation:0, trend:"stable", alert:"warning", threshold:"> 2.300 pts", spark:macro.bdi },
+  { id:"bdi", label:"Frete Marítimo (BDI)", value:"2.715", unit:"pontos", variation:1.7, trend:"up", alert:"warning", threshold:"> 2.300 pts", spark:macro.bdi },
   { id:"diesel", label:"Diesel S10", value:"7,09", unit:"R$/L", variation:0, trend:"stable", alert:"ok", threshold:"> R$ 7,60/L", spark:macro.diesel },
-  { id:"soja", label:"Soja CEPEA (Nacional)", value:"135,73", unit:"R$/saca", variation:0, trend:"stable", alert:"ok", threshold:"< R$ 125,00", spark:soy.soja },
-  { id:"sojaTO", label:"Soja Oeste BA (AIBA)", value:"129,88", unit:"R$/saca", variation:0, trend:"stable", alert:"ok", threshold:"> R$ 140,00", spark:soy.sojaTO },
-  { id:"trocaMap", label:"Troca Soja/MAP", value:"25,4", unit:"sacas/t", variation:-4.9, trend:"down", alert:"ok", threshold:"> 30 sacas/t", spark:soy.trocaMap },
+  { id:"soja", label:"Soja CEPEA (Nacional)", value:"137,84", unit:"R$/saca", variation:1.6, trend:"up", alert:"ok", threshold:"< R$ 125,00", spark:soy.soja },
+  { id:"sojaTO", label:"Soja Oeste BA (AIBA)", value:"132,25", unit:"R$/saca", variation:1.8, trend:"up", alert:"ok", threshold:"> R$ 140,00", spark:soy.sojaTO },
+  { id:"trocaMap", label:"Troca Soja/MAP", value:"24,4", unit:"sacas/t", variation:-8.6, trend:"down", alert:"ok", threshold:"> 30 sacas/t", spark:soy.trocaMap },
 ]; /* KPIS-END */
 const scenarios = [
   { name:"Otimista", cor:"success", icon:"trend-down", impacto:"Queda de 5% a 8%", premissas:["Câmbio: R$ 5,10/US$","Gás Natural: US$ 2,50/MMBtu","Frete Marítimo: -10%","Custos logísticos: -5%"] },
