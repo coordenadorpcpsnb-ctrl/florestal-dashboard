@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-07-23T19:04:20.816Z",
-  "updatedAtBR": "23/07/2026, 19:04:20",
+  "updatedAt": "2026-07-23T19:12:30.502Z",
+  "updatedAtBR": "23/07/2026, 19:12:30",
   "ref": "Jul/2026",
   "current": {
     "dolar": 5.08,
@@ -41,12 +41,11 @@
     "ureia": 22.3
   },
   "status": {
-    "cambio": "ok (BCB PTAX)",
     "soja": "ok (Noticias Agricolas / CEPEA-PR 22/07/2026)",
     "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
     "bdi": "ok (HANDYBULK, 22/07/2026)",
     "diesel": "falha: Petrobras: HTTP 403 | PortalCanaa: HTTP 403",
-    "_comexRetry": "aguardando 30s apos 429 (com-filtro-ncm 2026-06, tentativa 3)",
+    "cambio": "ok (BCB PTAX)",
     "_comexPeriodo": "com-filtro-ncm | 2026-06 | 4 linhas",
     "_comexNcmsEncontrados": "31042090,31054000,31021010,31042010",
     "ureia": "ok (ComexStat 2026-06)",
