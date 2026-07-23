@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-07-23T12:39:59.320Z",
-  "updatedAtBR": "23/07/2026, 12:39:59",
+  "updatedAt": "2026-07-23T13:06:10.619Z",
+  "updatedAtBR": "23/07/2026, 13:06:10",
   "ref": "Jul/2026",
   "current": {
     "dolar": 5.06,
@@ -14,27 +14,27 @@
     "sojaTO": 132.25
   },
   "previous": {
-    "dolar": 5.19,
+    "dolar": 5.06,
     "ureia": 491,
     "map": 640,
     "kcl": 328,
     "gas": 3.1,
-    "bdi": 2670,
+    "bdi": 2715,
     "diesel": 7.09,
-    "soja": 135.73,
-    "sojaTO": 129.88
+    "soja": 137.84,
+    "sojaTO": 132.25
   },
   "delta": {
-    "dolar": -2.5,
+    "dolar": 0,
     "ureia": 0,
     "map": 0,
     "kcl": 0,
     "gas": 0,
-    "bdi": 1.7,
+    "bdi": 0,
     "diesel": 0,
-    "soja": 1.6,
-    "sojaTO": 1.8,
-    "trocaMap": -8.6
+    "soja": 0,
+    "sojaTO": 0,
+    "trocaMap": 0
   },
   "troca": {
     "map": 24.4,
@@ -42,16 +42,16 @@
   },
   "status": {
     "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
-    "soja": "ok (Noticias Agricolas / CEPEA-PR 22/07/2026)",
-    "bdi": "ok (HANDYBULK, 22/07/2026)",
     "cambio": "ok (BCB PTAX)",
+    "bdi": "ok (HANDYBULK, 22/07/2026)",
+    "soja": "ok (Noticias Agricolas / CEPEA-PR 22/07/2026)",
     "diesel": "falha: Petrobras: HTTP 403 | PortalCanaa: HTTP 403",
-    "_comexRetry": "aguardando 15s apos HTTP 429 (tentativa 2)",
-    "_comexPeriodo": "nenhum periodo retornou dados (ultimo: vazio para 2025-06 a 2026-05 (ncm como texto))",
-    "ureia": "falha: vazio para 2025-06 a 2026-05 (ncm como texto)",
-    "map": "falha: vazio para 2025-06 a 2026-05 (ncm como texto)",
-    "kcl": "falha: vazio para 2025-06 a 2026-05 (ncm como texto)",
-    "gas": "falha stooq: valor implausivel :: resposta=\"<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex,nofollow\"></head><body><noscript>T\""
+    "_comexRetry": "aguardando 30s apos 429 (heading, tentativa 3)",
+    "_comexDiag": "vazio: ncm-numero 2025-07..2026-06 :: {\"data\":{\"list\":[]},\"success\":true,\"message\":null,\"processo_info\":null,\"language\":\"pt\"}",
+    "ureia": "falha: vazio (heading, 2025-05 a 2026-04)",
+    "map": "falha: vazio (heading, 2025-05 a 2026-04)",
+    "kcl": "falha: vazio (heading, 2025-05 a 2026-04)",
+    "gas": "SEM EIA_API_KEY configurada | falha stooq: valor implausivel :: resposta=\"<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex,nofollow\"></head><body><noscript>T\""
   },
   "refsFertilizantes": {}
 }
