@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-07-23T13:27:06.716Z",
-  "updatedAtBR": "23/07/2026, 13:27:06",
+  "updatedAt": "2026-07-23T13:50:47.304Z",
+  "updatedAtBR": "23/07/2026, 13:50:47",
   "ref": "Jul/2026",
   "current": {
     "dolar": 5.06,
@@ -15,10 +15,10 @@
   },
   "previous": {
     "dolar": 5.06,
-    "ureia": 491,
-    "map": 640,
-    "kcl": 328,
-    "gas": 3.1,
+    "ureia": 584.5,
+    "map": 844.3,
+    "kcl": 350.7,
+    "gas": 2.8,
     "bdi": 2715,
     "diesel": 7.09,
     "soja": 137.84,
@@ -26,15 +26,15 @@
   },
   "delta": {
     "dolar": 0,
-    "ureia": 19,
-    "map": 31.9,
-    "kcl": 6.9,
-    "gas": -9.7,
+    "ureia": null,
+    "map": null,
+    "kcl": null,
+    "gas": 0,
     "bdi": 0,
     "diesel": 0,
     "soja": 0,
     "sojaTO": 0,
-    "trocaMap": 30.7
+    "trocaMap": 0
   },
   "troca": {
     "map": 31.9,
@@ -42,8 +42,8 @@
   },
   "status": {
     "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
-    "soja": "ok (Noticias Agricolas / CEPEA-PR 22/07/2026)",
     "bdi": "ok (HANDYBULK, 22/07/2026)",
+    "soja": "ok (Noticias Agricolas / CEPEA-PR 22/07/2026)",
     "cambio": "ok (BCB PTAX)",
     "diesel": "falha: Petrobras: HTTP 403 | PortalCanaa: HTTP 403",
     "_comexRetry": "aguardando 15s apos 429 (com-filtro-ncm 2026-06, tentativa 2)",
