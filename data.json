@@ -1,8 +1,57 @@
 {
+  "updatedAt": "2026-07-23T12:39:59.320Z",
+  "updatedAtBR": "23/07/2026, 12:39:59",
   "ref": "Jul/2026",
-  "current": { "dolar":5.19,"ureia":491,"map":640,"kcl":328,"gas":3.10,"bdi":2670,"diesel":7.09,"soja":135.73,"sojaTO":129.88 },
-  "previous": {},
-  "delta": {},
-  "troca": { "map":26.7,"ureia":20.5 },
-  "status": { "nota": "semente inicial" }
+  "current": {
+    "dolar": 5.06,
+    "ureia": 491,
+    "map": 640,
+    "kcl": 328,
+    "gas": 3.1,
+    "bdi": 2715,
+    "diesel": 7.09,
+    "soja": 137.84,
+    "sojaTO": 132.25
+  },
+  "previous": {
+    "dolar": 5.19,
+    "ureia": 491,
+    "map": 640,
+    "kcl": 328,
+    "gas": 3.1,
+    "bdi": 2670,
+    "diesel": 7.09,
+    "soja": 135.73,
+    "sojaTO": 129.88
+  },
+  "delta": {
+    "dolar": -2.5,
+    "ureia": 0,
+    "map": 0,
+    "kcl": 0,
+    "gas": 0,
+    "bdi": 1.7,
+    "diesel": 0,
+    "soja": 1.6,
+    "sojaTO": 1.8,
+    "trocaMap": -8.6
+  },
+  "troca": {
+    "map": 24.4,
+    "ureia": 18.7
+  },
+  "status": {
+    "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
+    "soja": "ok (Noticias Agricolas / CEPEA-PR 22/07/2026)",
+    "bdi": "ok (HANDYBULK, 22/07/2026)",
+    "cambio": "ok (BCB PTAX)",
+    "diesel": "falha: Petrobras: HTTP 403 | PortalCanaa: HTTP 403",
+    "_comexRetry": "aguardando 15s apos HTTP 429 (tentativa 2)",
+    "_comexPeriodo": "nenhum periodo retornou dados (ultimo: vazio para 2025-06 a 2026-05 (ncm como texto))",
+    "ureia": "falha: vazio para 2025-06 a 2026-05 (ncm como texto)",
+    "map": "falha: vazio para 2025-06 a 2026-05 (ncm como texto)",
+    "kcl": "falha: vazio para 2025-06 a 2026-05 (ncm como texto)",
+    "gas": "falha stooq: valor implausivel :: resposta=\"<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex,nofollow\"></head><body><noscript>T\""
+  },
+  "refsFertilizantes": {}
 }
