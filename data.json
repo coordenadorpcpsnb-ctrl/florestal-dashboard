@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-07-23T13:06:10.619Z",
-  "updatedAtBR": "23/07/2026, 13:06:10",
+  "updatedAt": "2026-07-23T13:18:38.039Z",
+  "updatedAtBR": "23/07/2026, 13:18:38",
   "ref": "Jul/2026",
   "current": {
     "dolar": 5.06,
@@ -41,12 +41,12 @@
     "ureia": 18.7
   },
   "status": {
-    "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
-    "cambio": "ok (BCB PTAX)",
     "bdi": "ok (HANDYBULK, 22/07/2026)",
+    "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
     "soja": "ok (Noticias Agricolas / CEPEA-PR 22/07/2026)",
     "diesel": "falha: Petrobras: HTTP 403 | PortalCanaa: HTTP 403",
-    "_comexRetry": "aguardando 30s apos 429 (heading, tentativa 3)",
+    "cambio": "ok (BCB PTAX)",
+    "_comexRetry": "aguardando 15s apos 429 (heading, tentativa 2)",
     "_comexDiag": "vazio: ncm-numero 2025-07..2026-06 :: {\"data\":{\"list\":[]},\"success\":true,\"message\":null,\"processo_info\":null,\"language\":\"pt\"}",
     "ureia": "falha: vazio (heading, 2025-05 a 2026-04)",
     "map": "falha: vazio (heading, 2025-05 a 2026-04)",
