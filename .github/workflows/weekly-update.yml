@@ -1,0 +1,135 @@
+name: Atualizacao Semanal - Dashboard e Relatorio
+
+on:
+  schedule:
+    # 10:00 UTC = 07:00 no horario de Brasilia (UTC-3, sem horario de verao desde 2019)
+    # Campos: minuto hora dia-do-mes mes dia-da-semana (1 = segunda-feira)
+    - cron: "0 10 * * 1"
+  workflow_dispatch:        # permite rodar manualmente pelo botao "Run workflow"
+
+permissions:
+  contents: write           # necessario para commitar os arquivos atualizados
+  issues: write             # necessario para abrir/fechar o alerta de fonte indisponivel
+
+concurrency:
+  group: weekly-update
+  cancel-in-progress: false
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout do repositorio
+        uses: actions/checkout@v7
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Instalar LibreOffice (para gerar o PDF)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends libreoffice-writer fonts-liberation
+
+      - name: Executar atualizacao (dados + dashboard + relatorio)
+        id: run
+        env:
+          # OPCIONAL: chave gratuita da EIA para o gas natural (Henry Hub oficial).
+          # Sem ela, o gas e buscado no stooq (aproximacao por futuro NG).
+          # Cadastre em https://www.eia.gov/opendata/register.php e salve em
+          # Settings > Secrets and variables > Actions > New repository secret
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+        run: node run-weekly.mjs
+
+      - name: Resumo da execucao
+        if: always()
+        run: |
+          {
+            echo "## Atualizacao semanal"
+            echo ""
+            echo "Executado em: $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo ""
+            if [ -f data.json ]; then
+              echo "### Status das fontes"
+              echo '```json'
+              node -e "const d=require('./data.json');console.log(JSON.stringify(d.status,null,2))"
+              echo '```'
+              echo "### Valores atuais"
+              echo '```json'
+              node -e "const d=require('./data.json');console.log(JSON.stringify(d.current,null,2))"
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commitar arquivos atualizados
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dashboard.html data.json relatorio_executivo.docx relatorio_executivo.pdf 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "Nenhuma alteracao para commitar."
+          else
+            git commit -m "chore: atualizacao automatica $(date -u '+%Y-%m-%d')"
+            git push
+          fi
+
+      - name: Verificar status das fontes
+        id: check
+        if: always()
+        run: node check-status.mjs
+
+      - name: Abrir/atualizar alerta de fonte indisponivel
+        if: always() && steps.check.outputs.has_failures == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # garante que o rotulo existe
+          gh label create "fonte-indisponivel" --color "D93F0B" \
+            --description "Alguma fonte de dados falhou na atualizacao automatica" 2>/dev/null || true
+
+          # procura uma Issue aberta com esse rotulo (evita duplicar)
+          NUM=$(gh issue list --label "fonte-indisponivel" --state open --limit 1 --json number --jq '.[0].number // empty')
+
+          if [ -n "$NUM" ]; then
+            echo "Issue #$NUM ja aberta — adicionando comentario."
+            gh issue comment "$NUM" --body-file issue-body.md
+          else
+            echo "Abrindo nova Issue."
+            gh issue create \
+              --title "Falha na atualizacao automatica ($(date -u '+%d/%m/%Y')): ${{ steps.check.outputs.failed_count }} fonte(s) indisponivel(is)" \
+              --label "fonte-indisponivel" \
+              --body-file issue-body.md
+          fi
+
+      - name: Fechar alerta quando todas as fontes voltarem
+        if: always() && steps.check.outputs.has_failures == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NUM=$(gh issue list --label "fonte-indisponivel" --state open --limit 1 --json number --jq '.[0].number // empty')
+          if [ -n "$NUM" ]; then
+            gh issue comment "$NUM" --body "Todas as fontes voltaram a funcionar na execucao de $(date -u '+%d/%m/%Y %H:%M UTC'). Fechando automaticamente."
+            gh issue close "$NUM"
+            echo "Issue #$NUM fechada."
+          else
+            echo "Nenhum alerta aberto — nada a fazer."
+          fi
+
+      - name: Publicar relatorio como artefato (download pela aba Actions)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: relatorio-executivo
+          path: |
+            relatorio_executivo.pdf
+            relatorio_executivo.docx
+            dashboard.html
+          retention-days: 90
+          if-no-files-found: warn

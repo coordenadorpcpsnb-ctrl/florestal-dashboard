@@ -1,0 +1,8 @@
+{
+  "ref": "Jul/2026",
+  "current": { "dolar":5.19,"ureia":491,"map":640,"kcl":328,"gas":3.10,"bdi":2670,"diesel":7.09,"soja":135.73,"sojaTO":129.88 },
+  "previous": {},
+  "delta": {},
+  "troca": { "map":26.7,"ureia":20.5 },
+  "status": { "nota": "semente inicial" }
+}

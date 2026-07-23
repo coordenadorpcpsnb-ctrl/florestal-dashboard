@@ -1,0 +1,48 @@
+# OPCIONAL — Publica o dashboard.html como site (GitHub Pages).
+# Assim a equipe acessa o dashboard por uma URL, sempre com os dados mais recentes.
+#
+# Para ativar: Settings > Pages > Build and deployment > Source: "GitHub Actions".
+# Para desativar: apague este arquivo.
+
+name: Publicar Dashboard (GitHub Pages)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "dashboard.html"      # republica sempre que o dashboard mudar
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Preparar pasta do site
+        run: |
+          mkdir -p _site
+          cp dashboard.html _site/index.html
+          # inclui o relatorio para download direto pelo site, se existir
+          cp relatorio_executivo.pdf _site/ 2>/dev/null || true
+
+      - uses: actions/configure-pages@v6
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+      - id: deploy
+        uses: actions/deploy-pages@v5

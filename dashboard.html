@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Dashboard de Inteligência de Mercado — Setor Florestal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #faf9f5; --fg: #1c2433; --card: #ffffff; --muted: #6b7585;
+    --border: #e8e9ec; --navy: #1e2a44; --navy2: #2b3a55; --emerald: #2f8a5f; --amber: #d99021;
+    --bordeaux: #b23636; --blue: #5b7299; --radius: 10px;
+    --sidebar: #fbfbf9;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--fg); font-feature-settings: 'cv11','ss01'; line-height: 1.45; overflow: hidden; }
+  .tnum { font-variant-numeric: tabular-nums; }
+  .shell { display: flex; height: 100vh; }
+
+  /* Sidebar */
+  aside { width: 215px; flex-shrink: 0; background: var(--sidebar); border-right: 1px solid var(--border); padding: 16px 12px; display: flex; flex-direction: column; }
+  .brand { display: flex; align-items: center; gap: 9px; margin-bottom: 20px; padding: 4px 6px; }
+  .brand-mark { width: 30px; height: 30px; border-radius: 8px; background: var(--navy); color: #fff; display: grid; place-items: center; }
+  .brand-name { font-weight: 700; font-size: 13px; letter-spacing: -0.01em; line-height: 1.1; }
+  .brand-sub { font-size: 10px; color: var(--muted); }
+  nav { flex: 1; }
+  nav button { display: flex; align-items: center; gap: 10px; padding: 8px 11px; border-radius: 7px; color: var(--muted); font-size: 12.5px; font-weight: 500; margin-bottom: 1px; cursor: pointer; width: 100%; border: none; background: none; text-align: left; font-family: inherit; transition: all .12s; }
+  nav button:hover { background: #eeeeea; color: var(--fg); }
+  nav button.active { background: var(--navy); color: #fff; font-weight: 600; }
+  nav button svg { width: 15px; height: 15px; flex-shrink: 0; opacity: .9; }
+  .nav-foot { font-size: 10px; color: var(--muted); padding: 12px 8px 2px; border-top: 1px solid var(--border); line-height: 1.7; }
+  .nav-foot .lbl { text-transform: uppercase; letter-spacing: .08em; font-weight: 700; font-size: 9px; }
+  .nav-foot .em { color: var(--navy2); font-weight: 700; }
+
+  main { flex: 1; min-width: 0; display: flex; flex-direction: column; height: 100vh; }
+  header.topbar { display: flex; align-items: flex-start; justify-content: space-between; padding: 14px 28px 14px; border-bottom: 1px solid var(--border); background: var(--card); flex-shrink: 0; gap: 16px; }
+  .crumb { font-size: 9.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; margin-bottom: 5px; }
+  .crumb .sep { opacity: .5; margin: 0 5px; }
+  header.topbar h1 { font-size: 19px; font-weight: 800; letter-spacing: -0.025em; line-height: 1.1; }
+  header.topbar .psub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .topbar-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; padding: 6px 11px; border-radius: 7px; border: 1px solid var(--border); background: var(--card); color: var(--fg); cursor: default; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: 7px; border: 1px solid var(--border); background: var(--card); color: var(--fg); cursor: pointer; font-family: inherit; transition: all .12s; }
+  .btn:hover { background: #f2f1ec; }
+  .btn.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .btn.primary:hover { background: #15203a; }
+  .btn svg, .pill svg { width: 13px; height: 13px; }
+  .led { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .led.live { background: var(--emerald); box-shadow: 0 0 0 3px #2f8a5f25; }
+  .led.offline { background: var(--amber); }
+  .led.loading { background: var(--blue); animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .content { flex: 1; overflow-y: auto; padding: 22px 28px 40px; }
+  .view { display: none; }
+  .view.active { display: block; animation: fade .25s ease; }
+  @keyframes fade { from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none} }
+  .sec-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .11em; color: var(--blue); font-weight: 700; margin: 0 0 12px; }
+
+  /* Exec banner */
+  .exec { background: linear-gradient(135deg, var(--navy), #34466a); color: #fff; border-radius: var(--radius); padding: 20px 24px; margin-bottom: 20px; }
+  .exec .eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: .14em; opacity: .72; font-weight: 700; margin-bottom: 8px; }
+  .exec h2 { font-size: 18px; font-weight: 800; line-height: 1.35; letter-spacing: -0.02em; max-width: 880px; margin-bottom: 10px; }
+  .exec p { font-size: 12.5px; opacity: .9; max-width: 880px; }
+  .exec b { font-weight: 700; }
+
+  /* Analysis box (light) */
+  .analysis { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 22px; margin-bottom: 16px; }
+  .analysis .eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: .12em; color: var(--navy2); font-weight: 700; margin-bottom: 9px; }
+  .analysis h3 { font-size: 16px; font-weight: 800; letter-spacing: -0.02em; color: var(--fg); margin-bottom: 8px; }
+  .analysis h3 svg { width: 15px; height: 15px; vertical-align: -2px; margin-right: 3px; color: var(--navy2); }
+  .analysis p { font-size: 12.5px; color: var(--muted); line-height: 1.6; max-width: 1000px; }
+  .analysis p b { color: var(--fg); font-weight: 700; }
+  .analysis h3 svg { width: 16px; height: 16px; vertical-align: -2px; margin-right: 2px; }
+  .analysis h3 svg { width: 15px; height: 15px; vertical-align: -2px; margin-right: 2px; color: var(--navy2); }
+
+  /* KPI grid */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px 16px; transition: box-shadow .2s, transform .2s; }
+  .kpi:hover { box-shadow: 0 8px 22px -14px #00000025; transform: translateY(-2px); }
+  .kpi-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 11px; }
+  .kpi-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; color: var(--muted); }
+  .kpi-unit { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .badge { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; padding: 3px 7px; border-radius: 5px; border: 1px solid; white-space: nowrap; }
+  .badge.ok { background: #2f8a5f15; color: var(--emerald); border-color: #2f8a5f30; }
+  .badge.warning { background: #d9902118; color: var(--amber); border-color: #d9902135; }
+  .badge.critical { background: #b2363615; color: var(--bordeaux); border-color: #b2363630; }
+  .kpi-bottom { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+  .kpi-value { font-size: 25px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+  .kpi-trend { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; margin-top: 7px; }
+  .kpi-trend.up { color: var(--amber); } .kpi-trend.down { color: var(--bordeaux); } .kpi-trend.stable { color: var(--muted); }
+  .kpi-trend .vs { color: var(--muted); font-weight: 500; }
+  .spark-wrap { width: 92px; height: 36px; flex-shrink: 0; position: relative; }
+  .spark-wrap canvas { width: 100% !important; height: 100% !important; }
+  .kpi-thresh { font-size: 9.5px; color: var(--muted); margin-top: 9px; padding-top: 8px; border-top: 1px dashed var(--border); }
+
+  /* Panels & charts */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; }
+  .panel.nomb { margin-bottom: 0; }
+  .panel-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .panel-title { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; }
+  .panel-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .panel-badge { font-size: 9.5px; font-weight: 700; color: var(--blue); background: #5b729915; padding: 4px 9px; border-radius: 6px; white-space: nowrap; }
+  .chart-box { position: relative; height: 230px; }
+  .chart-box.sm { height: 195px; }
+  .chart-box.tall { height: 260px; }
+
+  /* Stat cards */
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 14px; }
+  .stat { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px 16px; }
+  .stat .lbl { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 700; margin-bottom: 7px; display: flex; align-items: center; gap: 6px; }
+  .stat .lbl svg { width: 13px; height: 13px; opacity: .7; }
+  .stat .val { font-size: 21px; font-weight: 800; letter-spacing: -0.025em; }
+  .stat .val.amber { color: var(--amber); } .stat .val.emerald { color: var(--emerald); } .stat .val.navy { color: var(--navy2); }
+  .stat .sub { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+  /* Scenarios */
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+  .scn { border: 1px solid var(--border); border-radius: var(--radius); padding: 17px; position: relative; }
+  .scn.success { background: #f1f8f4; border-color: #2f8a5f30; }
+  .scn.warning { background: #fdf7ec; border-color: #d9902130; }
+  .scn.destructive { background: #fbf0f0; border-color: #b2363630; }
+  .scn h4 { font-size: 13px; font-weight: 700; margin-bottom: 9px; }
+  .scn .il { font-size: 9.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 700; margin-bottom: 3px; }
+  .scn .imp { font-size: 17px; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.02em; }
+  .scn.success .imp { color: var(--emerald); } .scn.warning .imp { color: var(--amber); } .scn.destructive .imp { color: var(--bordeaux); }
+  .scn .pl { font-size: 9.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 700; margin-bottom: 5px; }
+  .scn ul { list-style: none; }
+  .scn li { font-size: 11px; color: var(--fg); padding: 3px 0 3px 13px; position: relative; }
+  .scn li::before { content: '•'; position: absolute; left: 0; }
+  .scn.success li::before { color: var(--emerald); } .scn.warning li::before { color: var(--amber); } .scn.destructive li::before { color: var(--bordeaux); }
+  .scn-icon { position: absolute; top: 15px; right: 15px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; }
+  .scn.success .scn-icon { background: #2f8a5f1e; color: var(--emerald); }
+  .scn.warning .scn-icon { background: #d990211e; color: var(--amber); }
+  .scn.destructive .scn-icon { background: #b236361e; color: var(--bordeaux); }
+  .scn-icon svg { width: 14px; height: 14px; }
+
+  /* Count cards (gatilhos) */
+  .count-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+  .count { border: 1px solid; border-radius: var(--radius); padding: 16px 18px; }
+  .count.ok { background: #f1f8f4; border-color: #2f8a5f30; }
+  .count.warning { background: #fdf7ec; border-color: #d9902130; }
+  .count.critical { background: #fbf0f0; border-color: #b2363630; }
+  .count .cl { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+  .count.ok .cl { color: var(--emerald); } .count.warning .cl { color: var(--amber); } .count.critical .cl { color: var(--bordeaux); }
+  .count .cl svg { width: 13px; height: 13px; }
+  .count .cv { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; }
+  .count .cs { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; font-size: 9.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 700; padding: 9px 10px; border-bottom: 1px solid var(--border); }
+  td { padding: 11px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .st { font-size: 9.5px; font-weight: 700; text-transform: uppercase; padding: 3px 9px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid; }
+  .st.ok { background: #2f8a5f12; color: var(--emerald); border-color: #2f8a5f30; }
+  .st.warning { background: #d9902115; color: var(--amber); border-color: #d9902135; }
+  .st.critical { background: #b2363612; color: var(--bordeaux); border-color: #b2363630; }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Callout box */
+  .callout { background: #fdf7ec; border: 1px solid #d9902130; border-radius: var(--radius); padding: 16px 20px; margin-bottom: 14px; }
+  .callout .ct { font-size: 12px; font-weight: 700; color: var(--amber); margin-bottom: 9px; display: flex; align-items: center; gap: 6px; }
+  .callout .ct svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .callout .ct svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .callout .ct svg { width: 14px; height: 14px; flex-shrink: 0; }
+  .callout ul { list-style: none; }
+  .callout li { font-size: 11.5px; color: var(--fg); padding: 3px 0 3px 14px; position: relative; line-height: 1.5; }
+  .callout li::before { content: '▸'; position: absolute; left: 0; color: var(--amber); }
+  .callout li b { font-weight: 700; }
+  .callout p { font-size: 11.5px; color: var(--muted); line-height: 1.6; }
+  .callout p b { color: var(--fg); }
+
+  /* Checklist */
+  .checklist { list-style: none; }
+  .checklist li { font-size: 11.5px; color: var(--fg); padding: 5px 0 5px 22px; position: relative; }
+  .checklist li::before { content: '✓'; position: absolute; left: 0; color: var(--emerald); font-weight: 800; }
+
+  /* References list */
+  .reflist { list-style: none; }
+  .refitem { display: flex; gap: 14px; padding: 12px 4px; border-bottom: 1px solid var(--border); }
+  .refitem:last-child { border-bottom: none; }
+  .refnum { font-size: 11px; color: var(--muted); font-weight: 700; width: 18px; flex-shrink: 0; padding-top: 2px; }
+  .refbody { flex: 1; }
+  .refsrc { font-size: 11px; font-weight: 700; color: var(--navy2); }
+  .refdate { font-size: 10px; color: var(--muted); margin-left: 8px; font-weight: 500; }
+  .reftitle { font-size: 12px; font-weight: 600; margin: 2px 0; }
+  .refurl { font-size: 10px; color: var(--muted); word-break: break-all; }
+
+  /* Simulator */
+  .sim-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; align-items: stretch; }
+  .sim-sliders { display: flex; flex-direction: column; gap: 16px; justify-content: center; }
+  .slider-row .sh { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+  .slider-row .sname { font-size: 12px; font-weight: 600; }
+  .slider-row .sval { font-size: 12px; font-weight: 700; color: var(--navy2); }
+  .slider-row .sval .su { font-size: 10px; color: var(--muted); font-weight: 500; margin-left: 3px; }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 5px; border-radius: 3px; background: var(--border); outline: none; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--navy); cursor: pointer; border: 2px solid #fff; box-shadow: 0 1px 4px #00000030; }
+  input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--navy); cursor: pointer; border: 2px solid #fff; }
+  .slider-row .sr { display: flex; justify-content: space-between; font-size: 9px; color: var(--muted); margin-top: 3px; }
+  .sim-result { background: linear-gradient(135deg, var(--navy), #34466a); color: #fff; border-radius: var(--radius); padding: 22px; display: flex; flex-direction: column; justify-content: center; }
+  .sim-result .rl { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; opacity: .75; font-weight: 700; margin-bottom: 8px; }
+  .sim-result .rv { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; }
+  .sim-result .rd { font-size: 12px; margin-top: 8px; opacity: .9; }
+  .sim-result .rd .chip { background: #ffffff22; padding: 2px 8px; border-radius: 5px; font-weight: 700; margin-left: 4px; }
+  .sim-result .rb { font-size: 10.5px; opacity: .7; margin-top: 16px; line-height: 1.6; border-top: 1px solid #ffffff22; padding-top: 12px; }
+
+  @media (max-width: 1100px) {
+    body { overflow: auto; }
+    .shell { flex-direction: column; height: auto; }
+    aside { width: 100%; height: auto; }
+    nav { display: flex; flex-wrap: wrap; gap: 4px; }
+    nav button { width: auto; }
+    main { height: auto; }
+    .kpi-grid, .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .grid-2, .grid-3, .count-row, .sim-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside>
+    <div class="brand">
+      <div class="brand-mark"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6"/></svg></div>
+      <div><div class="brand-name">Inteligência</div><div class="brand-sub">Florestal</div></div>
+    </div>
+    <nav id="nav"></nav>
+    <div class="nav-foot"><span class="lbl">Última atualização</span><br><span class="em" id="updatedAt">24 Jun 2026</span><br>Próx: 08 Jul 2026</div>
+  </aside>
+  <main>
+    <header class="topbar">
+      <div>
+        <div class="crumb">Equipe de Planejamento, Controle e Pesquisa Florestal<span class="sep">·</span>Jun 2026</div>
+        <h1 id="pageTitle">Visão Geral</h1>
+        <div class="psub" id="pageSub">Inteligência de mercado: insumos florestais e agronegócio</div>
+      </div>
+      <div class="topbar-actions">
+        <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Mai/24 — Jun/26</span>
+        <span class="pill"><span class="led live"></span>Dados base · Jul/2026</span>
+        <button class="btn primary" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Exportar</button>
+      </div>
+    </header>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+<script>
+const MONTHS = ["Mai/24","Jun/24","Jul/24","Ago/24","Set/24","Out/24","Nov/24","Dez/24","Jan/25","Fev/25","Mar/25","Abr/25","Mai/25","Jun/25","Jul/25","Ago/25","Set/25","Out/25","Nov/25","Dez/25","Jan/26","Fev/26","Mar/26","Abr/26","Mai/26","Jun/26"];
+const fert = {
+  ureia:[320,325,335,345,355,360,365,370,375,369,372,378,382,385,388,390,392,395,398,400,402,405,404,405,405,491],
+  map:[580,585,590,595,600,605,600,595,600,596,600,605,608,610,612,614,615,616,617,618,619,620,620,620,620,640],
+  kcl:[305,310,315,318,320,322,320,318,320,325,328,330,332,334,335,336,337,338,339,340,341,342,342,343,343,328],
+};
+const macro = {
+  dolar:[5.10,5.15,5.20,5.25,5.30,5.32,5.35,5.40,5.42,5.40,5.38,5.40,5.42,5.44,5.45,5.46,5.46,5.45,5.46,5.46,5.45,5.46,5.46,5.46,5.46,5.19],
+  gas:[2.2,2.3,2.35,2.4,2.45,2.5,2.55,2.6,2.65,2.7,2.72,2.75,2.78,2.8,2.8,2.82,2.83,2.83,2.84,2.84,2.85,2.85,2.85,2.85,2.85,3.10],
+  diesel:[6.10,6.15,6.20,6.25,6.30,6.40,6.50,6.60,6.70,6.80,6.90,7.00,7.10,7.15,7.20,7.25,7.30,7.32,7.35,7.38,7.40,7.41,7.42,7.43,7.43,7.26],
+  bdi:[1850,1920,1980,2010,2050,2080,2100,2120,2150,2160,2170,2180,2190,2200,2210,2215,2220,2225,2230,2235,2238,2240,2242,2242,2242,2667],
+};
+const soy = {
+  soja:[138,140,142,145,148,150,148,145,142,140,138,135,132,130,135,140.5,142,138,135,132,128,125,122,128.88,129.14,129.06],
+  trocaMap:[18.5,18,19.5,20,20.5,21,20.5,20,21.5,22,22.5,23,23.5,24,24.5,25,25.5,26,26.5,27,27.5,28,29,28.5,28,26.7],
+  trocaUreia:[12.5,12,13.5,14,14.5,15,14.5,14,15.5,16,16.5,17,17.5,18,18.5,19,19.5,20,20.5,21,21.5,22,23,22.5,22,20.5],
+};
+// Serie regional estimada em 95,7% do CEPEA (proporcao observada AIBA/CEPEA em jul/26).
+// O valor do card e real (AIBA); a serie historica e estimada — ver aba Referencias.
+soy.sojaTO = soy.soja.map(v => Math.round(v*0.957*100)/100);
+/* KPIS-START */
+let kpis = [
+  { id:"dolar", label:"Dólar", value:"5,19", unit:"R$/US$", variation:0, trend:"stable", alert:"ok", threshold:"> R$ 5,60", spark:macro.dolar },
+  { id:"ureia", label:"Ureia FOB", value:"491", unit:"US$/t", variation:0, trend:"stable", alert:"critical", threshold:"> US$ 430/t", spark:fert.ureia },
+  { id:"map", label:"MAP FOB", value:"640", unit:"US$/t", variation:0, trend:"stable", alert:"ok", threshold:"> US$ 650/t", spark:fert.map },
+  { id:"gas", label:"Gás Natural", value:"3,10", unit:"US$/MMBtu", variation:0, trend:"stable", alert:"warning", threshold:"> US$ 3,00", spark:macro.gas },
+  { id:"bdi", label:"Frete Marítimo (BDI)", value:"2.670", unit:"pontos", variation:0, trend:"stable", alert:"warning", threshold:"> 2.300 pts", spark:macro.bdi },
+  { id:"diesel", label:"Diesel S10", value:"7,09", unit:"R$/L", variation:0, trend:"stable", alert:"ok", threshold:"> R$ 7,60/L", spark:macro.diesel },
+  { id:"soja", label:"Soja CEPEA (Nacional)", value:"135,73", unit:"R$/saca", variation:0, trend:"stable", alert:"ok", threshold:"< R$ 125,00", spark:soy.soja },
+  { id:"sojaTO", label:"Soja Oeste BA (AIBA)", value:"129,88", unit:"R$/saca", variation:0, trend:"stable", alert:"ok", threshold:"> R$ 140,00", spark:soy.sojaTO },
+  { id:"trocaMap", label:"Troca Soja/MAP", value:"25,4", unit:"sacas/t", variation:-4.9, trend:"down", alert:"ok", threshold:"> 30 sacas/t", spark:soy.trocaMap },
+]; /* KPIS-END */
+const scenarios = [
+  { name:"Otimista", cor:"success", icon:"trend-down", impacto:"Queda de 5% a 8%", premissas:["Câmbio: R$ 5,10/US$","Gás Natural: US$ 2,50/MMBtu","Frete Marítimo: -10%","Custos logísticos: -5%"] },
+  { name:"Moderado (Base)", cor:"warning", icon:"minus", impacto:"Estabilidade (±2%)", premissas:["Câmbio: R$ 5,45/US$","Gás Natural: US$ 2,80/MMBtu","Frete Marítimo: estável","Custos logísticos: estáveis"] },
+  { name:"Pessimista", cor:"destructive", icon:"trend-up", impacto:"Alta de 10% a 15%", premissas:["Câmbio: R$ 5,80/US$","Gás Natural: US$ 3,50/MMBtu","Frete Marítimo: +15%","Custos logísticos: +10%"] },
+];
+const scnRecs = [
+  { cen:"Otimista", cor:"ok", estrategia:"Compras spot, postergar contratos longos", hedge:"Reduzido (20%)", estoque:"2-3 meses" },
+  { cen:"Moderado", cor:"warning", estrategia:"Mix 60% contrato / 40% spot", hedge:"Padrão (50%)", estoque:"3-4 meses" },
+  { cen:"Pessimista", cor:"critical", estrategia:"Antecipar contratos longos imediatamente", hedge:"Elevado (80%)", estoque:"5-6 meses" },
+];
+const sensitivity = [
+  { variavel:"Câmbio (R$/US$)", impacto:0.85, cor:"bordeaux" },{ variavel:"Preço FOB Ureia", impacto:0.78, cor:"bordeaux" },
+  { variavel:"Gás Natural", impacto:0.42, cor:"amber" },{ variavel:"Frete Marítimo", impacto:0.18, cor:"emerald" },
+  { variavel:"Diesel (Logística)", impacto:0.12, cor:"emerald" },{ variavel:"Pedágios", impacto:0.03, cor:"emerald" },
+];
+const route = { origem:"Santos (SP)", destino:"São Bento do Tocantins (TO)", distancia:2150, pisoAntt:12285.99, freteMercado:15971.78, custoDiesel:8874.72, pedagio:850, margem:5100, custoTon:499.12, custoKm:7.43 };
+const seasonal = [
+  {mes:"Jan",i:95},{mes:"Fev",i:110},{mes:"Mar",i:122},{mes:"Abr",i:118},{mes:"Mai",i:112},{mes:"Jun",i:102},
+  {mes:"Jul",i:95},{mes:"Ago",i:92},{mes:"Set",i:90},{mes:"Out",i:96},{mes:"Nov",i:100},{mes:"Dez",i:98},
+];
+const alerts = [
+  { indicador:"Dólar", valor:"R$ 5,19", gatilho:"> R$ 5,60", status:"ok", acao:"Câmbio recuou — janela favorável a importações" },
+  { indicador:"Ureia FOB", valor:"US$ 491/t", gatilho:"> US$ 430/t", status:"critical", acao:"Acima do gatilho: avaliar trava de preço / antecipação" },
+  { indicador:"Gás Natural", valor:"US$ 3,10/MMBtu", gatilho:"> US$ 3,00", status:"warning", acao:"Pressão sobre custo de nitrogenados" },
+  { indicador:"Frete Marítimo (BDI)", valor:"2.667 pts", gatilho:"> 2.300 pts", status:"warning", acao:"Elevado — monitorar custo de importação" },
+  { indicador:"Custo Frete Rodoviário", valor:"R$ 7,26/L diesel", gatilho:"> R$ 7,60/L", status:"ok", acao:"Monitorar" },
+  { indicador:"Soja CEPEA", valor:"R$ 129,06/saca", gatilho:"< R$ 125,00", status:"ok", acao:"Estável — sem sinal de gatilho" },
+];
+const references = [
+  { id:1, fonte:"Farmnews", data:"16/03/2026", titulo:"Preço do cloreto de potássio, ureia e MAP entre fev/2025 e fev/2026", url:"https://www.farmnews.com.br/mercado/preco-do-cloreto-de-potassio-ureia-e-map-entre-fevereiro-de-2025-e-2026/" },
+  { id:2, fonte:"CNN Brasil Agro", data:"22/04/2026", titulo:"Valor de mercado de defensivos deve crescer cerca de 8% na safra 2025/26", url:"https://www.cnnbrasil.com.br/agro/valor-de-mercado-de-defensivos-deve-crescer-cerca-de-8-na-safra-2025-26/" },
+  { id:3, fonte:"Argus Media", data:"Mar/2026", titulo:"Fretes sobem com baixo frete-retorno", url:"https://www.argusmedia.com/pt/news-and-insights/latest-market-news/2327374-fretes-sobem-com-baixo-frete-retorno" },
+  { id:4, fonte:"ANTT / Activecorp", data:"27/01/2026", titulo:"Nova Tabela de Frete da ANTT 2026", url:"https://activecorp.com.br/tabela-de-frete-da-antt-2026/" },
+  { id:5, fonte:"ANP", data:"Mai/2026", titulo:"Levantamento de Preços de Combustíveis", url:"https://www.gov.br/anp/pt-br/assuntos/precos-e-defesa-da-concorrencia/precos/levantamento-de-precos-de-combustiveis-ultimas-semanas-pesquisadas" },
+  { id:6, fonte:"CEPEA/ESALQ", data:"04/05/2026", titulo:"Indicador da Soja Paranaguá", url:"https://cepea.org.br/br/indicador/soja.aspx" },
+  { id:7, fonte:"Globo Rural", data:"26/02/2026", titulo:"Relação de troca entre soja e fertilizantes piora para o produtor", url:"https://globorural.globo.com/insumos/noticia/2026/02/relacao-de-troca-entre-soja-e-fertilizantes-piora-para-o-produtor.ghtml" },
+  { id:8, fonte:"CONAB", data:"02/01/2026", titulo:"Calendário de levantamentos das safras agrícolas 2026", url:"https://www.gov.br/conab/pt-br/assuntos/noticias/confira-o-calendario-de-2026-de-levantamentos-das-safras-agricolas-e-do-mercado-hortigranjeiro" },
+];
+const checklist = [
+  "Preços de fertilizantes cruzados entre Farmnews, Argus Media e ComexStat",
+  "Indicador de soja extraído diretamente do CEPEA/ESALQ (Paranaguá)",
+  "Tabela de Frete ANTT 2026 conforme Resolução vigente",
+  "Preço do Diesel S10 da ANP (média semanal)",
+  "Calendário de safras CONAB para projeção de demanda",
+];
+
+const C = { navy:"#1e2a44", navy2:"#2b3a55", emerald:"#2f8a5f", amber:"#d99021", bordeaux:"#b23636", blue:"#5b7299", muted:"#6b7585", border:"#e8e9ec", fg:"#1c2433" };
+const trendArrow = { up:"▲", down:"▼", stable:"—" };
+const badgeLabel = { ok:"OK", warning:"Atenção", critical:"Crítico" };
+const ICONS = {
+  overview:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
+  fertilizers:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6.5L5.2 18A2 2 0 0 0 7 21h10a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg>',
+  agro:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10M12 20v-9"/><path d="M12 11C12 7 9 5 5 5c0 4 3 6 7 6Z"/><path d="M12 11c0-3 3-5 7-5 0 3-3 5-7 5Z"/></svg>',
+  logistics:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5h11v11H2zM13 8h4l4 4v4h-6"/><circle cx="6" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></svg>',
+  model:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h2M14 10h2M8 14h2M14 14h2M8 18h2M14 18h2"/></svg>',
+  scenarios:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M6 8.5v7M6 6h9a3 3 0 0 1 3 3v3"/><path d="m15 9 3 3 3-3"/></svg>',
+  alerts:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
+  references:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h6"/></svg>',
+};
+const MICRO = {
+  ext:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>',
+  pin:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+  ruler:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h18v8H3z"/><path d="M7 8v3M11 8v4M15 8v3M19 8v4"/></svg>',
+  cash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>',
+  truck:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6h11v9H2zM13 9h4l4 3v3h-5"/><circle cx="6" cy="17" r="1.4"/><circle cx="17" cy="17" r="1.4"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>',
+  'trend-down':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17 13.5 8.5 8.5 13.5 2 7"/><path d="M16 17h6v-6"/></svg>',
+  'trend-up':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></svg>',
+  minus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14"/></svg>',
+};
+const SECTIONS = [
+  { id:"overview",   title:"Visão Geral",     sub:"Inteligência de mercado: insumos florestais e agronegócio" },
+  { id:"fertilizers",title:"Fertilizantes",   sub:"Análise de preços FOB e tendências dos principais nutrientes" },
+  { id:"agro",       title:"Agronegócio",     sub:"Influência da soja na demanda e logística de fertilizantes" },
+  { id:"logistics",  title:"Logística",       sub:"Custos e sazonalidade da rota Santos → São Bento do Tocantins" },
+  { id:"model",      title:"Modelo Econômico",sub:"Decomposição do preço final e análise de sensibilidade" },
+  { id:"scenarios",  title:"Cenários",        sub:"Projeções quantitativas para o 2º semestre de 2026" },
+  { id:"alerts",     title:"Gatilhos",        sub:"Sistema de monitoramento contínuo com alertas automáticos" },
+  { id:"references", title:"Referências",     sub:"Fontes verificáveis e checklist de verificação" },
+];
+let activeSection = "overview";
+const charts = {};
+
+function kpiCardHTML(k) {
+  const varSign = k.variation > 0 ? "+" : "";
+  return `<div class="kpi"><div class="kpi-top"><div><div class="kpi-label">${k.label}</div><div class="kpi-unit">${k.unit}</div></div><span class="badge ${k.alert}">${badgeLabel[k.alert]}</span></div><div class="kpi-bottom"><div><div class="kpi-value tnum">${k.value}</div><div class="kpi-trend ${k.trend}"><span>${trendArrow[k.trend]}</span><span class="tnum">${varSign}${k.variation.toFixed(1)}%</span><span class="vs">vs mês ant.</span></div></div><div class="spark-wrap"><canvas id="spark-${k.id}"></canvas></div></div><div class="kpi-thresh">Gatilho: ${k.threshold}</div></div>`;
+}
+function drawSpark(k) {
+  const ctx = document.getElementById("spark-"+k.id); if (!ctx) return;
+  const color = k.alert==="critical"?C.bordeaux : k.alert==="warning"?C.amber : C.navy2;
+  const data = k.spark.slice(-12);
+  charts["spark-"+k.id] = new Chart(ctx, { type:"line",
+    data:{ labels:data.map((_,i)=>i), datasets:[{ data, borderColor:color, borderWidth:2, fill:true, backgroundColor:color+"16", pointRadius:0, tension:0.4 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false},tooltip:{enabled:false}}, scales:{x:{display:false},y:{display:false}} } });
+}
+const baseOpts = () => ({
+  responsive:true, maintainAspectRatio:false, interaction:{mode:"index",intersect:false},
+  plugins:{ legend:{position:"bottom",labels:{boxWidth:9,boxHeight:9,font:{size:10},color:C.muted,usePointStyle:true,padding:14}},
+    tooltip:{backgroundColor:"#fff",titleColor:C.navy,bodyColor:C.fg,borderColor:C.border,borderWidth:1,padding:10,titleFont:{size:11,weight:"700"},bodyFont:{size:11}} },
+  scales:{ x:{grid:{display:false},ticks:{color:C.muted,font:{size:9.5},maxRotation:0,autoSkip:true,maxTicksLimit:7}},
+    y:{grid:{color:C.border},ticks:{color:C.muted,font:{size:9.5}}} }
+});
+function line(id, datasets, opts) { const ctx=document.getElementById(id); if(!ctx) return; charts[id]=new Chart(ctx,{type:"line",data:{labels:MONTHS,datasets},options:opts||baseOpts()}); }
+function ds(label, data, color, fill) { return { label, data, borderColor:color, backgroundColor: fill?color+"15":"transparent", borderWidth:2, pointRadius:0, tension:0.3, fill:!!fill }; }
+function colByName(n){ return C[n]||C.navy2; }
+
+/* ---------- VISÃO GERAL ---------- */
+function viewOverview() {
+  const troca = kpis.find(k=>k.id==="trocaMap").value;
+  return `<div class="exec"><div class="eyebrow">Resumo Executivo · Junho 2026</div><h2>Nova pressão sobre nitrogenados (ureia ~US$ 491/t) contrasta com alívio cambial; frete marítimo em alta amplia risco no custo de importação.</h2><p>A Ureia FOB saltou para <b>~US$ 491/t</b> (COMEX, mar/26 — último mês fechado), pressionada pelo gás natural (<b>US$ 3,10/MMBtu</b>) e por tensões geopolíticas. Em contrapartida, o dólar recuou para <b>R$ 5,19</b>, melhorando a relação de troca soja/MAP para <b>${troca} sacas/t</b>. O frete marítimo (BDI) subiu para <b>2.667 pts</b> e o diesel nacional cedeu levemente para <b>R$ 7,26/L</b>.</p></div>
+  <h3 class="sec-label">Indicadores-Chave</h3><div class="kpi-grid">${kpis.map(kpiCardHTML).join("")}</div>
+  <div class="grid-2"><div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Preços de Fertilizantes (FOB)</div><div class="panel-sub">US$/t · Últimos 25 meses</div></div><span class="panel-badge">Tendência de alta</span></div><div class="chart-box sm"><canvas id="ovFert"></canvas></div></div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Câmbio R$/US$ vs Soja CEPEA</div><div class="panel-sub">Correlação macro · Últimos 25 meses</div></div><span class="panel-badge">Volatilidade</span></div><div class="chart-box sm"><canvas id="ovMacro"></canvas></div></div></div>`;
+}
+function renderOverviewCharts() {
+  kpis.forEach(drawSpark);
+  line("ovFert", [ds("Ureia",fert.ureia,C.navy2),ds("MAP",fert.map,C.emerald),ds("KCl",fert.kcl,C.amber)]);
+  const o=baseOpts(); o.scales={ x:o.scales.x, y:{position:"left",grid:{color:C.border},ticks:{color:C.navy2,font:{size:9.5}}}, y1:{position:"right",grid:{display:false},ticks:{color:C.emerald,font:{size:9.5}}} };
+  line("ovMacro", [Object.assign(ds("Dólar (R$)",macro.dolar,C.navy2,true),{yAxisID:"y"}), Object.assign(ds("Soja (R$/saca)",soy.soja,C.emerald),{yAxisID:"y1"})], o);
+}
+
+/* ---------- FERTILIZANTES ---------- */
+function viewFertilizers() {
+  return `<div class="analysis"><div class="eyebrow">Análise · Fertilizantes</div><h3>Pressão sustentada nos preços FOB de nitrogenados e fosfatados</h3><p>A Ureia FOB saltou para <b>~US$ 491/t</b> (COMEX, mar/26), acumulando cerca de <b>+27%</b> em 12 meses, sob efeito do gás natural e de tensões geopolíticas. O MAP subiu para <b>~US$ 640/t</b> e o KCl recuou para <b>~US$ 328/t</b>.</p></div>
+  <div class="grid-2"><div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Ureia FOB</div><div class="panel-sub">US$/t · 25 meses</div></div><span class="panel-badge">+27% ALTA</span></div><div class="chart-box sm"><canvas id="fzUreia"></canvas></div></div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">MAP FOB</div><div class="panel-sub">US$/t · 25 meses</div></div><span class="panel-badge">+3,2% ALTA</span></div><div class="chart-box sm"><canvas id="fzMap"></canvas></div></div></div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">KCl (Cloreto de Potássio)</div><div class="panel-sub">US$/t · 25 meses</div></div><span class="panel-badge">ALTA MODERADA</span></div><div class="chart-box sm"><canvas id="fzKcl"></canvas></div></div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Variação Mensal — Últimos 12 meses</div><div class="panel-sub">% · Comparativo entre fertilizantes</div></div></div><div class="chart-box"><canvas id="fzVar"></canvas></div></div>`;
+}
+function mom(a){ const r=[]; for(let i=a.length-12;i<a.length;i++){ r.push(Math.round(((a[i]-a[i-1])/a[i-1])*1000)/10); } return r; }
+function renderFertilizersCharts() {
+  line("fzUreia", [ds("Ureia",fert.ureia,C.navy2,true)]);
+  line("fzMap", [ds("MAP",fert.map,C.emerald,true)]);
+  line("fzKcl", [ds("KCl",fert.kcl,C.amber,true)]);
+  const labels = MONTHS.slice(-12);
+  const ctx=document.getElementById("fzVar"); if(!ctx) return;
+  charts["fzVar"]=new Chart(ctx,{ type:"bar",
+    data:{ labels, datasets:[
+      {label:"Ureia",data:mom(fert.ureia),backgroundColor:C.navy2,borderRadius:3},
+      {label:"MAP",data:mom(fert.map),backgroundColor:C.emerald,borderRadius:3},
+      {label:"KCl",data:mom(fert.kcl),backgroundColor:C.amber,borderRadius:3},
+    ]},
+    options:Object.assign(baseOpts(),{ plugins:{legend:{position:"bottom",labels:{boxWidth:9,boxHeight:9,font:{size:10},color:C.muted,usePointStyle:true,padding:14}},tooltip:{callbacks:{label:c=>c.dataset.label+": "+c.parsed.y.toFixed(1)+"%"}}} }) });
+}
+
+/* ---------- AGRONEGÓCIO ---------- */
+function viewAgro() {
+  return `<div class="analysis"><div class="eyebrow">Análise · Influência do Agronegócio</div><h3>Deterioração da relação de troca pressiona oferta para o setor florestal</h3><p>A soja CEPEA está em <b>R$ 129,06/saca</b> (estável). O recuo do dólar para R$ 5,19 aliviou a relação de troca soja/MAP para <b>26,7 sacas/t</b> (vs. 28,0 em mai/26), mas o patamar segue elevado frente a 18,5 de mai/24. O nível continua sendo um <b>sinalizador de demanda concentrada</b> do agronegócio no 2º semestre, com risco de competição por oferta e logística no MATOPIBA.</p></div>
+  <div class="stat-row">
+    <div class="stat"><div class="lbl">Soja CEPEA (Nacional)</div><div class="val tnum">R$ 129,06</div><div class="sub">por saca · estável vs mai/26</div></div>
+    <div class="stat"><div class="lbl">Soja Oeste BA (AIBA)</div><div class="val tnum">R$ 129,88</div><div class="sub">por saca · spread -R$ 5,85 vs Nacional</div></div>
+    <div class="stat"><div class="lbl">Troca Soja/MAP</div><div class="val tnum amber">26,7 sacas</div><div class="sub">por tonelada · -4,6% vs mai/26</div></div>
+    <div class="stat"><div class="lbl">Troca Soja/Ureia</div><div class="val tnum amber">20,5 sacas</div><div class="sub">por tonelada · -6,8% vs mai/26</div></div>
+  </div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Soja CEPEA (Nacional) vs Soja Oeste da Bahia (AIBA)</div><div class="panel-sub">R$/saca · 25 meses · Spread regional</div></div><span class="panel-badge">COMPARAÇÃO REGIONAL</span></div><div class="chart-box tall"><canvas id="agComp"></canvas></div></div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Soja vs Fertilizantes</div><div class="panel-sub">R$/saca (esq.) vs US$/t (dir.) · 25 meses</div></div><span class="panel-badge">DIVERGÊNCIA</span></div><div class="chart-box tall"><canvas id="agDiv"></canvas></div></div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Relação de Troca — Sacas de Soja por Tonelada</div><div class="panel-sub">Evolução do poder de compra do produtor · 25 meses</div></div><span class="panel-badge">PIORA</span></div><div class="chart-box tall"><canvas id="agTroca"></canvas></div></div>
+  <div class="callout"><div class="ct">${MICRO.alert} Implicações para o Setor Florestal</div><ul>
+    <li><b>Competição por oferta:</b> safra de soja 2026/27 pode pressionar disponibilidade de fertilizantes a partir de Ago/26.</li>
+    <li><b>Sazonalidade logística:</b> escoamento de soja Fev–Mai influencia fretes para Norte do Tocantins em até 25%.</li>
+    <li><b>Janela de compra:</b> recomendação de antecipar aquisições para Jun–Jul/26, antes do pico de demanda do agro.</li>
+  </ul></div>`;
+}
+function renderAgroCharts() {
+  line("agComp", [ds("CEPEA Nacional",soy.soja,C.emerald,true), ds("Oeste da Bahia (AIBA)",soy.sojaTO,C.bordeaux,true)]);
+  const o=baseOpts(); o.scales={ x:o.scales.x, y:{position:"left",grid:{color:C.border},ticks:{color:C.emerald,font:{size:9.5}}}, y1:{position:"right",grid:{display:false},ticks:{color:C.navy2,font:{size:9.5}}} };
+  line("agDiv", [Object.assign(ds("Soja R$/saca",soy.soja,C.emerald,true),{yAxisID:"y"}), Object.assign(ds("MAP US$/t",fert.map,C.navy2),{yAxisID:"y1"}), Object.assign(ds("Ureia US$/t",fert.ureia,C.bordeaux),{yAxisID:"y1"})], o);
+  line("agTroca", [ds("Soja/MAP",soy.trocaMap,C.navy2), ds("Soja/Ureia",soy.trocaUreia,C.bordeaux)]);
+}
+
+/* ---------- LOGÍSTICA ---------- */
+function viewLogistics() {
+  const f=(n)=>n.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const f0=(n)=>n.toLocaleString("pt-BR",{maximumFractionDigits:0});
+  return `<div class="analysis"><div class="eyebrow">Análise Logística · Rota Crítica</div><h3>${MICRO.pin} Santos (SP) → São Bento do Tocantins (TO)</h3><p>Rota com <b>2.150 km</b>, cruzando 4 estados (SP, MG, GO, TO). Custo atual de <b>R$ 499,12/t</b> ou <b>R$ 7,43/km</b>. Fortemente impactada pela sazonalidade da soja no MATOPIBA.</p></div>
+  <div class="stat-row">
+    <div class="stat"><div class="lbl">${MICRO.ruler} Distância</div><div class="val tnum">2.150 km</div><div class="sub">Santos → S. B. Tocantins</div></div>
+    <div class="stat"><div class="lbl">${MICRO.cash} Piso ANTT</div><div class="val tnum">R$ ${f0(route.pisoAntt)}</div><div class="sub">por viagem · 33t</div></div>
+    <div class="stat"><div class="lbl">${MICRO.truck} Frete Mercado</div><div class="val tnum">R$ ${f0(route.freteMercado)}</div><div class="sub">+30% sobre piso</div></div>
+    <div class="stat"><div class="lbl">${MICRO.cash} Custo/t</div><div class="val tnum">R$ ${f(route.custoTon)}</div><div class="sub">R$ 7,43/km</div></div>
+  </div>
+  <div class="grid-2"><div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Composição do Custo de Frete</div><div class="panel-sub">R$ por viagem (33t)</div></div><span class="panel-badge">MAI/2026</span></div><div class="chart-box sm"><canvas id="lgCost"></canvas></div></div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Índice Sazonal de Frete</div><div class="panel-sub">Base 100 = média anual · MATOPIBA</div></div><span class="panel-badge">PICO EM MAR</span></div><div class="chart-box sm"><canvas id="lgSeason"></canvas></div></div></div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Diesel S10 — Evolução do Preço</div><div class="panel-sub">R$/L · 25 meses · ANP</div></div></div><div class="chart-box sm"><canvas id="lgDiesel"></canvas></div></div>`;
+}
+function renderLogisticsCharts() {
+  const cctx=document.getElementById("lgCost");
+  if(cctx) charts["lgCost"]=new Chart(cctx,{ type:"bar",
+    data:{ labels:["Diesel (combustível)","Piso ANTT","Pedágio","Margem (mercado)"], datasets:[{ data:[route.custoDiesel,route.pisoAntt,route.pedagio,route.margem], backgroundColor:[C.navy2,C.emerald,C.amber,C.bordeaux], borderRadius:4 }] },
+    options:Object.assign(baseOpts(),{ indexAxis:"y", plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>"R$ "+c.parsed.x.toLocaleString("pt-BR",{minimumFractionDigits:2})}}} }) });
+  const sctx=document.getElementById("lgSeason");
+  if(sctx) charts["lgSeason"]=new Chart(sctx,{ type:"bar",
+    data:{ labels:seasonal.map(s=>s.mes), datasets:[{ data:seasonal.map(s=>s.i), backgroundColor:seasonal.map(s=>s.i>=115?C.bordeaux:s.i>=105?C.amber:C.emerald), borderRadius:4 }] },
+    options:Object.assign(baseOpts(),{ plugins:{legend:{display:false}}, scales:{x:baseOpts().scales.x, y:Object.assign(baseOpts().scales.y,{min:80,max:130})} }) });
+  line("lgDiesel", [ds("Diesel S10",macro.diesel,C.navy2,true)]);
+}
+
+/* ---------- MODELO ECONÔMICO ---------- */
+function viewModel() {
+  return `<div class="analysis"><div class="eyebrow">Modelo Econômico Integrado</div><h3>Decomposição do preço final do fertilizante</h3><p>O preço final do fertilizante é função de quatro variáveis principais: <b>câmbio</b>, <b>preço FOB internacional</b>, <b>gás natural</b> (que pressiona o FOB) e <b>frete marítimo</b>. Câmbio e FOB representam, juntos, mais de 80% da sensibilidade do preço final.</p></div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Análise de Sensibilidade</div><div class="panel-sub">Impacto no preço final por 1% de variação na variável</div></div><span class="panel-badge">MODELO</span></div><div class="chart-box"><canvas id="mdSens"></canvas></div></div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Simulador Interativo de Preço · Ureia CIF Brasil</div><div class="panel-sub">Ajuste as variáveis para projetar o impacto no preço final</div></div></div>
+    <div class="sim-grid">
+      <div class="sim-sliders">
+        <div class="slider-row"><div class="sh"><span class="sname">Câmbio</span><span class="sval"><span id="sv-cambio">5,19</span><span class="su">R$/US$</span></span></div><input type="range" id="sl-cambio" min="4.0" max="6.5" step="0.01" value="5.19"><div class="sr"><span>4,0</span><span>6,5</span></div></div>
+        <div class="slider-row"><div class="sh"><span class="sname">Preço FOB Ureia</span><span class="sval"><span id="sv-fob">491</span><span class="su">US$/t</span></span></div><input type="range" id="sl-fob" min="300" max="650" step="1" value="491"><div class="sr"><span>300</span><span>650</span></div></div>
+        <div class="slider-row"><div class="sh"><span class="sname">Gás Natural Henry Hub</span><span class="sval"><span id="sv-gas">3,10</span><span class="su">US$/MMBtu</span></span></div><input type="range" id="sl-gas" min="1.5" max="4.5" step="0.05" value="3.10"><div class="sr"><span>1,5</span><span>4,5</span></div></div>
+        <div class="slider-row"><div class="sh"><span class="sname">Baltic Dry Index</span><span class="sval"><span id="sv-bdi">2.667</span><span class="su">pontos</span></span></div><input type="range" id="sl-bdi" min="1400" max="3300" step="10" value="2667"><div class="sr"><span>1.400</span><span>3.300</span></div></div>
+      </div>
+      <div class="sim-result"><div class="rl">Preço Projetado · Ureia CIF Brasil</div><div class="rv tnum">R$ <span id="simPrice">2.940</span></div><div class="rd">vs. base: <span class="chip tnum" id="simDelta">0,0%</span></div><div class="rb">Base de cálculo (Jun/26): R$ 2.940/t<br>Câmbio base: R$ 5,19 · FOB base: US$ 491</div></div>
+    </div>
+  </div>`;
+}
+function simPriceFn(cambio, fob, gas, bdi) {
+  const freteMaritimo = (bdi/2242)*180;
+  const gasPremium = (gas-2.85)*60;
+  return (fob+gasPremium)*cambio + freteMaritimo + 100;
+}
+const SIM_BASE = simPriceFn(5.19,491,3.10,2667);
+function renderModelCharts() {
+  const sctx=document.getElementById("mdSens");
+  if(sctx) charts["mdSens"]=new Chart(sctx,{ type:"bar",
+    data:{ labels:sensitivity.map(s=>s.variavel), datasets:[{ data:sensitivity.map(s=>s.impacto), backgroundColor:sensitivity.map(s=>colByName(s.cor)), borderRadius:4 }] },
+    options:Object.assign(baseOpts(),{ indexAxis:"y", plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x.toFixed(2)+"%"}}}, scales:{ y:{grid:{display:false},ticks:{color:C.fg,font:{size:10}}}, x:{grid:{color:C.border},ticks:{color:C.muted,font:{size:9.5},callback:v=>(v*100).toFixed(0)+"%"}} } }) });
+  // wire sliders
+  const ids=["cambio","fob","gas","bdi"];
+  const fmtBy={ cambio:v=>v.toFixed(2).replace(".",","), fob:v=>Math.round(v).toString(), gas:v=>v.toFixed(2).replace(".",","), bdi:v=>Math.round(v).toLocaleString("pt-BR") };
+  function recompute(){
+    const cambio=parseFloat(document.getElementById("sl-cambio").value);
+    const fob=parseFloat(document.getElementById("sl-fob").value);
+    const gas=parseFloat(document.getElementById("sl-gas").value);
+    const bdi=parseFloat(document.getElementById("sl-bdi").value);
+    document.getElementById("sv-cambio").textContent=fmtBy.cambio(cambio);
+    document.getElementById("sv-fob").textContent=fmtBy.fob(fob);
+    document.getElementById("sv-gas").textContent=fmtBy.gas(gas);
+    document.getElementById("sv-bdi").textContent=fmtBy.bdi(bdi);
+    const price=simPriceFn(cambio,fob,gas,bdi);
+    const delta=((price-SIM_BASE)/SIM_BASE)*100;
+    document.getElementById("simPrice").textContent=Math.round(price).toLocaleString("pt-BR");
+    const dEl=document.getElementById("simDelta");
+    dEl.textContent=(delta>=0?"+":"")+delta.toFixed(1).replace(".",",")+"%";
+  }
+  ids.forEach(id=>{ const el=document.getElementById("sl-"+id); if(el) el.addEventListener("input",recompute); });
+  recompute();
+}
+
+/* ---------- CENÁRIOS ---------- */
+function viewScenarios() {
+  return `<div class="analysis"><div class="eyebrow">Cenários · 2º Semestre 2026</div><h3>Três trajetórias de preços para fertilizantes</h3><p>Cenários construídos a partir de premissas explícitas para câmbio, gás natural, frete marítimo e custos logísticos. O cenário <b>moderado (base)</b> é o mais provável (+55%), seguido do pessimista (+30%) e otimista (+15%).</p></div>
+  <div class="grid-3">${scenarios.map(s=>`<div class="scn ${s.cor}"><div class="scn-icon">${MICRO[s.icon]}</div><h4>${s.name}</h4><div class="il">Impacto nos preços</div><div class="imp">${s.impacto}</div><div class="pl">Premissas</div><ul>${s.premissas.map(p=>`<li>${p}</li>`).join("")}</ul></div>`).join("")}</div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Recomendações Estratégicas por Cenário</div></div></div><table><thead><tr><th>Cenário</th><th>Estratégia de Compra</th><th>Hedge Cambial</th><th>Estoque Estratégico</th></tr></thead><tbody>
+  ${scnRecs.map(r=>`<tr><td><span class="st ${r.cor}">${r.cen}</span></td><td>${r.estrategia}</td><td class="tnum">${r.hedge}</td><td class="tnum">${r.estoque}</td></tr>`).join("")}
+  </tbody></table></div>`;
+}
+
+/* ---------- GATILHOS ---------- */
+function viewAlerts() {
+  const nOk=alerts.filter(a=>a.status==="ok").length;
+  const nW=alerts.filter(a=>a.status==="warning").length;
+  const nC=alerts.filter(a=>a.status==="critical").length;
+  return `<div class="analysis"><div class="eyebrow">Sistema de Monitoramento</div><h3>Gatilhos Estratégicos · Maio 2026</h3><p>Indicadores monitorados continuamente com gatilhos pré-definidos. Ações recomendadas são acionadas automaticamente quando os limiares são ultrapassados.</p></div>
+  <div class="count-row">
+    <div class="count ok"><div class="cl">${MICRO.check} Em Conformidade</div><div class="cv tnum">${nOk}</div><div class="cs">indicadores</div></div>
+    <div class="count warning"><div class="cl">${MICRO.alert} Atenção</div><div class="cv tnum">${nW}</div><div class="cs">indicadores</div></div>
+    <div class="count critical"><div class="cl">${MICRO.x} Crítico</div><div class="cv tnum">${nC}</div><div class="cs">indicadores</div></div>
+  </div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Lista de Gatilhos Ativos</div></div></div><table><thead><tr><th>Status</th><th>Indicador</th><th>Valor Atual</th><th>Gatilho</th><th>Ação Recomendada</th></tr></thead><tbody>
+  ${alerts.map(a=>`<tr><td><span class="st ${a.status}">${a.status==="ok"?MICRO.check:MICRO.alert} ${badgeLabel[a.status]}</span></td><td style="font-weight:600">${a.indicador}</td><td class="tnum">${a.valor}</td><td class="tnum" style="color:var(--muted)">${a.gatilho}</td><td style="color:var(--muted)">${a.acao}</td></tr>`).join("")}
+  </tbody></table></div>`;
+}
+
+/* ---------- REFERÊNCIAS ---------- */
+function viewReferences() {
+  return `<div class="analysis"><div class="eyebrow">Fontes & Verificação</div><h3>Referências utilizadas no dashboard</h3><p>Todas as séries históricas e indicadores são extraídos de fontes públicas oficiais ou de instituições reconhecidas no setor. Atualização quinzenal com revisão completa das fontes.</p></div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Lista de Fontes (${references.length})</div></div></div><ul class="reflist">
+  ${references.map(r=>`<li class="refitem"><div class="refnum tnum">${r.id}</div><div class="refbody"><span class="refsrc">${r.fonte}</span><span class="refdate">${r.data}</span><div class="reftitle">${r.titulo}</div><div class="refurl">${r.url}</div></div><a href="${r.url}" target="_blank" rel="noopener" style="align-self:center;width:15px;height:15px;color:var(--muted)">${MICRO.ext}</a></li>`).join("")}
+  </ul></div>
+  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Checklist de Verificação</div></div></div><ul class="checklist">${checklist.map(c=>`<li>${c}</li>`).join("")}</ul></div>
+  <div class="callout"><div class="ct">${MICRO.alert} Limites e Incertezas</div><p>Algumas séries de preços para os meses mais antigos (Mai–Ago/2024) são estimativas interpoladas a partir de relatórios mensais consolidados. O modelo econômico simplificado não captura efeitos de segunda ordem como expectativas de mercado e arbitragem entre regiões. Os gatilhos propostos são <b>recomendações iniciais</b> e devem ser calibrados conforme histórico interno de operação. <b>Atualização de 24/jun/2026:</b> dólar, soja CEPEA, gás natural (Henry Hub), BDI e diesel foram atualizados com dados de jun/2026. Os preços FOB de fertilizantes refletem o último mês fechado verificável na COMEX (ureia e KCl: mar/26; MAP: jan/26) e usam benchmark de importação, distinto da referência original do relatório — por isso há um degrau no fim da série.</p></div>`;
+}
+
+const BUILDERS = {
+  overview:{ html:viewOverview, charts:renderOverviewCharts },
+  fertilizers:{ html:viewFertilizers, charts:renderFertilizersCharts },
+  agro:{ html:viewAgro, charts:renderAgroCharts },
+  logistics:{ html:viewLogistics, charts:renderLogisticsCharts },
+  model:{ html:viewModel, charts:renderModelCharts },
+  scenarios:{ html:viewScenarios, charts:function(){} },
+  alerts:{ html:viewAlerts, charts:function(){} },
+  references:{ html:viewReferences, charts:function(){} },
+};
+function destroyCharts(){ Object.keys(charts).forEach(k=>{try{charts[k].destroy()}catch(e){} delete charts[k];}); }
+function renderNav(){
+  const nav=document.getElementById("nav");
+  nav.innerHTML=SECTIONS.map(s=>`<button data-id="${s.id}" class="${s.id===activeSection?'active':''}">${ICONS[s.id]}${s.title}</button>`).join("");
+  nav.querySelectorAll("button").forEach(b=>b.addEventListener("click",function(){ switchTo(b.dataset.id); }));
+}
+function switchTo(id){
+  activeSection=id;
+  const sec=SECTIONS.find(s=>s.id===id);
+  document.getElementById("pageTitle").textContent=sec.title;
+  document.getElementById("pageSub").textContent=sec.sub;
+  renderNav();
+  destroyCharts();
+  document.getElementById("content").innerHTML='<div class="view active">'+BUILDERS[id].html()+'</div>';
+  requestAnimationFrame(function(){ BUILDERS[id].charts(); });
+}
+document.getElementById("btnExport").addEventListener("click",function(){ window.print(); });
+renderNav();
+switchTo("overview");
+</script>
+</body>
+</html>
