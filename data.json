@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-07-23T13:50:47.304Z",
-  "updatedAtBR": "23/07/2026, 13:50:47",
+  "updatedAt": "2026-07-23T15:21:07.808Z",
+  "updatedAtBR": "23/07/2026, 15:21:07",
   "ref": "Jul/2026",
   "current": {
     "dolar": 5.06,
     "ureia": 584.5,
     "map": 844.3,
     "kcl": 350.7,
-    "gas": 2.8,
+    "gas": 3.1,
     "bdi": 2715,
     "diesel": 7.09,
     "soja": 137.84,
@@ -29,7 +29,7 @@
     "ureia": null,
     "map": null,
     "kcl": null,
-    "gas": 0,
+    "gas": 10.7,
     "bdi": 0,
     "diesel": 0,
     "soja": 0,
@@ -41,18 +41,17 @@
     "ureia": 22.2
   },
   "status": {
+    "soja": "ok (Noticias Agricolas / CEPEA-PR 22/07/2026)",
     "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
     "bdi": "ok (HANDYBULK, 22/07/2026)",
-    "soja": "ok (Noticias Agricolas / CEPEA-PR 22/07/2026)",
     "cambio": "ok (BCB PTAX)",
     "diesel": "falha: Petrobras: HTTP 403 | PortalCanaa: HTTP 403",
-    "_comexRetry": "aguardando 15s apos 429 (com-filtro-ncm 2026-06, tentativa 2)",
     "_comexPeriodo": "com-filtro-ncm | 2026-06 | 4 linhas",
     "_comexNcmsEncontrados": "31042090,31054000,31021010,31042010",
     "ureia": "ok (ComexStat 2026-06)",
     "map": "ok (ComexStat 2026-06)",
     "kcl": "ok (ComexStat 2026-06)",
-    "gas": "ok (EIA Henry Hub)"
+    "gas": "falha EIA: HTTP 500 :: \"Something unexpected happened.\" | falha stooq: valor implausivel :: resposta=\"<!DOCTYPE html><html><head><meta charset=\"utf-8\"><meta name=\"robots\" content=\"noindex,nofollow\"></head><body><noscript>T\""
   },
   "refsFertilizantes": {
     "ureia": "2026-06",
