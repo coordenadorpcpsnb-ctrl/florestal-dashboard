@@ -4,7 +4,7 @@ on:
   schedule:
     # 10:00 UTC = 07:00 no horario de Brasilia (UTC-3, sem horario de verao desde 2019)
     # Campos: minuto hora dia-do-mes mes dia-da-semana (1 = segunda-feira)
-    - cron: "0 10 * * 1"
+    - cron: "0 10 * * 2"
   workflow_dispatch:        # permite rodar manualmente pelo botao "Run workflow"
 
 permissions:
