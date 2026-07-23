@@ -150,52 +150,52 @@ export async function buscarFertilizantes(status) {
   const out = { ureia: null, map: null, kcl: null, refs: {} };
   const hoje = new Date();
 
-  // Períodos a tentar (a defasagem de publicação varia de 1 a 4 meses)
-  const periodos = [1, 2, 3].map(back => ({ from: ym(hoje, -back - 11), to: ym(hoje, -back) }));
-
-  // Variantes de consulta, da mais específica para a mais ampla.
-  // A variante "heading" filtra pela posição HS4 (3102/3104/3105) em vez do NCM de 8 dígitos:
-  // é imune a divergências no código NCM e devolve o NCM em cada linha, o que permite
-  // selecionar os produtos do nosso lado.
+  // Diagnóstico anterior: consultas COM filtro (ncm ou heading) sempre voltam
+  // {"data":{"list":[]},"success":true}. Como o filtro por posição inteira também
+  // veio vazio, o problema está no mecanismo de filtro da API, não nos códigos.
+  //
+  // Contorno: pedir o mês SEM filtro algum, com detalhe por NCM, e selecionar os
+  // produtos do nosso lado. A resposta é maior (todos os NCMs importados no mês),
+  // mas é uma requisição só e não depende do filtro.
   const variantes = [
-    { nome: "ncm-numero", filtro: () => [{ filter: "ncm", values: TODOS_NCM }] },
-    { nome: "ncm-texto",  filtro: () => [{ filter: "ncm", values: TODOS_NCM.map(String) }] },
-    { nome: "heading",    filtro: () => [{ filter: "heading", values: [3102, 3104, 3105] }] },
+    { nome: "com-filtro-ncm", filtros: () => [{ filter: "ncm", values: TODOS_NCM }] },
+    { nome: "sem-filtro",     filtros: () => [] },
   ];
 
-  let linhas = null, usado = "", ultimoErro = "", primeiroVazio = "";
+  let linhas = null, usado = "", ultimoErro = "", diag = "";
 
   busca:
   for (const v of variantes) {
-    for (const p of periodos) {
+    for (let back = 1; back <= 5; back++) {          // mês anterior até 5 meses atrás
+      const mes = ym(hoje, -back);
       try {
         const body = {
           flow: "import",
           monthDetail: true,
-          period: { from: p.from, to: p.to },
-          filters: v.filtro(),
+          period: { from: mes, to: mes },             // um mês por vez: resposta menor
+          filters: v.filtros(),
           details: ["ncm"],
           metrics: ["metricFOB", "metricKG"],
         };
-        const { json, txt } = await postar(body, status, v.nome);
+        const { json, txt } = await postar(body, status, `${v.nome} ${mes}`);
         const achadas = acharLinhas(json);
         if (achadas?.length) {
           linhas = achadas;
-          usado = `${v.nome} | ${p.from} a ${p.to} | ${achadas.length} linhas`;
+          usado = `${v.nome} | ${mes} | ${achadas.length} linhas`;
           break busca;
         }
-        if (!primeiroVazio) primeiroVazio = `vazio: ${v.nome} ${p.from}..${p.to} :: ${cortar(txt, 110)}`;
-        ultimoErro = `vazio (${v.nome}, ${p.from} a ${p.to})`;
+        if (!diag) diag = `vazio: ${v.nome} ${mes} :: ${cortar(txt, 110)}`;
+        ultimoErro = `vazio (${v.nome}, ${mes})`;
       } catch (e) {
-        ultimoErro = `${v.nome}: ${e.message}`;
+        ultimoErro = `${v.nome} ${mes}: ${e.message}`;
         if (/429/.test(ultimoErro)) await dormir(20000);
       }
-      await dormir(6000);          // respiro entre consultas (limite da API)
+      await dormir(6000);                             // respiro entre consultas
     }
   }
 
   if (!linhas) {
-    status._comexDiag = primeiroVazio || ultimoErro;
+    status._comexDiag = diag || ultimoErro;
     for (const p of ["ureia", "map", "kcl"]) status[p] = "falha: " + ultimoErro;
     return out;
   }
@@ -206,7 +206,7 @@ export async function buscarFertilizantes(status) {
   const precos = precosPorProduto(linhas);
   for (const produto of ["ureia", "map", "kcl"]) {
     const r = precos[produto];
-    if (!r) { status[produto] = `falha: NCM nao veio na resposta (encontrados: ${status._comexNcmsEncontrados})`; continue; }
+    if (!r) { status[produto] = `falha: NCM ausente na resposta (amostra: ${status._comexNcmsEncontrados})`; continue; }
     const [min, max] = FAIXAS[produto];
     if (r.preco < min || r.preco > max) { status[produto] = `falha: valor implausivel (${r.preco})`; continue; }
     out[produto] = r.preco;
