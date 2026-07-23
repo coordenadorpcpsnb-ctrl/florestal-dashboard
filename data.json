@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-07-23T18:28:54.387Z",
-  "updatedAtBR": "23/07/2026, 18:28:54",
+  "updatedAt": "2026-07-23T18:46:23.734Z",
+  "updatedAtBR": "23/07/2026, 18:46:23",
   "ref": "Jul/2026",
   "current": {
     "dolar": 5.08,
@@ -14,27 +14,27 @@
     "sojaTO": 132.25
   },
   "previous": {
-    "dolar": 5.06,
+    "dolar": 5.08,
     "ureia": 584.5,
     "map": 844.3,
     "kcl": 350.7,
-    "gas": 3.1,
+    "gas": 2.8,
     "bdi": 2715,
     "diesel": 7.09,
     "soja": 137.84,
     "sojaTO": 132.25
   },
   "delta": {
-    "dolar": 0.4,
+    "dolar": 0,
     "ureia": null,
     "map": null,
     "kcl": null,
-    "gas": -9.7,
+    "gas": 0,
     "bdi": 0,
     "diesel": 0,
     "soja": 0,
     "sojaTO": 0,
-    "trocaMap": 0.3
+    "trocaMap": 0
   },
   "troca": {
     "map": 32,
@@ -42,8 +42,8 @@
   },
   "status": {
     "bdi": "ok (HANDYBULK, 22/07/2026)",
-    "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
     "soja": "ok (Noticias Agricolas / CEPEA-PR 22/07/2026)",
+    "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
     "diesel": "falha: Petrobras: HTTP 403 | PortalCanaa: HTTP 403",
     "cambio": "ok (BCB PTAX)",
     "_comexRetry": "aguardando 15s apos 429 (com-filtro-ncm 2026-06, tentativa 2)",
