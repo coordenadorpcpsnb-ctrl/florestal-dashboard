@@ -73,22 +73,17 @@ function normalizar(row) {
 }
 
 /** POST único com todos os NCMs, com retentativa em caso de 429 */
-async function consultarTudo(comoTexto, from, to, status) {
-  const body = {
-    flow: "import",
-    monthDetail: true,
-    period: { from, to },
-    filters: [{ filter: "ncm", values: comoTexto ? TODOS_NCM.map(String) : TODOS_NCM }],
-    details: ["ncm"],
-    metrics: ["metricFOB", "metricKG"],
-  };
-
-  const esperas = [0, 15000, 30000];          // 1a tentativa imediata; depois 15s e 30s
+/**
+ * Executa um POST no /general com o corpo informado.
+ * Retenta em caso de HTTP 429 (limite de requisições).
+ */
+async function postar(body, status, etiqueta) {
+  const esperas = [0, 15000, 30000];
   let ultimoErro = "";
 
   for (let i = 0; i < esperas.length; i++) {
     if (esperas[i]) {
-      status._comexRetry = `aguardando ${esperas[i] / 1000}s apos HTTP 429 (tentativa ${i + 1})`;
+      status._comexRetry = `aguardando ${esperas[i] / 1000}s apos 429 (${etiqueta}, tentativa ${i + 1})`;
       await dormir(esperas[i]);
     }
     try {
@@ -96,19 +91,17 @@ async function consultarTudo(comoTexto, from, to, status) {
         method: "POST",
         headers: { "Content-Type": "application/json", "User-Agent": UA, Accept: "application/json" },
         body: JSON.stringify(body),
-        signal: AbortSignal.timeout(40000),
+        signal: AbortSignal.timeout(45000),
       });
       const txt = await r.text();
-
-      if (r.status === 429) { ultimoErro = `HTTP 429 :: ${cortar(txt, 120)}`; continue; }
-      if (!r.ok) throw new Error(`HTTP ${r.status} :: ${cortar(txt, 120)}`);
-
+      if (r.status === 429) { ultimoErro = "HTTP 429"; continue; }
+      if (!r.ok) throw new Error(`HTTP ${r.status} :: ${cortar(txt, 100)}`);
       let json;
-      try { json = JSON.parse(txt); } catch { throw new Error(`resposta nao-JSON :: ${cortar(txt, 140)}`); }
+      try { json = JSON.parse(txt); } catch { throw new Error(`nao-JSON :: ${cortar(txt, 100)}`); }
       return { json, txt };
     } catch (e) {
       ultimoErro = e.message;
-      if (!/429/.test(ultimoErro)) break;      // erro que não é limite: não adianta repetir
+      if (!/429/.test(ultimoErro)) break;
     }
   }
   throw new Error(ultimoErro || "falha desconhecida");
@@ -116,7 +109,6 @@ async function consultarTudo(comoTexto, from, to, status) {
 
 /** Agrupa as linhas por produto e calcula US$/t do mês mais recente com volume */
 function precosPorProduto(linhas) {
-  // produto -> mês -> {fob, kg}
   const acc = {};
   for (const l of linhas) {
     const { ncm, ano, mes, fob, kg } = normalizar(l);
@@ -129,13 +121,12 @@ function precosPorProduto(linhas) {
     a.fob += fob; a.kg += kg;
     acc[produto].set(chaveMes, a);
   }
-
   const out = {};
   for (const [produto, porMes] of Object.entries(acc)) {
     const meses = [...porMes.keys()].sort();
     for (let i = meses.length - 1; i >= 0; i--) {
       const { fob, kg } = porMes.get(meses[i]);
-      if (kg > 1_000_000) {                       // pelo menos ~1.000 t importadas
+      if (kg > 1_000_000) {
         out[produto] = { preco: Math.round((fob / (kg / 1000)) * 10) / 10, ref: meses[i] };
         break;
       }
@@ -144,52 +135,78 @@ function precosPorProduto(linhas) {
   return out;
 }
 
+/** Lista os NCMs presentes na resposta, para diagnóstico */
+function ncmsPresentes(linhas) {
+  const vistos = new Map();
+  for (const l of linhas) {
+    const { ncm, kg } = normalizar(l);
+    if (!ncm) continue;
+    vistos.set(ncm, (vistos.get(ncm) ?? 0) + (kg ?? 0));
+  }
+  return [...vistos.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6).map(([n]) => n).join(",");
+}
+
 export async function buscarFertilizantes(status) {
   const out = { ureia: null, map: null, kcl: null, refs: {} };
   const hoje = new Date();
 
-  let linhas = null, ultimoErro = "", amostra = "", periodoUsado = "";
+  // Períodos a tentar (a defasagem de publicação varia de 1 a 4 meses)
+  const periodos = [1, 2, 3].map(back => ({ from: ym(hoje, -back - 11), to: ym(hoje, -back) }));
 
-  // A API devolve TUDO vazio se o mês final pedido ainda não foi publicado.
-  // Por isso recuamos mês a mês até encontrar dados (a defasagem varia de 1 a 4 meses).
-  const tentativas = [];
-  for (let back = 1; back <= 4; back++) tentativas.push({ back, comoTexto: false });
-  tentativas.push({ back: 2, comoTexto: true });        // última cartada: NCM como texto
+  // Variantes de consulta, da mais específica para a mais ampla.
+  // A variante "heading" filtra pela posição HS4 (3102/3104/3105) em vez do NCM de 8 dígitos:
+  // é imune a divergências no código NCM e devolve o NCM em cada linha, o que permite
+  // selecionar os produtos do nosso lado.
+  const variantes = [
+    { nome: "ncm-numero", filtro: () => [{ filter: "ncm", values: TODOS_NCM }] },
+    { nome: "ncm-texto",  filtro: () => [{ filter: "ncm", values: TODOS_NCM.map(String) }] },
+    { nome: "heading",    filtro: () => [{ filter: "heading", values: [3102, 3104, 3105] }] },
+  ];
 
-  for (let i = 0; i < tentativas.length; i++) {
-    const { back, comoTexto } = tentativas[i];
-    const to = ym(hoje, -back);
-    const from = ym(hoje, -back - 11);                   // janela de 12 meses
+  let linhas = null, usado = "", ultimoErro = "", primeiroVazio = "";
 
-    if (i > 0) await dormir(8000);                      // respiro entre tentativas (limite da API)
-
-    try {
-      const { json, txt } = await consultarTudo(comoTexto, from, to, status);
-      const achadas = acharLinhas(json);
-      if (achadas?.length) {
-        linhas = achadas;
-        amostra = cortar(JSON.stringify(achadas[0]), 200);
-        periodoUsado = `${from} a ${to}`;
-        break;
+  busca:
+  for (const v of variantes) {
+    for (const p of periodos) {
+      try {
+        const body = {
+          flow: "import",
+          monthDetail: true,
+          period: { from: p.from, to: p.to },
+          filters: v.filtro(),
+          details: ["ncm"],
+          metrics: ["metricFOB", "metricKG"],
+        };
+        const { json, txt } = await postar(body, status, v.nome);
+        const achadas = acharLinhas(json);
+        if (achadas?.length) {
+          linhas = achadas;
+          usado = `${v.nome} | ${p.from} a ${p.to} | ${achadas.length} linhas`;
+          break busca;
+        }
+        if (!primeiroVazio) primeiroVazio = `vazio: ${v.nome} ${p.from}..${p.to} :: ${cortar(txt, 110)}`;
+        ultimoErro = `vazio (${v.nome}, ${p.from} a ${p.to})`;
+      } catch (e) {
+        ultimoErro = `${v.nome}: ${e.message}`;
+        if (/429/.test(ultimoErro)) await dormir(20000);
       }
-      ultimoErro = `vazio para ${from} a ${to}${comoTexto ? " (ncm como texto)" : ""}`;
-    } catch (e) {
-      ultimoErro = e.message;
-      if (/429/.test(ultimoErro)) await dormir(20000);   // limite atingido: espera mais
+      await dormir(6000);          // respiro entre consultas (limite da API)
     }
   }
 
-  status._comexPeriodo = periodoUsado || `nenhum periodo retornou dados (ultimo: ${ultimoErro})`;
-
   if (!linhas) {
+    status._comexDiag = primeiroVazio || ultimoErro;
     for (const p of ["ureia", "map", "kcl"]) status[p] = "falha: " + ultimoErro;
     return out;
   }
 
+  status._comexPeriodo = usado;
+  status._comexNcmsEncontrados = ncmsPresentes(linhas);
+
   const precos = precosPorProduto(linhas);
   for (const produto of ["ureia", "map", "kcl"]) {
     const r = precos[produto];
-    if (!r) { status[produto] = `falha: sem dados para o produto :: amostra=${amostra}`; continue; }
+    if (!r) { status[produto] = `falha: NCM nao veio na resposta (encontrados: ${status._comexNcmsEncontrados})`; continue; }
     const [min, max] = FAIXAS[produto];
     if (r.preco < min || r.preco > max) { status[produto] = `falha: valor implausivel (${r.preco})`; continue; }
     out[produto] = r.preco;
@@ -230,7 +247,8 @@ export async function buscarGasNatural(status) {
     status.gas = "ok (stooq — futuro NG)";
     return Math.round(v * 100) / 100;
   } catch (e) {
-    status.gas = (status.gas.startsWith("falha") ? status.gas + " | " : "") + "falha stooq: " + e.message;
+    const prefixo = chave ? status.gas + " | " : "SEM EIA_API_KEY configurada | ";
+    status.gas = prefixo + "falha stooq: " + e.message;
     return null;
   }
 }

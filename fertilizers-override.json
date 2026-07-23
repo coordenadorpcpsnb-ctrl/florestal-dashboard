@@ -1,13 +1,15 @@
 {
-  "_leia_me": "Valores manuais de seguranca. So sao usados quando a busca automatica falha. Todos os indicadores tem fonte automatica no momento.",
+  "_leia_me": "Valores manuais de seguranca. So sao usados quando a busca automatica falha.",
   "forceManual": false,
 
-  "_fontesManuais": "Liste aqui fontes que voce prefira manter manuais (nao geram alerta). Atualmente vazio: tudo e automatico.",
-  "fontesManuais": [],
+  "_fontesManuais": "Fontes que bloqueiam os servidores do GitHub. Nao geram alerta; atualize o valor manualmente quando quiser.",
+  "fontesManuais": ["diesel"],
 
+  "diesel": 7.09,
+
+  "_automaticos": "Buscados sozinhos. Os valores abaixo so entram se a busca falhar.",
   "soja": 135.73,
   "sojaTO": 129.88,
-  "diesel": 7.09,
   "bdi": 2670,
   "ureia": 491,
   "map": 640,
