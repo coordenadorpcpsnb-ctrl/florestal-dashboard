@@ -2,9 +2,9 @@ name: Atualizacao Semanal - Dashboard e Relatorio
 
 on:
   schedule:
-    # 11:00 UTC = 08:00 no horario de Brasilia (UTC-3, sem horario de verao desde 2019)
+    # 12:00 UTC = 09:00 no horario de Brasilia (UTC-3, sem horario de verao desde 2019)
     # Campos: minuto hora dia-do-mes mes dia-da-semana (1 = segunda-feira)
-    - cron: "0 11 * * 2"
+    - cron: "0 12 * * 2"
   workflow_dispatch:        # permite rodar manualmente pelo botao "Run workflow"
 
 permissions:
