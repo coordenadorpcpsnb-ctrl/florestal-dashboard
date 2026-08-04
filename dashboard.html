@@ -242,7 +242,7 @@
       </div>
       <div class="topbar-actions">
         <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Mai/24 — Jun/26</span>
-        <span class="pill"><span class="led live"></span>Dados base · Jul/2026</span>
+        <span class="pill"><span class="led live"></span>Dados base · Ago/2026</span>
         <button class="btn primary" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Exportar</button>
       </div>
     </header>
@@ -251,22 +251,22 @@
 </div>
 <script>
 /* SERIES-START */
-const MONTHS = ["Mai/24","Jun/24","Jul/24","Ago/24","Set/24","Out/24","Nov/24","Dez/24","Jan/25","Fev/25","Mar/25","Abr/25","Mai/25","Jun/25","Jul/25","Ago/25","Set/25","Out/25","Nov/25","Dez/25","Jan/26","Fev/26","Mar/26","Abr/26","Mai/26","Jun/26","Jul/26"];
+const MONTHS = ["Mai/24","Jun/24","Jul/24","Ago/24","Set/24","Out/24","Nov/24","Dez/24","Jan/25","Fev/25","Mar/25","Abr/25","Mai/25","Jun/25","Jul/25","Ago/25","Set/25","Out/25","Nov/25","Dez/25","Jan/26","Fev/26","Mar/26","Abr/26","Mai/26","Jun/26","Jul/26","Ago/26"];
 const fert = {
-  ureia:[320,325,335,345,355,360,365,370,375,369,372,378,382,385,388,390,392,395,398,400,402,405,404,405,405,491,491],
-  map:[580,585,590,595,600,605,600,595,600,596,600,605,608,610,612,614,615,616,617,618,619,620,620,620,620,640,640],
-  kcl:[305,310,315,318,320,322,320,318,320,325,328,330,332,334,335,336,337,338,339,340,341,342,342,343,343,328,328],
+  ureia:[320,325,335,345,355,360,365,370,375,369,372,378,382,385,388,390,392,395,398,400,402,405,404,405,405,491,491,584.5],
+  map:[580,585,590,595,600,605,600,595,600,596,600,605,608,610,612,614,615,616,617,618,619,620,620,620,620,640,640,844.3],
+  kcl:[305,310,315,318,320,322,320,318,320,325,328,330,332,334,335,336,337,338,339,340,341,342,342,343,343,328,328,350.7],
 };
 const macro = {
-  dolar:[5.10,5.15,5.20,5.25,5.30,5.32,5.35,5.40,5.42,5.40,5.38,5.40,5.42,5.44,5.45,5.46,5.46,5.45,5.46,5.46,5.45,5.46,5.46,5.46,5.46,5.19,5.19],
-  gas:[2.2,2.3,2.35,2.4,2.45,2.5,2.55,2.6,2.65,2.7,2.72,2.75,2.78,2.8,2.8,2.82,2.83,2.83,2.84,2.84,2.85,2.85,2.85,2.85,2.85,3.10,3.1],
-  diesel:[6.10,6.15,6.20,6.25,6.30,6.40,6.50,6.60,6.70,6.80,6.90,7.00,7.10,7.15,7.20,7.25,7.30,7.32,7.35,7.38,7.40,7.41,7.42,7.43,7.43,7.26,7.09],
-  bdi:[1850,1920,1980,2010,2050,2080,2100,2120,2150,2160,2170,2180,2190,2200,2210,2215,2220,2225,2230,2235,2238,2240,2242,2242,2242,2667,2670],
+  dolar:[5.10,5.15,5.20,5.25,5.30,5.32,5.35,5.40,5.42,5.40,5.38,5.40,5.42,5.44,5.45,5.46,5.46,5.45,5.46,5.46,5.45,5.46,5.46,5.46,5.46,5.19,5.19,5.07],
+  gas:[2.2,2.3,2.35,2.4,2.45,2.5,2.55,2.6,2.65,2.7,2.72,2.75,2.78,2.8,2.8,2.82,2.83,2.83,2.84,2.84,2.85,2.85,2.85,2.85,2.85,3.10,3.1,2.63],
+  diesel:[6.10,6.15,6.20,6.25,6.30,6.40,6.50,6.60,6.70,6.80,6.90,7.00,7.10,7.15,7.20,7.25,7.30,7.32,7.35,7.38,7.40,7.41,7.42,7.43,7.43,7.26,7.09,7.09],
+  bdi:[1850,1920,1980,2010,2050,2080,2100,2120,2150,2160,2170,2180,2190,2200,2210,2215,2220,2225,2230,2235,2238,2240,2242,2242,2242,2667,2670,2843],
 };
 const soy = {
-  soja:[138,140,142,145,148,150,148,145,142,140,138,135,132,130,135,140.5,142,138,135,132,128,125,122,128.88,129.14,129.06,135.73],
-  trocaMap:[18.5,18,19.5,20,20.5,21,20.5,20,21.5,22,22.5,23,23.5,24,24.5,25,25.5,26,26.5,27,27.5,28,29,28.5,28,26.7,26.7],
-  trocaUreia:[12.5,12,13.5,14,14.5,15,14.5,14,15.5,16,16.5,17,17.5,18,18.5,19,19.5,20,20.5,21,21.5,22,23,22.5,22,20.5,20.5],
+  soja:[138,140,142,145,148,150,148,145,142,140,138,135,132,130,135,140.5,142,138,135,132,128,125,122,128.88,129.14,129.06,135.73,136.66],
+  trocaMap:[18.5,18,19.5,20,20.5,21,20.5,20,21.5,22,22.5,23,23.5,24,24.5,25,25.5,26,26.5,27,27.5,28,29,28.5,28,26.7,26.7,32.2],
+  trocaUreia:[12.5,12,13.5,14,14.5,15,14.5,14,15.5,16,16.5,17,17.5,18,18.5,19,19.5,20,20.5,21,21.5,22,23,22.5,22,20.5,20.5,22.4],
 };
 // Serie regional estimada em 95,7% do CEPEA (proporcao observada AIBA/CEPEA em jul/26).
 // O valor do card e real (AIBA); a serie historica e estimada — ver aba Referencias.
@@ -276,10 +276,10 @@ soy.sojaTO = soy.soja.map(v => Math.round(v*0.957*100)/100);
 /* LIVE-START */
 // Valores da ultima leitura, reescritos pela automacao (patch-dashboard.mjs).
 const LIVE = {
-  refMes:"Julho 2026", refFert:"jun/26", fertFechado:false,
-  dolar:"5,10", ureia:"585", map:"844", kcl:"351", gas:"2,80",
-  bdi:"2.696", diesel:"7,09", soja:"140,58", sojaTO:"134,13",
-  trocaMap:"31,5", trocaUreia:"21,9", spread:"6,45",
+  refMes:"Agosto 2026", refFert:"jun/26", fertFechado:false,
+  dolar:"5,07", ureia:"585", map:"844", kcl:"351", gas:"2,63",
+  bdi:"2.843", diesel:"7,09", soja:"136,66", sojaTO:"128,25",
+  trocaMap:"32,2", trocaUreia:"22,4", spread:"8,41",
 };
 /* LIVE-END */
 
@@ -292,15 +292,15 @@ function badge12(arr){ const p=pct12(arr);
   return t+" "+(p>10?"ALTA":p>0?"leve alta":p<-10?"QUEDA":"leve queda")+" · 12m"; }
 /* KPIS-START */
 let kpis = [
-  { id:"dolar", label:"Dólar", value:"5,10", unit:"R$/US$", variation:0.6, trend:"up", alert:"ok", threshold:"> R$ 5,60", spark:macro.dolar },
+  { id:"dolar", label:"Dólar", value:"5,07", unit:"R$/US$", variation:-0.6, trend:"down", alert:"ok", threshold:"> R$ 5,60", spark:macro.dolar },
   { id:"ureia", label:"Ureia FOB", value:"585", unit:"US$/t", variation:null, trend:"stable", alert:"critical", threshold:"> US$ 430/t", spark:fert.ureia, vs:"fechamento jun/26" },
   { id:"map", label:"MAP FOB", value:"844", unit:"US$/t", variation:null, trend:"stable", alert:"warning", threshold:"> US$ 650/t", spark:fert.map, vs:"fechamento jun/26" },
-  { id:"gas", label:"Gás Natural", value:"2,80", unit:"US$/MMBtu", variation:0, trend:"stable", alert:"ok", threshold:"> US$ 3,00", spark:macro.gas },
-  { id:"bdi", label:"Frete Marítimo (BDI)", value:"2.696", unit:"pontos", variation:-1.7, trend:"down", alert:"warning", threshold:"> 2.300 pts", spark:macro.bdi },
+  { id:"gas", label:"Gás Natural", value:"2,63", unit:"US$/MMBtu", variation:-6.1, trend:"down", alert:"ok", threshold:"> US$ 3,00", spark:macro.gas },
+  { id:"bdi", label:"Frete Marítimo (BDI)", value:"2.843", unit:"pontos", variation:5.5, trend:"up", alert:"warning", threshold:"> 2.300 pts", spark:macro.bdi },
   { id:"diesel", label:"Diesel S10", value:"7,09", unit:"R$/L", variation:0, trend:"stable", alert:"ok", threshold:"> R$ 7,60/L", spark:macro.diesel },
-  { id:"soja", label:"Soja CEPEA (Nacional)", value:"140,58", unit:"R$/saca", variation:0.2, trend:"stable", alert:"ok", threshold:"< R$ 125,00", spark:soy.soja },
-  { id:"sojaTO", label:"Soja Oeste BA (AIBA)", value:"134,13", unit:"R$/saca", variation:-0.2, trend:"stable", alert:"ok", threshold:"> R$ 140,00", spark:soy.sojaTO },
-  { id:"trocaMap", label:"Troca Soja/MAP", value:"31,5", unit:"sacas/t", variation:0.3, trend:"stable", alert:"warning", threshold:"> 30 sacas/t", spark:soy.trocaMap },
+  { id:"soja", label:"Soja CEPEA (Nacional)", value:"136,66", unit:"R$/saca", variation:-2.8, trend:"down", alert:"ok", threshold:"< R$ 125,00", spark:soy.soja },
+  { id:"sojaTO", label:"Soja Oeste BA (AIBA)", value:"128,25", unit:"R$/saca", variation:-4.4, trend:"down", alert:"ok", threshold:"> R$ 140,00", spark:soy.sojaTO },
+  { id:"trocaMap", label:"Troca Soja/MAP", value:"32,2", unit:"sacas/t", variation:2.2, trend:"up", alert:"warning", threshold:"> 30 sacas/t", spark:soy.trocaMap },
 ]; /* KPIS-END */
 const scenarios = [
   { name:"Otimista", cor:"success", icon:"trend-down", impacto:"Queda de 5% a 8%", premissas:["Câmbio: R$ 5,10/US$","Gás Natural: US$ 2,50/MMBtu","Frete Marítimo: -10%","Custos logísticos: -5%"] },
@@ -324,14 +324,14 @@ const seasonal = [
 ];
 /* ALERTS-START */
 const alerts = [
-  { indicador:"Dólar", valor:"R$ 5,10", gatilho:"> R$ 5,60", status:"ok", acao:"Monitorar" },
+  { indicador:"Dólar", valor:"R$ 5,07", gatilho:"> R$ 5,60", status:"ok", acao:"Monitorar" },
   { indicador:"Ureia FOB", valor:"US$ 585/t", gatilho:"> US$ 430/t", status:"critical", acao:"Avaliar antecipação de compra / trava de preço" },
   { indicador:"MAP FOB", valor:"US$ 844/t", gatilho:"> US$ 650/t", status:"warning", acao:"Acima do gatilho — reavaliar programação" },
-  { indicador:"Gás Natural", valor:"US$ 2,80/MMBtu", gatilho:"> US$ 3,00", status:"ok", acao:"Monitorar" },
-  { indicador:"Frete Marítimo (BDI)", valor:"2.696 pts", gatilho:"> 2.300 pts", status:"warning", acao:"Elevado — encarece importação" },
+  { indicador:"Gás Natural", valor:"US$ 2,63/MMBtu", gatilho:"> US$ 3,00", status:"ok", acao:"Monitorar" },
+  { indicador:"Frete Marítimo (BDI)", valor:"2.843 pts", gatilho:"> 2.300 pts", status:"warning", acao:"Elevado — encarece importação" },
   { indicador:"Diesel S10", valor:"R$ 7,09/L", gatilho:"> R$ 7,60/L", status:"ok", acao:"Monitorar" },
-  { indicador:"Soja CEPEA", valor:"R$ 140,58/saca", gatilho:"< R$ 125,00", status:"ok", acao:"Monitorar" },
-  { indicador:"Troca Soja/MAP", valor:"31,5 sacas/t", gatilho:"> 30 sacas/t", status:"warning", acao:"Risco de demanda concentrada no 2º sem." },
+  { indicador:"Soja CEPEA", valor:"R$ 136,66/saca", gatilho:"< R$ 125,00", status:"ok", acao:"Monitorar" },
+  { indicador:"Troca Soja/MAP", valor:"32,2 sacas/t", gatilho:"> 30 sacas/t", status:"warning", acao:"Risco de demanda concentrada no 2º sem." },
 ]; /* ALERTS-END */
 const references = [
   { id:1, fonte:"Farmnews", data:"16/03/2026", titulo:"Preço do cloreto de potássio, ureia e MAP entre fev/2025 e fev/2026", url:"https://www.farmnews.com.br/mercado/preco-do-cloreto-de-potassio-ureia-e-map-entre-fevereiro-de-2025-e-2026/" },
