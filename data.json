@@ -1,50 +1,50 @@
 {
-  "updatedAt": "2026-07-27T12:17:33.587Z",
-  "updatedAtBR": "27/07/2026, 12:17:33",
-  "ref": "Jul/2026",
+  "updatedAt": "2026-08-04T14:13:33.137Z",
+  "updatedAtBR": "04/08/2026, 14:13:33",
+  "ref": "Ago/2026",
   "current": {
     "dolar": 5.07,
     "ureia": 584.5,
     "map": 844.3,
     "kcl": 350.7,
-    "gas": 2.8,
-    "bdi": 2743,
+    "gas": 2.63,
+    "bdi": 2843,
     "diesel": 7.09,
-    "soja": 140.26,
-    "sojaTO": 134.38
+    "soja": 136.66,
+    "sojaTO": 128.25
   },
   "previous": {
-    "dolar": 5.08,
+    "dolar": 5.1,
     "ureia": 584.5,
     "map": 844.3,
     "kcl": 350.7,
     "gas": 2.8,
-    "bdi": 2715,
+    "bdi": 2696,
     "diesel": 7.09,
-    "soja": 137.84,
-    "sojaTO": 132.25
+    "soja": 140.58,
+    "sojaTO": 134.13
   },
   "delta": {
-    "dolar": -0.2,
+    "dolar": -0.6,
     "ureia": null,
     "map": null,
     "kcl": null,
-    "gas": 0,
-    "bdi": 1,
+    "gas": -6.1,
+    "bdi": 5.5,
     "diesel": 0,
-    "soja": 1.8,
-    "sojaTO": 1.6,
-    "trocaMap": -1.9
+    "soja": -2.8,
+    "sojaTO": -4.4,
+    "trocaMap": 2.2
   },
   "troca": {
-    "map": 31.4,
-    "ureia": 21.8
+    "map": 32.2,
+    "ureia": 22.4
   },
   "status": {
-    "bdi": "ok (HANDYBULK, 24/07/2026)",
-    "soja": "ok (Noticias Agricolas / CEPEA-PR 24/07/2026)",
-    "cambio": "ok (BCB PTAX)",
     "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
+    "soja": "ok (Noticias Agricolas / CEPEA-PR 03/08/2026)",
+    "bdi": "ok (HANDYBULK, 03/08/2026)",
+    "cambio": "ok (BCB PTAX)",
     "diesel": "falha: Petrobras: HTTP 403 | PortalCanaa: HTTP 403",
     "_comexPeriodo": "com-filtro-ncm | 2026-06 | 4 linhas",
     "_comexNcmsEncontrados": "31042090,31054000,31021010,31042010",
