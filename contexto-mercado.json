@@ -1,0 +1,37 @@
+{
+  "_leia_me": "Análise qualitativa de contexto de mercado. NÃO é atualizada pela automação semanal — deve ser revisada manualmente (sugestão: mensalmente). Alimenta tanto o dashboard (aba Visão Geral) quanto o relatório em PDF.",
+  "atualizadoEm": "Agosto/2026",
+
+  "titulo": "Por que os fertilizantes subiram — e o que esperar",
+
+  "resumo": "A alta de 2026, concentrada nos nitrogenados (ureia), foi puxada pela combinação de conflito no Oriente Médio, gás natural mais caro e restrições de exportação de China e Rússia, sobre uma base de forte dependência brasileira de importação (~85%).",
+
+  "causas": [
+    { "titulo": "Conflito no Oriente Médio (Irã)", "texto": "A região concentra cerca de 40% do comércio marítimo global de ureia e é fornecedora relevante de nitrogenados ao Brasil. Tensões envolvendo o Irã e a interrupção de rotas no Estreito de Ormuz elevaram o risco de desabastecimento e os custos." },
+    { "titulo": "Gás natural mais caro", "texto": "É a principal matéria-prima da amônia e da ureia. Energia mais cara encarece diretamente a produção dos nitrogenados." },
+    { "titulo": "Restrições de exportação (China e Rússia)", "texto": "A China segurou vendas de fosfatados e de ureia para priorizar o abastecimento interno; a Rússia também limitou embarques. Como o Brasil importa cerca de 85% dos fertilizantes, essas restrições pressionam preço e oferta." },
+    { "titulo": "Frete marítimo elevado", "texto": "O desvio de rotas por conta do Estreito de Ormuz e a alta do petróleo encareceram o transporte, somando-se ao custo do produto na chegada ao Brasil." },
+    { "titulo": "Demanda global forte na janela de compras", "texto": "A ampliação de compras de EUA, Índia e Brasil para a safra 2026/27 sustentou as cotações internacionais no momento em que o país mais precisa importar." },
+    { "titulo": "Fosfatados e escassez de enxofre", "texto": "Além da retração chinesa, a oferta restrita de fosfato e a falta de enxofre no mercado internacional mantêm o MAP pressionado." }
+  ],
+
+  "numeros": "Segundo o Banco Central, a ureia granular entregue no Brasil subiu cerca de 50% em maio ante a média de jan–fev/2026; no mesmo intervalo o MAP avançou ~29,7% e o KCl ~9,7% — evidência de que a pressão foi maior nos nitrogenados. O Itaú BBA chegou a apontar ureia a US$ 710/t no porto brasileiro, alta de ~50% em 30 dias.",
+
+  "perspectiva": [
+    "O cenário ficou menos turbulento a partir de julho, com a retomada das exportações de ureia pela China e a redução das tensões geopolíticas — mas o mercado segue muito sensível a qualquer mudança externa.",
+    "Para o 3º trimestre de 2026, a StoneX projeta que a normalização gradual da navegação por Ormuz e o retorno das exportações chinesas melhorem o abastecimento mundial, com fundamentos distintos por segmento.",
+    "Nitrogenados: podem ter recuperação de preços com a recomposição de estoques e a volta da demanda global. Fosfatados: seguem pressionados pela oferta restrita e pelo enxofre caro. Potássio (KCl): mercado relativamente equilibrado.",
+    "Estratégia sugerida por analistas: escalonar as compras, avançar mais no potássio e fazer aquisições parciais de nitrogênio e fósforo, aproveitando janelas e relações de troca favoráveis, em vez de tentar acertar o menor preço.",
+    "Riscos a monitorar: evolução do conflito no Oriente Médio, novas restrições da China (há rumores inclusive sobre sulfato de amônio, 100% importado do país) e a taxa de câmbio."
+  ],
+
+  "fontes": [
+    { "nome": "Itaú BBA / CNN Brasil — ureia a US$ 710/t no porto (+50% em 30 dias)", "data": "abr/2026" },
+    { "nome": "Banco Central, via Agrolink — ureia +50%, MAP +29,7%, KCl +9,7% em maio", "data": "ago/2026" },
+    { "nome": "CEPEA-Esalq/USP — Oriente Médio concentra ~40% do comércio marítimo de ureia", "data": "2026" },
+    { "nome": "StoneX — perspectivas de fertilizantes para o 3º trimestre de 2026", "data": "jul/2026" },
+    { "nome": "Gazeta do Povo — restrições de China e Rússia e dependência brasileira (~85%)", "data": "abr/2026" }
+  ],
+
+  "nota": "Análise de contexto com caráter informativo, revisada manualmente. As datas e cenários mudam; confirme com as fontes antes de decisões de compra."
+}
