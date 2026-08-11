@@ -1,3 +1,5 @@
 node_modules/
 *.log
 issue-body.md
+email-body.html
+email-subject.txt

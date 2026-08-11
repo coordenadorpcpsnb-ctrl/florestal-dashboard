@@ -76,7 +76,59 @@ comentada (conforme suas preferências de notificação em Settings → Notifica
 
 ---
 
-## 4. Publicar o dashboard como site (opcional)
+## 4. Receber o relatório por e-mail (opcional)
+
+O workflow pode enviar o **PDF anexado** com um resumo no corpo da mensagem
+(gatilhos acionados, tabelas de fertilizantes, soja e macro).
+
+O envio só acontece se o secret `MAIL_TO` existir — sem ele, o passo é simplesmente pulado.
+
+### Secrets necessários
+
+Em **Settings → Secrets and variables → Actions → New repository secret**:
+
+| Secret | O que é | Exemplo |
+|---|---|---|
+| `MAIL_TO` | destinatário(s), separados por vírgula | `jamur@empresa.com.br, equipe@empresa.com.br` |
+| `MAIL_SERVER` | endereço do servidor SMTP | `smtp.gmail.com` |
+| `MAIL_PORT` | porta (SSL) | `465` |
+| `MAIL_USERNAME` | usuário / e-mail remetente | `relatorios@empresa.com.br` |
+| `MAIL_PASSWORD` | senha do SMTP | — |
+
+### Configuração por provedor
+
+| Provedor | MAIL_SERVER | MAIL_PORT |
+|---|---|---|
+| Gmail | `smtp.gmail.com` | `465` |
+| Outlook / Microsoft 365 | `smtp.office365.com` | `587` |
+| Servidor corporativo | pergunte ao TI | geralmente `465` ou `587` |
+
+> **Gmail e Microsoft 365 não aceitam a senha normal da conta.**
+> No Gmail é preciso ativar a verificação em duas etapas e gerar uma
+> **Senha de app** (myaccount.google.com → Segurança → Senhas de app).
+> No Microsoft 365, o SMTP básico costuma vir desativado — o TI precisa liberar.
+>
+> Se a empresa tiver servidor SMTP próprio, prefira ele: evita depender de conta pessoal.
+
+### Assunto da mensagem
+
+Quando algum gatilho é acionado, o assunto vem destacado:
+`[ATENÇÃO: 2 gatilho(s)] Inteligência de Mercado — Jul/2026`
+
+### Enviar só quando houver gatilho
+
+Se preferir receber apenas nas semanas com alerta, edite o passo
+*"Enviar relatorio por e-mail"* no `weekly-update.yml`, trocando a condição por:
+
+```yaml
+        if: success() && env.MAIL_TO != '' && contains(env.ASSUNTO, 'ATENÇÃO')
+```
+
+(nesse caso é preciso expor o assunto como variável de ambiente — posso ajudar a montar).
+
+---
+
+## 5. Publicar o dashboard como site (opcional)
 
 O arquivo `.github/workflows/publish-pages.yml` publica o dashboard numa URL
 (ex.: `https://seu-usuario.github.io/florestal-dashboard`), sempre com os dados
@@ -90,7 +142,7 @@ mais recentes — prático para compartilhar com a equipe.
 
 ---
 
-## 5. Fontes dos dados e o que ainda é manual
+## 6. Fontes dos dados e o que ainda é manual
 
 Quase tudo é buscado automaticamente. A tabela abaixo mostra a origem de cada indicador:
 
@@ -148,7 +200,7 @@ Nesse modo os valores do arquivo têm prioridade sobre a busca automática.
 
 ---
 
-## 6. Ajustes comuns
+## 7. Ajustes comuns
 
 **Mudar o horário** — edite o `cron` em `.github/workflows/weekly-update.yml`.
 O GitHub usa **UTC**; Brasília é UTC-3 (sem horário de verão desde 2019):
@@ -166,7 +218,7 @@ Eles continuarão disponíveis como *Artifacts*.
 
 ---
 
-## 7. Limites e cuidados (importante)
+## 8. Limites e cuidados (importante)
 
 - **O horário é aproximado.** O agendador do GitHub sofre atrasos quando há muita
   fila — atrasos de 5 a 30 minutos são comuns, e em picos podem ser maiores.
@@ -215,7 +267,7 @@ Eles continuarão disponíveis como *Artifacts*.
 
 ---
 
-## 8. Estrutura dos arquivos
+## 9. Estrutura dos arquivos
 
 ```
 .github/workflows/
@@ -223,8 +275,10 @@ Eles continuarão disponíveis como *Artifacts*.
   publish-pages.yml      # publicação do site (opcional)
 fetch-data.mjs           # orquestra a busca -> data.json
 fetch-fertilizers.mjs    # ComexStat (ureia/MAP/KCl) + gas natural (EIA/stooq)
+fetch-noticias.mjs       # noticias recentes de fertilizantes (Noticias Agricolas)
 patch-dashboard.mjs      # injeta os valores no dashboard.html
 build-report.mjs         # gera o relatório docx + pdf
+build-email.mjs          # monta o corpo do e-mail (email-body.html)
 run-weekly.mjs           # orquestra os três passos
 check-status.mjs         # detecta falhas e monta o alerta (Issue)
 fertilizers-override.json# valores manuais + rede de seguranca

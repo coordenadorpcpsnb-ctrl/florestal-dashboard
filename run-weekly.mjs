@@ -12,4 +12,5 @@ console.log("Atualização semanal —", new Date().toLocaleString("pt-BR"));
 run("fetch-data.mjs");
 run("patch-dashboard.mjs");
 run("build-report.mjs");
+run("build-email.mjs");
 console.log("\n✅ Concluído. Dashboard e relatório atualizados.");

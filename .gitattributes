@@ -1,0 +1,22 @@
+# Padroniza as quebras de linha do projeto.
+# Evita o aviso "This file uses LF line endings..." no GitHub Desktop
+# e garante que os scripts rodem corretamente no Linux (GitHub Actions).
+
+* text=auto
+
+# Arquivos executados no Linux pelo GitHub Actions: sempre LF
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.mjs   text eol=lf
+*.js    text eol=lf
+*.json  text eol=lf
+*.html  text eol=lf
+*.md    text eol=lf
+
+# Binarios: nunca converter
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.pdf   binary
+*.docx  binary
+*.zip   binary
