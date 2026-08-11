@@ -1,8 +1,19 @@
 {
-  "updatedAt": "2026-08-04T14:13:33.137Z",
-  "updatedAtBR": "04/08/2026, 14:13:33",
+  "updatedAt": "2026-08-10T12:15:32.902Z",
+  "updatedAtBR": "10/08/2026, 12:15:32",
   "ref": "Ago/2026",
   "current": {
+    "dolar": 5.09,
+    "ureia": 418.3,
+    "map": 828,
+    "kcl": 358.9,
+    "gas": 2.81,
+    "bdi": 3089,
+    "diesel": 7.09,
+    "soja": 137.33,
+    "sojaTO": 129.25
+  },
+  "previous": {
     "dolar": 5.07,
     "ureia": 584.5,
     "map": 844.3,
@@ -13,49 +24,38 @@
     "soja": 136.66,
     "sojaTO": 128.25
   },
-  "previous": {
-    "dolar": 5.1,
-    "ureia": 584.5,
-    "map": 844.3,
-    "kcl": 350.7,
-    "gas": 2.8,
-    "bdi": 2696,
-    "diesel": 7.09,
-    "soja": 140.58,
-    "sojaTO": 134.13
-  },
   "delta": {
-    "dolar": -0.6,
-    "ureia": null,
-    "map": null,
-    "kcl": null,
-    "gas": -6.1,
-    "bdi": 5.5,
+    "dolar": 0.4,
+    "ureia": -28.4,
+    "map": -1.9,
+    "kcl": 2.3,
+    "gas": 6.8,
+    "bdi": 8.7,
     "diesel": 0,
-    "soja": -2.8,
-    "sojaTO": -4.4,
-    "trocaMap": 2.2
+    "soja": 0.5,
+    "sojaTO": 0.8,
+    "trocaMap": -1.9
   },
   "troca": {
-    "map": 32.2,
-    "ureia": 22.4
+    "map": 31.6,
+    "ureia": 16.2
   },
   "status": {
     "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
-    "soja": "ok (Noticias Agricolas / CEPEA-PR 03/08/2026)",
-    "bdi": "ok (HANDYBULK, 03/08/2026)",
+    "soja": "ok (Noticias Agricolas / CEPEA-PR 07/08/2026)",
+    "bdi": "ok (HANDYBULK, 07/08/2026)",
     "cambio": "ok (BCB PTAX)",
     "diesel": "falha: Petrobras: HTTP 403 | PortalCanaa: HTTP 403",
-    "_comexPeriodo": "com-filtro-ncm | 2026-06 | 4 linhas",
-    "_comexNcmsEncontrados": "31042090,31054000,31021010,31042010",
-    "ureia": "ok (ComexStat 2026-06)",
-    "map": "ok (ComexStat 2026-06)",
-    "kcl": "ok (ComexStat 2026-06)",
+    "_comexPeriodo": "com-filtro-ncm | 2026-07 | 4 linhas",
+    "_comexNcmsEncontrados": "31042090,31021010,31054000,31042010",
+    "ureia": "ok (ComexStat 2026-07)",
+    "map": "ok (ComexStat 2026-07)",
+    "kcl": "ok (ComexStat 2026-07)",
     "gas": "ok (EIA Henry Hub)"
   },
   "refsFertilizantes": {
-    "ureia": "2026-06",
-    "map": "2026-06",
-    "kcl": "2026-06"
+    "ureia": "2026-07",
+    "map": "2026-07",
+    "kcl": "2026-07"
   }
 }
