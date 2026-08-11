@@ -248,7 +248,7 @@
       </div>
       <div class="topbar-actions">
         <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Mai/24 — Jun/26</span>
-        <span class="pill"><span class="led live"></span>Dados base · Jul/2026</span>
+        <span class="pill"><span class="led live"></span>Dados base · Ago/2026</span>
         <button class="btn primary" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Exportar</button>
       </div>
     </header>
@@ -282,10 +282,10 @@ soy.sojaTO = soy.soja.map(v => Math.round(v*0.957*100)/100);
 /* LIVE-START */
 // Valores da ultima leitura, reescritos pela automacao (patch-dashboard.mjs).
 const LIVE = {
-  refMes:"Julho 2026", refFert:"jun/26", fertFechado:false,
-  dolar:"5,19", ureia:"491", map:"640", kcl:"328", gas:"3,10",
-  bdi:"2.670", diesel:"7,09", soja:"135,73", sojaTO:"129,88",
-  trocaMap:"26,7", trocaUreia:"20,5", spread:"5,85",
+  refMes:"Agosto 2026", refFert:"jul/26", fertFechado:false,
+  dolar:"5,10", ureia:"418", map:"828", kcl:"359", gas:"2,81",
+  bdi:"3.083", diesel:"7,09", soja:"137,44", sojaTO:"128,75",
+  trocaMap:"31,6", trocaUreia:"16,2", spread:"8,69",
 };
 /* LIVE-END */
 
@@ -340,15 +340,15 @@ function badge12(arr){ const p=pct12(arr);
   return t+" "+(p>10?"ALTA":p>0?"leve alta":p<-10?"QUEDA":"leve queda")+" · 12m"; }
 /* KPIS-START */
 let kpis = [
-  { id:"dolar", label:"Dólar", value:"5,19", unit:"R$/US$", variation:0, trend:"stable", alert:"ok", threshold:"> R$ 5,60", spark:macro.dolar },
-  { id:"ureia", label:"Ureia FOB", value:"491", unit:"US$/t", variation:null, trend:"stable", alert:"critical", threshold:"> US$ 430/t", spark:fert.ureia, vs:"fechamento jun/26" },
-  { id:"map", label:"MAP FOB", value:"640", unit:"US$/t", variation:null, trend:"stable", alert:"ok", threshold:"> US$ 650/t", spark:fert.map, vs:"fechamento jun/26" },
-  { id:"gas", label:"Gás Natural", value:"3,10", unit:"US$/MMBtu", variation:0, trend:"stable", alert:"warning", threshold:"> US$ 3,00", spark:macro.gas },
-  { id:"bdi", label:"Frete Marítimo (BDI)", value:"2.670", unit:"pontos", variation:0, trend:"stable", alert:"warning", threshold:"> 2.300 pts", spark:macro.bdi },
+  { id:"dolar", label:"Dólar", value:"5,10", unit:"R$/US$", variation:0.2, trend:"stable", alert:"ok", threshold:"> R$ 5,60", spark:macro.dolar },
+  { id:"ureia", label:"Ureia FOB", value:"418", unit:"US$/t", variation:null, trend:"stable", alert:"ok", threshold:"> US$ 430/t", spark:fert.ureia, vs:"fechamento jul/26" },
+  { id:"map", label:"MAP FOB", value:"828", unit:"US$/t", variation:null, trend:"stable", alert:"warning", threshold:"> US$ 650/t", spark:fert.map, vs:"fechamento jul/26" },
+  { id:"gas", label:"Gás Natural", value:"2,81", unit:"US$/MMBtu", variation:0, trend:"stable", alert:"ok", threshold:"> US$ 3,00", spark:macro.gas },
+  { id:"bdi", label:"Frete Marítimo (BDI)", value:"3.083", unit:"pontos", variation:-0.2, trend:"stable", alert:"warning", threshold:"> 2.300 pts", spark:macro.bdi },
   { id:"diesel", label:"Diesel S10", value:"7,09", unit:"R$/L", variation:0, trend:"stable", alert:"ok", threshold:"> R$ 7,60/L", spark:macro.diesel },
-  { id:"soja", label:"Soja CEPEA (Nacional)", value:"135,73", unit:"R$/saca", variation:0, trend:"stable", alert:"ok", threshold:"< R$ 125,00", spark:soy.soja },
-  { id:"sojaTO", label:"Soja Oeste BA (AIBA)", value:"129,88", unit:"R$/saca", variation:0, trend:"stable", alert:"ok", threshold:"> R$ 140,00", spark:soy.sojaTO },
-  { id:"trocaMap", label:"Troca Soja/MAP", value:"26,7", unit:"sacas/t", variation:0, trend:"stable", alert:"ok", threshold:"> 30 sacas/t", spark:soy.trocaMap },
+  { id:"soja", label:"Soja CEPEA (Nacional)", value:"137,44", unit:"R$/saca", variation:0.1, trend:"stable", alert:"ok", threshold:"< R$ 125,00", spark:soy.soja },
+  { id:"sojaTO", label:"Soja Oeste BA (AIBA)", value:"128,75", unit:"R$/saca", variation:-0.4, trend:"stable", alert:"ok", threshold:"> R$ 140,00", spark:soy.sojaTO },
+  { id:"trocaMap", label:"Troca Soja/MAP", value:"31,6", unit:"sacas/t", variation:0, trend:"stable", alert:"warning", threshold:"> 30 sacas/t", spark:soy.trocaMap },
 ]; /* KPIS-END */
 const scenarios = [
   { name:"Otimista", cor:"success", icon:"trend-down", impacto:"Queda de 5% a 8%", premissas:["Câmbio: R$ 5,10/US$","Gás Natural: US$ 2,50/MMBtu","Frete Marítimo: -10%","Custos logísticos: -5%"] },
@@ -372,14 +372,14 @@ const seasonal = [
 ];
 /* ALERTS-START */
 const alerts = [
-  { indicador:"Dólar", valor:"R$ 5,19", gatilho:"> R$ 5,60", status:"ok", acao:"Monitorar" },
-  { indicador:"Ureia FOB", valor:"US$ 491/t", gatilho:"> US$ 430/t", status:"critical", acao:"Avaliar antecipação de compra / trava de preço" },
-  { indicador:"MAP FOB", valor:"US$ 640/t", gatilho:"> US$ 650/t", status:"ok", acao:"Monitorar" },
-  { indicador:"Gás Natural", valor:"US$ 3,10/MMBtu", gatilho:"> US$ 3,00", status:"warning", acao:"Pressão sobre nitrogenados" },
-  { indicador:"Frete Marítimo (BDI)", valor:"2.670 pts", gatilho:"> 2.300 pts", status:"warning", acao:"Elevado — encarece importação" },
+  { indicador:"Dólar", valor:"R$ 5,10", gatilho:"> R$ 5,60", status:"ok", acao:"Monitorar" },
+  { indicador:"Ureia FOB", valor:"US$ 418/t", gatilho:"> US$ 430/t", status:"ok", acao:"Monitorar" },
+  { indicador:"MAP FOB", valor:"US$ 828/t", gatilho:"> US$ 650/t", status:"warning", acao:"Acima do gatilho — reavaliar programação" },
+  { indicador:"Gás Natural", valor:"US$ 2,81/MMBtu", gatilho:"> US$ 3,00", status:"ok", acao:"Monitorar" },
+  { indicador:"Frete Marítimo (BDI)", valor:"3.083 pts", gatilho:"> 2.300 pts", status:"warning", acao:"Elevado — encarece importação" },
   { indicador:"Diesel S10", valor:"R$ 7,09/L", gatilho:"> R$ 7,60/L", status:"ok", acao:"Monitorar" },
-  { indicador:"Soja CEPEA", valor:"R$ 135,73/saca", gatilho:"< R$ 125,00", status:"ok", acao:"Monitorar" },
-  { indicador:"Troca Soja/MAP", valor:"26,7 sacas/t", gatilho:"> 30 sacas/t", status:"ok", acao:"Monitorar" },
+  { indicador:"Soja CEPEA", valor:"R$ 137,44/saca", gatilho:"< R$ 125,00", status:"ok", acao:"Monitorar" },
+  { indicador:"Troca Soja/MAP", valor:"31,6 sacas/t", gatilho:"> 30 sacas/t", status:"warning", acao:"Risco de demanda concentrada no 2º sem." },
 ]; /* ALERTS-END */
 const references = [
   { id:1, fonte:"Farmnews", data:"16/03/2026", titulo:"Preço do cloreto de potássio, ureia e MAP entre fev/2025 e fev/2026", url:"https://www.farmnews.com.br/mercado/preco-do-cloreto-de-potassio-ureia-e-map-entre-fevereiro-de-2025-e-2026/" },
