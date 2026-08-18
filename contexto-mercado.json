@@ -1,0 +1,36 @@
+{
+  "_leia_me": "Análise qualitativa de contexto de mercado. NÃO é atualizada pela automação semanal — deve ser revisada manualmente (sugestão: mensalmente). Alimenta tanto o dashboard (aba Visão Geral) quanto o relatório em PDF.",
+  "atualizadoEm": "Agosto/2026",
+
+  "titulo": "Por que os fertilizantes subiram — e o que esperar",
+
+  "resumo": "O eixo da pressão mudou ao longo de 2026: a ureia recuou dos picos após o alívio das tensões no Oriente Médio, mas os fosfatados (MAP) tornaram-se o ponto crítico — caros e de oferta apertada — por causa das restrições da China e da escassez de enxofre, às vésperas da safra 2026/27.",
+
+  "causas": [
+    { "titulo": "Restrições da China aos fosfatados", "texto": "A China suspendeu boa parte das exportações de fosfatados para priorizar o abastecimento interno; fontes do setor estimam que de 40% a 80% dos embarques estejam bloqueados ou sob cota, e as restrições podem durar até meados do segundo semestre de 2026." },
+    { "titulo": "Escassez de enxofre", "texto": "Insumo essencial do MAP, o enxofre chegou a cerca de US$ 1.250/t; os desembarques no Brasil no 1º semestre ficaram ~42% abaixo de 2025 (StoneX), levando fábricas a reduzir produção e apertando ainda mais a oferta de fosfatados." },
+    { "titulo": "Oferta russa e de outros polos reduzida", "texto": "Menor disponibilidade da Rússia, restrições no Marrocos e paralisações pontuais de produtoras limitam a oferta global de fósforo e sustentam o MAP em patamar elevado." },
+    { "titulo": "Conflito no Oriente Médio (efeito decrescente)", "texto": "Foi o principal motor da disparada da ureia no 1º semestre. Com o avanço do acordo entre EUA e Irã, o risco arrefeceu e a ureia recuou — mas o mercado segue cauteloso a novas tensões." },
+    { "titulo": "Dependência de importação e compras atrasadas", "texto": "O Brasil importa cerca de 85% dos fertilizantes. Em 2026 as compras da safra 2026/27 atrasaram, e o produtor ainda descoberto pode enfrentar preço e disponibilidade piores ao acelerar as aquisições." }
+  ],
+
+  "numeros": "Referências de portos no meio do ano: a ureia recuou para a faixa de US$ 410–430/t CFR após ter passado de US$ 700/t no auge; o MAP seguiu pressionado, negociado próximo de US$ 850–900/t; o KCl manteve-se relativamente estável, em torno de US$ 380–405/t (Itaú BBA / consultorias). O Ministério da Agricultura chegou a alertar para risco de déficit de 1 a 3 milhões de toneladas de fosfatados em 2026.",
+
+  "perspectiva": [
+    "Ureia (nitrogenados): cenário mais calmo após o recuo, mas ainda sensível a choques geopolíticos e ao gás natural — sem folga estrutural de oferta.",
+    "MAP (fosfatados): é hoje o produto mais crítico; a pressão deve persistir enquanto durarem as restrições chinesas e a escassez de enxofre, com risco de faltar produto no pico de plantio (set–out).",
+    "KCl (potássio): segmento mais equilibrado e com importação recorde; preços relativamente estáveis, embora manutenções industriais no 2º semestre possam alterar o equilíbrio.",
+    "Estratégia sugerida por analistas: evitar ficar descoberto — garantir disponibilidade de fosfatados pode importar mais que o preço; escalonar compras, priorizar KCl (mais líquido) e avaliar substitutos de fósforo como SSP/TSP.",
+    "Riscos a monitorar: prazo real da suspensão das restrições chinesas, evolução do conflito no Oriente Médio, preço do enxofre e câmbio."
+  ],
+
+  "fontes": [
+    { "nome": "Itaú BBA (Agro Mensal), via NN Online — ureia recua; MAP ~US$ 900/t; enxofre ~US$ 1.250/t; KCl ~US$ 405/t", "data": "jun/2026" },
+    { "nome": "StoneX, via Minuto MT / AF News — enxofre -42% no 1º semestre e risco de abastecimento de fosfatados", "data": "jul/2026" },
+    { "nome": "CNA — restrições chinesas ao MAP e queda de 13,7% na importação (jan–ago)", "data": "2026" },
+    { "nome": "Spazio Agro — China pode manter restrições até o 2º semestre; alerta do MAPA de déficit de 1–3 Mt", "data": "abr/2026" },
+    { "nome": "Conecta Agro — ureia teve a maior disparada percentual de 2026, com correção posterior", "data": "ago/2026" }
+  ],
+
+  "nota": "Análise de contexto com caráter informativo, revisada manualmente. As datas e cenários mudam; confirme com as fontes antes de decisões de compra."
+}
