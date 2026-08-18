@@ -1,14 +1,84 @@
 {
-  "ref": "Jul/2026",
-  "current": { "dolar":5.19,"ureia":491,"map":640,"kcl":328,"gas":3.10,"bdi":2670,"diesel":7.09,"soja":135.73,"sojaTO":129.88 },
-  "previous": {},
-  "delta": {},
-  "troca": { "map":26.7,"ureia":20.5 },
-  "refsFertilizantes": { "ureia":"2026-06","map":"2026-06","kcl":"2026-06" },
+  "updatedAt": "2026-08-17T10:26:40.824Z",
+  "updatedAtBR": "17/08/2026, 10:26:40",
+  "ref": "Ago/2026",
+  "current": {
+    "dolar": 5.22,
+    "ureia": 418.3,
+    "map": 828,
+    "kcl": 358.9,
+    "gas": 2.79,
+    "bdi": 2863,
+    "diesel": 7.09,
+    "soja": 141.16,
+    "sojaTO": 133.38
+  },
+  "previous": {
+    "dolar": 5.13,
+    "ureia": 418.3,
+    "map": 828,
+    "kcl": 358.9,
+    "gas": 2.81,
+    "bdi": 3083,
+    "diesel": 7.09,
+    "soja": 137.44,
+    "sojaTO": 128.75
+  },
+  "delta": {
+    "dolar": 1.8,
+    "ureia": null,
+    "map": null,
+    "kcl": null,
+    "gas": -0.7,
+    "bdi": -7.1,
+    "diesel": 0,
+    "soja": 2.7,
+    "sojaTO": 3.6,
+    "trocaMap": -0.9
+  },
+  "troca": {
+    "map": 31.5,
+    "ureia": 16.2
+  },
+  "status": {
+    "bdi": "ok (HANDYBULK, 14/08/2026)",
+    "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
+    "soja": "ok (Noticias Agricolas / CEPEA-PR 14/08/2026)",
+    "diesel": "falha: Petrobras: HTTP 403 | PortalCanaa: HTTP 403",
+    "cambio": "ok (BCB PTAX)",
+    "_comexPeriodo": "com-filtro-ncm | 2026-07 | 4 linhas",
+    "_comexNcmsEncontrados": "31042090,31021010,31054000,31042010",
+    "ureia": "ok (ComexStat 2026-07)",
+    "map": "ok (ComexStat 2026-07)",
+    "kcl": "ok (ComexStat 2026-07)",
+    "gas": "ok (EIA Henry Hub)",
+    "noticias": "ok (40 de https://www.noticiasagricolas.com.br/tags/fertilizantes/)"
+  },
+  "refsFertilizantes": {
+    "ureia": "2026-07",
+    "map": "2026-07",
+    "kcl": "2026-07"
+  },
   "noticiasFert": [
-    { "data":"30/06/2026", "titulo":"Mercado de fertilizantes amplia movimento de baixa com recuo da ureia, MAP e cloreto de potássio", "url":"https://www.noticiasagricolas.com.br/noticias/agronegocio/423854-mercado-de-fertilizantes-amplia-movimento-de-baixa.html" },
-    { "data":"19/06/2026", "titulo":"Importação dos EUA de fertilizante com origem no Oriente Médio zera em maio", "url":"https://www.noticiasagricolas.com.br/noticias/agronegocio/423163-importacao-dos-eua-de-fertilizante.html" },
-    { "data":"16/06/2026", "titulo":"Ureia cai mais de 40% e volta ao nível pré-crise com avanço de acordo entre EUA e Irã", "url":"https://www.noticiasagricolas.com.br/noticias/agronegocio/422949-ureia-cai-mais-de-40.html" }
-  ],
-  "status": { "nota": "semente inicial" }
+    {
+      "data": "04/08/2026",
+      "titulo": "El Niño reforça importância da nutrição das plantas para reduzir perdas no campo",
+      "url": "https://www.noticiasagricolas.com.br/noticias/tempo-e-clima/425868-el-nino-reforca-importancia-da-nutricao-das-plantas-para-reduzir-perdas-no-campo.html"
+    },
+    {
+      "data": "30/06/2026",
+      "titulo": "Mercado de fertilizantes amplia movimento de baixa com recuo da ureia, MAP e cloreto de potássio",
+      "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/423854-mercado-de-fertilizantes-amplia-movimento-de-baixa-com-recuo-da-ureia-map-e-cloreto-de-potassio.html"
+    },
+    {
+      "data": "19/06/2026",
+      "titulo": "Importação dos EUA de fertilizante com origem no Oriente Médio zera em maio",
+      "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/423163-importacao-dos-eua-de-fertilizante-com-origem-no-oriente-medio-zera-em-maio.html"
+    },
+    {
+      "data": "16/06/2026",
+      "titulo": "Ureia cai mais de 40% e volta ao nível pré-crise com avanço de acordo entre EUA e Irã",
+      "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/422949-ureia-cai-mais-de-40-e-volta-ao-nivel-pre-crise-com-avanco-de-acordo-entre-eua-e-ira.html"
+    }
+  ]
 }
