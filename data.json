@@ -1,8 +1,19 @@
 {
-  "updatedAt": "2026-08-24T10:31:55.095Z",
-  "updatedAtBR": "24/08/2026, 10:31:55",
+  "updatedAt": "2026-08-31T17:22:38.434Z",
+  "updatedAtBR": "31/08/2026, 17:22:38",
   "ref": "Ago/2026",
   "current": {
+    "dolar": 5.18,
+    "ureia": 418.3,
+    "map": 828,
+    "kcl": 358.9,
+    "gas": 2.7,
+    "bdi": 3186,
+    "diesel": 7.09,
+    "soja": 151.32,
+    "sojaTO": 142
+  },
+  "previous": {
     "dolar": 5.16,
     "ureia": 418.3,
     "map": 828,
@@ -13,38 +24,27 @@
     "soja": 146.7,
     "sojaTO": 138.75
   },
-  "previous": {
-    "dolar": 5.2,
-    "ureia": 418.3,
-    "map": 828,
-    "kcl": 358.9,
-    "gas": 2.79,
-    "bdi": 2878,
-    "diesel": 7.09,
-    "soja": 141.69,
-    "sojaTO": 134.25
-  },
   "delta": {
-    "dolar": -0.8,
+    "dolar": 0.4,
     "ureia": null,
     "map": null,
     "kcl": null,
-    "gas": 1.1,
-    "bdi": -1.3,
+    "gas": -4.3,
+    "bdi": 12.1,
     "diesel": 0,
-    "soja": 3.5,
-    "sojaTO": 3.4,
-    "trocaMap": -4.2
+    "soja": 3.1,
+    "sojaTO": 2.3,
+    "trocaMap": -2.7
   },
   "troca": {
-    "map": 29.9,
-    "ureia": 15.4
+    "map": 29.1,
+    "ureia": 15
   },
   "status": {
-    "soja": "ok (Noticias Agricolas / CEPEA-PR 21/08/2026)",
     "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
+    "bdi": "ok (HANDYBULK, 28/08/2026)",
+    "soja": "ok (Noticias Agricolas / CEPEA-PR 28/08/2026)",
     "cambio": "ok (BCB PTAX)",
-    "bdi": "ok (HANDYBULK, 21/08/2026)",
     "diesel": "falha: Petrobras: HTTP 403 | PortalCanaa: HTTP 403",
     "_comexPeriodo": "com-filtro-ncm | 2026-07 | 4 linhas",
     "_comexNcmsEncontrados": "31042090,31021010,31054000,31042010",
@@ -61,23 +61,23 @@
   },
   "noticiasFert": [
     {
-      "data": "04/08/2026",
-      "titulo": "El Niño reforça importância da nutrição das plantas para reduzir perdas no campo",
+      "data": null,
+      "titulo": "Tempo e Clima 04/08/2026 - 12:41 El Niño reforça importância da nutrição das plantas para reduzir perdas no campo",
       "url": "https://www.noticiasagricolas.com.br/noticias/tempo-e-clima/425868-el-nino-reforca-importancia-da-nutricao-das-plantas-para-reduzir-perdas-no-campo.html"
     },
     {
-      "data": "30/06/2026",
-      "titulo": "Mercado de fertilizantes amplia movimento de baixa com recuo da ureia, MAP e cloreto de potássio",
+      "data": null,
+      "titulo": "Agronegócio 30/06/2026 - 09:30 Mercado de fertilizantes amplia movimento de baixa com recuo da ureia, MAP e cloreto de potássio",
       "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/423854-mercado-de-fertilizantes-amplia-movimento-de-baixa-com-recuo-da-ureia-map-e-cloreto-de-potassio.html"
     },
     {
-      "data": "19/06/2026",
-      "titulo": "Importação dos EUA de fertilizante com origem no Oriente Médio zera em maio",
+      "data": null,
+      "titulo": "Agronegócio 19/06/2026 - 11:01 Importação dos EUA de fertilizante com origem no Oriente Médio zera em maio",
       "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/423163-importacao-dos-eua-de-fertilizante-com-origem-no-oriente-medio-zera-em-maio.html"
     },
     {
-      "data": "16/06/2026",
-      "titulo": "Ureia cai mais de 40% e volta ao nível pré-crise com avanço de acordo entre EUA e Irã",
+      "data": null,
+      "titulo": "Agronegócio 16/06/2026 - 16:30 Ureia cai mais de 40% e volta ao nível pré-crise com avanço de acordo entre EUA e Irã",
       "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/422949-ureia-cai-mais-de-40-e-volta-ao-nivel-pre-crise-com-avanco-de-acordo-entre-eua-e-ira.html"
     }
   ]
