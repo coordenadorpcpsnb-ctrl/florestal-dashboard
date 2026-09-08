@@ -1,83 +1,83 @@
 {
-  "updatedAt": "2026-08-17T10:26:40.824Z",
-  "updatedAtBR": "17/08/2026, 10:26:40",
-  "ref": "Ago/2026",
+  "updatedAt": "2026-09-07T15:27:16.123Z",
+  "updatedAtBR": "07/09/2026, 15:27:16",
+  "ref": "Set/2026",
   "current": {
-    "dolar": 5.22,
-    "ureia": 418.3,
-    "map": 828,
-    "kcl": 358.9,
-    "gas": 2.79,
-    "bdi": 2863,
+    "dolar": 5.13,
+    "ureia": 412.8,
+    "map": 834.3,
+    "kcl": 352.1,
+    "gas": 2.9,
+    "bdi": 3628,
     "diesel": 7.09,
-    "soja": 141.16,
-    "sojaTO": 133.38
+    "soja": 152.1,
+    "sojaTO": 144.75
   },
   "previous": {
-    "dolar": 5.13,
+    "dolar": 5.18,
     "ureia": 418.3,
     "map": 828,
     "kcl": 358.9,
-    "gas": 2.81,
-    "bdi": 3083,
+    "gas": 2.7,
+    "bdi": 3186,
     "diesel": 7.09,
-    "soja": 137.44,
-    "sojaTO": 128.75
+    "soja": 151.31,
+    "sojaTO": 142
   },
   "delta": {
-    "dolar": 1.8,
-    "ureia": null,
-    "map": null,
-    "kcl": null,
-    "gas": -0.7,
-    "bdi": -7.1,
+    "dolar": -1,
+    "ureia": -1.3,
+    "map": 0.8,
+    "kcl": -1.9,
+    "gas": 7.4,
+    "bdi": 13.9,
     "diesel": 0,
-    "soja": 2.7,
-    "sojaTO": 3.6,
-    "trocaMap": -0.9
+    "soja": 0.5,
+    "sojaTO": 1.9,
+    "trocaMap": -0.7
   },
   "troca": {
-    "map": 31.5,
-    "ureia": 16.2
+    "map": 28.9,
+    "ureia": 14.6
   },
   "status": {
-    "bdi": "ok (HANDYBULK, 14/08/2026)",
     "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
-    "soja": "ok (Noticias Agricolas / CEPEA-PR 14/08/2026)",
-    "diesel": "falha: Petrobras: HTTP 403 | PortalCanaa: HTTP 403",
     "cambio": "ok (BCB PTAX)",
-    "_comexPeriodo": "com-filtro-ncm | 2026-07 | 4 linhas",
+    "soja": "ok (Noticias Agricolas / CEPEA-PR 04/09/2026)",
+    "bdi": "ok (HANDYBULK, 04/09/2026)",
+    "diesel": "falha: Petrobras: HTTP 403 | PortalCanaa: HTTP 403",
+    "_comexPeriodo": "com-filtro-ncm | 2026-08 | 4 linhas",
     "_comexNcmsEncontrados": "31042090,31021010,31054000,31042010",
-    "ureia": "ok (ComexStat 2026-07)",
-    "map": "ok (ComexStat 2026-07)",
-    "kcl": "ok (ComexStat 2026-07)",
+    "ureia": "ok (ComexStat 2026-08)",
+    "map": "ok (ComexStat 2026-08)",
+    "kcl": "ok (ComexStat 2026-08)",
     "gas": "ok (EIA Henry Hub)",
     "noticias": "ok (40 de https://www.noticiasagricolas.com.br/tags/fertilizantes/)"
   },
   "refsFertilizantes": {
-    "ureia": "2026-07",
-    "map": "2026-07",
-    "kcl": "2026-07"
+    "ureia": "2026-08",
+    "map": "2026-08",
+    "kcl": "2026-08"
   },
   "noticiasFert": [
     {
-      "data": "04/08/2026",
-      "titulo": "El Niño reforça importância da nutrição das plantas para reduzir perdas no campo",
+      "data": null,
+      "titulo": "Tempo e Clima 04/08/2026 - 12:41 El Niño reforça importância da nutrição das plantas para reduzir perdas no campo",
       "url": "https://www.noticiasagricolas.com.br/noticias/tempo-e-clima/425868-el-nino-reforca-importancia-da-nutricao-das-plantas-para-reduzir-perdas-no-campo.html"
     },
     {
-      "data": "30/06/2026",
-      "titulo": "Mercado de fertilizantes amplia movimento de baixa com recuo da ureia, MAP e cloreto de potássio",
+      "data": null,
+      "titulo": "Agronegócio 30/06/2026 - 09:30 Mercado de fertilizantes amplia movimento de baixa com recuo da ureia, MAP e cloreto de potássio",
       "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/423854-mercado-de-fertilizantes-amplia-movimento-de-baixa-com-recuo-da-ureia-map-e-cloreto-de-potassio.html"
     },
     {
-      "data": "19/06/2026",
-      "titulo": "Importação dos EUA de fertilizante com origem no Oriente Médio zera em maio",
+      "data": null,
+      "titulo": "Agronegócio 19/06/2026 - 11:01 Importação dos EUA de fertilizante com origem no Oriente Médio zera em maio",
       "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/423163-importacao-dos-eua-de-fertilizante-com-origem-no-oriente-medio-zera-em-maio.html"
     },
     {
-      "data": "16/06/2026",
-      "titulo": "Ureia cai mais de 40% e volta ao nível pré-crise com avanço de acordo entre EUA e Irã",
+      "data": null,
+      "titulo": "Agronegócio 16/06/2026 - 16:30 Ureia cai mais de 40% e volta ao nível pré-crise com avanço de acordo entre EUA e Irã",
       "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/422949-ureia-cai-mais-de-40-e-volta-ao-nivel-pre-crise-com-avanco-de-acordo-entre-eua-e-ira.html"
     }
   ]

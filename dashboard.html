@@ -254,7 +254,7 @@
       </div>
       <div class="topbar-actions">
         <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Mai/24 — Jun/26</span>
-        <span class="pill"><span class="led live"></span>Dados base · Ago/2026</span>
+        <span class="pill"><span class="led live"></span>Dados base · Set/2026</span>
         <button class="btn primary" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Exportar</button>
       </div>
     </header>
@@ -263,22 +263,22 @@
 </div>
 <script>
 /* SERIES-START */
-const MONTHS = ["Mai/24","Jun/24","Jul/24","Ago/24","Set/24","Out/24","Nov/24","Dez/24","Jan/25","Fev/25","Mar/25","Abr/25","Mai/25","Jun/25","Jul/25","Ago/25","Set/25","Out/25","Nov/25","Dez/25","Jan/26","Fev/26","Mar/26","Abr/26","Mai/26","Jun/26","Jul/26","Ago/26"];
+const MONTHS = ["Mai/24","Jun/24","Jul/24","Ago/24","Set/24","Out/24","Nov/24","Dez/24","Jan/25","Fev/25","Mar/25","Abr/25","Mai/25","Jun/25","Jul/25","Ago/25","Set/25","Out/25","Nov/25","Dez/25","Jan/26","Fev/26","Mar/26","Abr/26","Mai/26","Jun/26","Jul/26","Ago/26","Set/26"];
 const fert = {
-  ureia:[320,325,335,345,355,360,365,370,375,369,372,378,382,385,388,390,392,395,398,400,402,405,404,405,405,491,491,491],
-  map:[580,585,590,595,600,605,600,595,600,596,600,605,608,610,612,614,615,616,617,618,619,620,620,620,620,640,640,640],
-  kcl:[305,310,315,318,320,322,320,318,320,325,328,330,332,334,335,336,337,338,339,340,341,342,342,343,343,328,328,328],
+  ureia:[320,325,335,345,355,360,365,370,375,369,372,378,382,385,388,390,392,395,398,400,402,405,404,405,405,491,491,491,418.3],
+  map:[580,585,590,595,600,605,600,595,600,596,600,605,608,610,612,614,615,616,617,618,619,620,620,620,620,640,640,640,828],
+  kcl:[305,310,315,318,320,322,320,318,320,325,328,330,332,334,335,336,337,338,339,340,341,342,342,343,343,328,328,328,358.9],
 };
 const macro = {
-  dolar:[5.10,5.15,5.20,5.25,5.30,5.32,5.35,5.40,5.42,5.40,5.38,5.40,5.42,5.44,5.45,5.46,5.46,5.45,5.46,5.46,5.45,5.46,5.46,5.46,5.46,5.19,5.19,5.19],
-  gas:[2.2,2.3,2.35,2.4,2.45,2.5,2.55,2.6,2.65,2.7,2.72,2.75,2.78,2.8,2.8,2.82,2.83,2.83,2.84,2.84,2.85,2.85,2.85,2.85,2.85,3.10,3.1,3.1],
-  diesel:[6.10,6.15,6.20,6.25,6.30,6.40,6.50,6.60,6.70,6.80,6.90,7.00,7.10,7.15,7.20,7.25,7.30,7.32,7.35,7.38,7.40,7.41,7.42,7.43,7.43,7.26,7.09,7.09],
-  bdi:[1850,1920,1980,2010,2050,2080,2100,2120,2150,2160,2170,2180,2190,2200,2210,2215,2220,2225,2230,2235,2238,2240,2242,2242,2242,2667,2670,2670],
+  dolar:[5.10,5.15,5.20,5.25,5.30,5.32,5.35,5.40,5.42,5.40,5.38,5.40,5.42,5.44,5.45,5.46,5.46,5.45,5.46,5.46,5.45,5.46,5.46,5.46,5.46,5.19,5.19,5.19,5.18],
+  gas:[2.2,2.3,2.35,2.4,2.45,2.5,2.55,2.6,2.65,2.7,2.72,2.75,2.78,2.8,2.8,2.82,2.83,2.83,2.84,2.84,2.85,2.85,2.85,2.85,2.85,3.10,3.1,3.1,2.7],
+  diesel:[6.10,6.15,6.20,6.25,6.30,6.40,6.50,6.60,6.70,6.80,6.90,7.00,7.10,7.15,7.20,7.25,7.30,7.32,7.35,7.38,7.40,7.41,7.42,7.43,7.43,7.26,7.09,7.09,7.09],
+  bdi:[1850,1920,1980,2010,2050,2080,2100,2120,2150,2160,2170,2180,2190,2200,2210,2215,2220,2225,2230,2235,2238,2240,2242,2242,2242,2667,2670,2670,3186],
 };
 const soy = {
-  soja:[138,140,142,145,148,150,148,145,142,140,138,135,132,130,135,140.5,142,138,135,132,128,125,122,128.88,129.14,129.06,135.73,135.73],
-  trocaMap:[18.5,18,19.5,20,20.5,21,20.5,20,21.5,22,22.5,23,23.5,24,24.5,25,25.5,26,26.5,27,27.5,28,29,28.5,28,26.7,26.7,26.7],
-  trocaUreia:[12.5,12,13.5,14,14.5,15,14.5,14,15.5,16,16.5,17,17.5,18,18.5,19,19.5,20,20.5,21,21.5,22,23,22.5,22,20.5,20.5,20.5],
+  soja:[138,140,142,145,148,150,148,145,142,140,138,135,132,130,135,140.5,142,138,135,132,128,125,122,128.88,129.14,129.06,135.73,135.73,151.31],
+  trocaMap:[18.5,18,19.5,20,20.5,21,20.5,20,21.5,22,22.5,23,23.5,24,24.5,25,25.5,26,26.5,27,27.5,28,29,28.5,28,26.7,26.7,26.7,29.1],
+  trocaUreia:[12.5,12,13.5,14,14.5,15,14.5,14,15.5,16,16.5,17,17.5,18,18.5,19,19.5,20,20.5,21,21.5,22,23,22.5,22,20.5,20.5,20.5,15],
 };
 // Serie regional estimada em 95,7% do CEPEA (proporcao observada AIBA/CEPEA em jul/26).
 // O valor do card e real (AIBA); a serie historica e estimada — ver aba Referencias.
@@ -288,10 +288,10 @@ soy.sojaTO = soy.soja.map(v => Math.round(v*0.957*100)/100);
 /* LIVE-START */
 // Valores da ultima leitura, reescritos pela automacao (patch-dashboard.mjs).
 const LIVE = {
-  refMes:"Agosto 2026", refFert:"jul/26", fertFechado:false,
-  dolar:"5,22", ureia:"418", map:"828", kcl:"359", gas:"2,79",
-  bdi:"2.863", diesel:"7,09", soja:"141,16", sojaTO:"133,38",
-  trocaMap:"31,5", trocaUreia:"16,2", spread:"7,78",
+  refMes:"Setembro 2026", refFert:"ago/26", fertFechado:true,
+  dolar:"5,13", ureia:"413", map:"834", kcl:"352", gas:"2,90",
+  bdi:"3.628", diesel:"7,09", soja:"152,10", sojaTO:"144,75",
+  trocaMap:"28,9", trocaUreia:"14,6", spread:"7,35",
 };
 /* LIVE-END */
 
@@ -299,61 +299,57 @@ const LIVE = {
 const CONTEXTO = {
   "atualizadoEm": "Agosto/2026",
   "titulo": "Por que os fertilizantes subiram — e o que esperar",
-  "resumo": "A alta de 2026, concentrada nos nitrogenados (ureia), foi puxada pela combinação de conflito no Oriente Médio, gás natural mais caro e restrições de exportação de China e Rússia, sobre uma base de forte dependência brasileira de importação (~85%).",
+  "resumo": "O eixo da pressão mudou ao longo de 2026: a ureia recuou dos picos após o alívio das tensões no Oriente Médio, mas os fosfatados (MAP) tornaram-se o ponto crítico — caros e de oferta apertada — por causa das restrições da China e da escassez de enxofre, às vésperas da safra 2026/27.",
   "causas": [
     {
-      "titulo": "Conflito no Oriente Médio (Irã)",
-      "texto": "A região concentra cerca de 40% do comércio marítimo global de ureia e é fornecedora relevante de nitrogenados ao Brasil. Tensões envolvendo o Irã e a interrupção de rotas no Estreito de Ormuz elevaram o risco de desabastecimento e os custos."
+      "titulo": "Restrições da China aos fosfatados",
+      "texto": "A China suspendeu boa parte das exportações de fosfatados para priorizar o abastecimento interno; fontes do setor estimam que de 40% a 80% dos embarques estejam bloqueados ou sob cota, e as restrições podem durar até meados do segundo semestre de 2026."
     },
     {
-      "titulo": "Gás natural mais caro",
-      "texto": "É a principal matéria-prima da amônia e da ureia. Energia mais cara encarece diretamente a produção dos nitrogenados."
+      "titulo": "Escassez de enxofre",
+      "texto": "Insumo essencial do MAP, o enxofre chegou a cerca de US$ 1.250/t; os desembarques no Brasil no 1º semestre ficaram ~42% abaixo de 2025 (StoneX), levando fábricas a reduzir produção e apertando ainda mais a oferta de fosfatados."
     },
     {
-      "titulo": "Restrições de exportação (China e Rússia)",
-      "texto": "A China segurou vendas de fosfatados e de ureia para priorizar o abastecimento interno; a Rússia também limitou embarques. Como o Brasil importa cerca de 85% dos fertilizantes, essas restrições pressionam preço e oferta."
+      "titulo": "Oferta russa e de outros polos reduzida",
+      "texto": "Menor disponibilidade da Rússia, restrições no Marrocos e paralisações pontuais de produtoras limitam a oferta global de fósforo e sustentam o MAP em patamar elevado."
     },
     {
-      "titulo": "Frete marítimo elevado",
-      "texto": "O desvio de rotas por conta do Estreito de Ormuz e a alta do petróleo encareceram o transporte, somando-se ao custo do produto na chegada ao Brasil."
+      "titulo": "Conflito no Oriente Médio (efeito decrescente)",
+      "texto": "Foi o principal motor da disparada da ureia no 1º semestre. Com o avanço do acordo entre EUA e Irã, o risco arrefeceu e a ureia recuou — mas o mercado segue cauteloso a novas tensões."
     },
     {
-      "titulo": "Demanda global forte na janela de compras",
-      "texto": "A ampliação de compras de EUA, Índia e Brasil para a safra 2026/27 sustentou as cotações internacionais no momento em que o país mais precisa importar."
-    },
-    {
-      "titulo": "Fosfatados e escassez de enxofre",
-      "texto": "Além da retração chinesa, a oferta restrita de fosfato e a falta de enxofre no mercado internacional mantêm o MAP pressionado."
+      "titulo": "Dependência de importação e compras atrasadas",
+      "texto": "O Brasil importa cerca de 85% dos fertilizantes. Em 2026 as compras da safra 2026/27 atrasaram, e o produtor ainda descoberto pode enfrentar preço e disponibilidade piores ao acelerar as aquisições."
     }
   ],
   "perspectiva": [
-    "O cenário ficou menos turbulento a partir de julho, com a retomada das exportações de ureia pela China e a redução das tensões geopolíticas — mas o mercado segue muito sensível a qualquer mudança externa.",
-    "Para o 3º trimestre de 2026, a StoneX projeta que a normalização gradual da navegação por Ormuz e o retorno das exportações chinesas melhorem o abastecimento mundial, com fundamentos distintos por segmento.",
-    "Nitrogenados: podem ter recuperação de preços com a recomposição de estoques e a volta da demanda global. Fosfatados: seguem pressionados pela oferta restrita e pelo enxofre caro. Potássio (KCl): mercado relativamente equilibrado.",
-    "Estratégia sugerida por analistas: escalonar as compras, avançar mais no potássio e fazer aquisições parciais de nitrogênio e fósforo, aproveitando janelas e relações de troca favoráveis, em vez de tentar acertar o menor preço.",
-    "Riscos a monitorar: evolução do conflito no Oriente Médio, novas restrições da China (há rumores inclusive sobre sulfato de amônio, 100% importado do país) e a taxa de câmbio."
+    "Ureia (nitrogenados): cenário mais calmo após o recuo, mas ainda sensível a choques geopolíticos e ao gás natural — sem folga estrutural de oferta.",
+    "MAP (fosfatados): é hoje o produto mais crítico; a pressão deve persistir enquanto durarem as restrições chinesas e a escassez de enxofre, com risco de faltar produto no pico de plantio (set–out).",
+    "KCl (potássio): segmento mais equilibrado e com importação recorde; preços relativamente estáveis, embora manutenções industriais no 2º semestre possam alterar o equilíbrio.",
+    "Estratégia sugerida por analistas: evitar ficar descoberto — garantir disponibilidade de fosfatados pode importar mais que o preço; escalonar compras, priorizar KCl (mais líquido) e avaliar substitutos de fósforo como SSP/TSP.",
+    "Riscos a monitorar: prazo real da suspensão das restrições chinesas, evolução do conflito no Oriente Médio, preço do enxofre e câmbio."
   ],
   "nota": "Análise de contexto com caráter informativo, revisada manualmente. As datas e cenários mudam; confirme com as fontes antes de decisões de compra.",
-  "leituraAuto": "Sem novo fechamento de fertilizantes desde a leitura anterior (jul/26).",
+  "leituraAuto": "Último fechamento (ago/26): ureia -1,3%, MAP +0,8%, KCl -1,9% ante o mês anterior.",
   "noticias": [
     {
-      "data": "04/08/2026",
-      "titulo": "El Niño reforça importância da nutrição das plantas para reduzir perdas no campo",
+      "data": "",
+      "titulo": "Tempo e Clima 04/08/2026 - 12:41 El Niño reforça importância da nutrição das plantas para reduzir perdas no campo",
       "url": "https://www.noticiasagricolas.com.br/noticias/tempo-e-clima/425868-el-nino-reforca-importancia-da-nutricao-das-plantas-para-reduzir-perdas-no-campo.html"
     },
     {
-      "data": "30/06/2026",
-      "titulo": "Mercado de fertilizantes amplia movimento de baixa com recuo da ureia, MAP e cloreto de potássio",
+      "data": "",
+      "titulo": "Agronegócio 30/06/2026 - 09:30 Mercado de fertilizantes amplia movimento de baixa com recuo da ureia, MAP e cloreto de potássio",
       "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/423854-mercado-de-fertilizantes-amplia-movimento-de-baixa-com-recuo-da-ureia-map-e-cloreto-de-potassio.html"
     },
     {
-      "data": "19/06/2026",
-      "titulo": "Importação dos EUA de fertilizante com origem no Oriente Médio zera em maio",
+      "data": "",
+      "titulo": "Agronegócio 19/06/2026 - 11:01 Importação dos EUA de fertilizante com origem no Oriente Médio zera em maio",
       "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/423163-importacao-dos-eua-de-fertilizante-com-origem-no-oriente-medio-zera-em-maio.html"
     },
     {
-      "data": "16/06/2026",
-      "titulo": "Ureia cai mais de 40% e volta ao nível pré-crise com avanço de acordo entre EUA e Irã",
+      "data": "",
+      "titulo": "Agronegócio 16/06/2026 - 16:30 Ureia cai mais de 40% e volta ao nível pré-crise com avanço de acordo entre EUA e Irã",
       "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/422949-ureia-cai-mais-de-40-e-volta-ao-nivel-pre-crise-com-avanco-de-acordo-entre-eua-e-ira.html"
     }
   ]
@@ -369,15 +365,15 @@ function badge12(arr){ const p=pct12(arr);
   return t+" "+(p>10?"ALTA":p>0?"leve alta":p<-10?"QUEDA":"leve queda")+" · 12m"; }
 /* KPIS-START */
 let kpis = [
-  { id:"dolar", label:"Dólar", value:"5,22", unit:"R$/US$", variation:1.8, trend:"up", alert:"ok", threshold:"> R$ 5,60", spark:macro.dolar },
-  { id:"ureia", label:"Ureia FOB", value:"418", unit:"US$/t", variation:null, trend:"stable", alert:"ok", threshold:"> US$ 430/t", spark:fert.ureia, vs:"fechamento jul/26" },
-  { id:"map", label:"MAP FOB", value:"828", unit:"US$/t", variation:null, trend:"stable", alert:"warning", threshold:"> US$ 650/t", spark:fert.map, vs:"fechamento jul/26" },
-  { id:"gas", label:"Gás Natural", value:"2,79", unit:"US$/MMBtu", variation:-0.7, trend:"down", alert:"ok", threshold:"> US$ 3,00", spark:macro.gas },
-  { id:"bdi", label:"Frete Marítimo (BDI)", value:"2.863", unit:"pontos", variation:-7.1, trend:"down", alert:"warning", threshold:"> 2.300 pts", spark:macro.bdi },
+  { id:"dolar", label:"Dólar", value:"5,13", unit:"R$/US$", variation:-1, trend:"down", alert:"ok", threshold:"> R$ 5,60", spark:macro.dolar },
+  { id:"ureia", label:"Ureia FOB", value:"413", unit:"US$/t", variation:-1.3, trend:"down", alert:"ok", threshold:"> US$ 430/t", spark:fert.ureia, vs:"vs ago/26" },
+  { id:"map", label:"MAP FOB", value:"834", unit:"US$/t", variation:0.8, trend:"up", alert:"warning", threshold:"> US$ 650/t", spark:fert.map, vs:"vs ago/26" },
+  { id:"gas", label:"Gás Natural", value:"2,90", unit:"US$/MMBtu", variation:7.4, trend:"up", alert:"ok", threshold:"> US$ 3,00", spark:macro.gas },
+  { id:"bdi", label:"Frete Marítimo (BDI)", value:"3.628", unit:"pontos", variation:13.9, trend:"up", alert:"warning", threshold:"> 2.300 pts", spark:macro.bdi },
   { id:"diesel", label:"Diesel S10", value:"7,09", unit:"R$/L", variation:0, trend:"stable", alert:"ok", threshold:"> R$ 7,60/L", spark:macro.diesel },
-  { id:"soja", label:"Soja CEPEA (Nacional)", value:"141,16", unit:"R$/saca", variation:2.7, trend:"up", alert:"ok", threshold:"< R$ 125,00", spark:soy.soja },
-  { id:"sojaTO", label:"Soja Oeste BA (AIBA)", value:"133,38", unit:"R$/saca", variation:3.6, trend:"up", alert:"ok", threshold:"> R$ 140,00", spark:soy.sojaTO },
-  { id:"trocaMap", label:"Troca Soja/MAP", value:"31,5", unit:"sacas/t", variation:-0.9, trend:"down", alert:"warning", threshold:"> 30 sacas/t", spark:soy.trocaMap },
+  { id:"soja", label:"Soja CEPEA (Nacional)", value:"152,10", unit:"R$/saca", variation:0.5, trend:"stable", alert:"ok", threshold:"< R$ 125,00", spark:soy.soja },
+  { id:"sojaTO", label:"Soja Oeste BA (AIBA)", value:"144,75", unit:"R$/saca", variation:1.9, trend:"up", alert:"warning", threshold:"> R$ 140,00", spark:soy.sojaTO },
+  { id:"trocaMap", label:"Troca Soja/MAP", value:"28,9", unit:"sacas/t", variation:-0.7, trend:"down", alert:"ok", threshold:"> 30 sacas/t", spark:soy.trocaMap },
 ]; /* KPIS-END */
 const scenarios = [
   { name:"Otimista", cor:"success", icon:"trend-down", impacto:"Queda de 5% a 8%", premissas:["Câmbio: R$ 5,10/US$","Gás Natural: US$ 2,50/MMBtu","Frete Marítimo: -10%","Custos logísticos: -5%"] },
@@ -401,14 +397,14 @@ const seasonal = [
 ];
 /* ALERTS-START */
 const alerts = [
-  { indicador:"Dólar", valor:"R$ 5,22", gatilho:"> R$ 5,60", status:"ok", acao:"Monitorar" },
-  { indicador:"Ureia FOB", valor:"US$ 418/t", gatilho:"> US$ 430/t", status:"ok", acao:"Monitorar" },
-  { indicador:"MAP FOB", valor:"US$ 828/t", gatilho:"> US$ 650/t", status:"warning", acao:"Acima do gatilho — reavaliar programação" },
-  { indicador:"Gás Natural", valor:"US$ 2,79/MMBtu", gatilho:"> US$ 3,00", status:"ok", acao:"Monitorar" },
-  { indicador:"Frete Marítimo (BDI)", valor:"2.863 pts", gatilho:"> 2.300 pts", status:"warning", acao:"Elevado — encarece importação" },
+  { indicador:"Dólar", valor:"R$ 5,13", gatilho:"> R$ 5,60", status:"ok", acao:"Monitorar" },
+  { indicador:"Ureia FOB", valor:"US$ 413/t", gatilho:"> US$ 430/t", status:"ok", acao:"Monitorar" },
+  { indicador:"MAP FOB", valor:"US$ 834/t", gatilho:"> US$ 650/t", status:"warning", acao:"Acima do gatilho — reavaliar programação" },
+  { indicador:"Gás Natural", valor:"US$ 2,90/MMBtu", gatilho:"> US$ 3,00", status:"ok", acao:"Monitorar" },
+  { indicador:"Frete Marítimo (BDI)", valor:"3.628 pts", gatilho:"> 2.300 pts", status:"warning", acao:"Elevado — encarece importação" },
   { indicador:"Diesel S10", valor:"R$ 7,09/L", gatilho:"> R$ 7,60/L", status:"ok", acao:"Monitorar" },
-  { indicador:"Soja CEPEA", valor:"R$ 141,16/saca", gatilho:"< R$ 125,00", status:"ok", acao:"Monitorar" },
-  { indicador:"Troca Soja/MAP", valor:"31,5 sacas/t", gatilho:"> 30 sacas/t", status:"warning", acao:"Risco de demanda concentrada no 2º sem." },
+  { indicador:"Soja CEPEA", valor:"R$ 152,10/saca", gatilho:"< R$ 125,00", status:"ok", acao:"Monitorar" },
+  { indicador:"Troca Soja/MAP", valor:"28,9 sacas/t", gatilho:"> 30 sacas/t", status:"ok", acao:"Monitorar" },
 ]; /* ALERTS-END */
 const references = [
   { id:1, fonte:"Farmnews", data:"16/03/2026", titulo:"Preço do cloreto de potássio, ureia e MAP entre fev/2025 e fev/2026", url:"https://www.farmnews.com.br/mercado/preco-do-cloreto-de-potassio-ureia-e-map-entre-fevereiro-de-2025-e-2026/" },
