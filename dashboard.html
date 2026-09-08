@@ -288,49 +288,49 @@ soy.sojaTO = soy.soja.map(v => Math.round(v*0.957*100)/100);
 /* LIVE-START */
 // Valores da ultima leitura, reescritos pela automacao (patch-dashboard.mjs).
 const LIVE = {
-  refMes:"Setembro 2026", refFert:"ago/26", fertFechado:true,
+  refMes:"Setembro 2026", refFert:"ago/26", fertFechado:false,
   dolar:"5,13", ureia:"413", map:"834", kcl:"352", gas:"2,90",
-  bdi:"3.628", diesel:"7,09", soja:"152,10", sojaTO:"144,75",
+  bdi:"3.575", diesel:"7,09", soja:"152,10", sojaTO:"144,75",
   trocaMap:"28,9", trocaUreia:"14,6", spread:"7,35",
 };
 /* LIVE-END */
 
 /* CONTEXTO-START */
 const CONTEXTO = {
-  "atualizadoEm": "Agosto/2026",
+  "atualizadoEm": "Setembro/2026",
   "titulo": "Por que os fertilizantes subiram — e o que esperar",
-  "resumo": "O eixo da pressão mudou ao longo de 2026: a ureia recuou dos picos após o alívio das tensões no Oriente Médio, mas os fosfatados (MAP) tornaram-se o ponto crítico — caros e de oferta apertada — por causa das restrições da China e da escassez de enxofre, às vésperas da safra 2026/27.",
+  "resumo": "Em setembro o quadro é de alívio parcial, não de normalização: os preços recuaram dos picos e a China voltou a exportar, mas a oferta segue apertada — sobretudo nos fosfatados (MAP) — e o abastecimento da safra 2026/27 virou a principal preocupação, com importações atrasadas e o governo atuando na logística dos portos.",
   "causas": [
     {
-      "titulo": "Restrições da China aos fosfatados",
-      "texto": "A China suspendeu boa parte das exportações de fosfatados para priorizar o abastecimento interno; fontes do setor estimam que de 40% a 80% dos embarques estejam bloqueados ou sob cota, e as restrições podem durar até meados do segundo semestre de 2026."
+      "titulo": "Fosfatados (MAP) ainda pressionados",
+      "texto": "É o segmento mais crítico. As importações brasileiras de MAP caíram cerca de 24% no 1º semestre; a oferta chinesa, mesmo com retomada parcial, ainda é limitada, e a escassez de enxofre (matéria-prima do MAP) mantém o custo alto."
     },
     {
       "titulo": "Escassez de enxofre",
-      "texto": "Insumo essencial do MAP, o enxofre chegou a cerca de US$ 1.250/t; os desembarques no Brasil no 1º semestre ficaram ~42% abaixo de 2025 (StoneX), levando fábricas a reduzir produção e apertando ainda mais a oferta de fosfatados."
+      "texto": "Insumo essencial dos fosfatados, o enxofre saltou de cerca de US$ 100/t no pré-guerra para a faixa de US$ 1.200/t, levando fábricas a reduzir produção e apertando ainda mais a oferta de MAP."
     },
     {
-      "titulo": "Oferta russa e de outros polos reduzida",
-      "texto": "Menor disponibilidade da Rússia, restrições no Marrocos e paralisações pontuais de produtoras limitam a oferta global de fósforo e sustentam o MAP em patamar elevado."
+      "titulo": "China retomou exportações (alívio parcial)",
+      "texto": "A volta gradual dos embarques chineses trouxe algum alívio a nitrogenados e fosfatados, mas ainda não elimina o risco de desabastecimento para a safra 2026/27."
     },
     {
-      "titulo": "Conflito no Oriente Médio (efeito decrescente)",
-      "texto": "Foi o principal motor da disparada da ureia no 1º semestre. Com o avanço do acordo entre EUA e Irã, o risco arrefeceu e a ureia recuou — mas o mercado segue cauteloso a novas tensões."
+      "titulo": "Importações atrasadas e cautelosas",
+      "texto": "No 1º semestre os desembarques totais caíram ~8,6% (ureia −32%, MAP −24%), com compradores adiando negócios diante da volatilidade e da relação de troca ruim. O tempo para garantir o abastecimento do plantio (set–out) ficou curto."
     },
     {
-      "titulo": "Dependência de importação e compras atrasadas",
-      "texto": "O Brasil importa cerca de 85% dos fertilizantes. Em 2026 as compras da safra 2026/27 atrasaram, e o produtor ainda descoberto pode enfrentar preço e disponibilidade piores ao acelerar as aquisições."
+      "titulo": "Oriente Médio e logística",
+      "texto": "As tensões e a disrupção de rotas ligadas ao Estreito de Ormuz afetaram ureia, amônia, enxofre e fosfatos, e ainda pesam sobre o frete e a previsibilidade das entregas."
     }
   ],
   "perspectiva": [
-    "Ureia (nitrogenados): cenário mais calmo após o recuo, mas ainda sensível a choques geopolíticos e ao gás natural — sem folga estrutural de oferta.",
-    "MAP (fosfatados): é hoje o produto mais crítico; a pressão deve persistir enquanto durarem as restrições chinesas e a escassez de enxofre, com risco de faltar produto no pico de plantio (set–out).",
-    "KCl (potássio): segmento mais equilibrado e com importação recorde; preços relativamente estáveis, embora manutenções industriais no 2º semestre possam alterar o equilíbrio.",
-    "Estratégia sugerida por analistas: evitar ficar descoberto — garantir disponibilidade de fosfatados pode importar mais que o preço; escalonar compras, priorizar KCl (mais líquido) e avaliar substitutos de fósforo como SSP/TSP.",
-    "Riscos a monitorar: prazo real da suspensão das restrições chinesas, evolução do conflito no Oriente Médio, preço do enxofre e câmbio."
+    "Ureia (nitrogenados): preços fora dos extremos e acessibilidade em recuperação desde julho; espera-se retomada gradual das compras até o fim do ano, mas atrasos podem pressionar a 2ª safra de milho (plantio em jan/2027).",
+    "MAP (fosfatados): segue o ponto mais delicado; oferta apertada e enxofre caro limitam quedas, com risco de faltar produto no pico de plantio (set–out).",
+    "KCl (potássio): segmento mais confortável e com preços entre os mais favoráveis em anos; boa janela de reposição.",
+    "Ação do governo: a Casa Civil mantém a Sala de Situação sobre Fertilizantes, e foi publicada resolução (ago/2026, validade de 6 meses) priorizando o desembarque de fertilizantes nos portos públicos para garantir o abastecimento da safra 2026/27.",
+    "Riscos a monitorar: duração do conflito e normalização do Estreito de Ormuz, ritmo real da oferta chinesa, preço do enxofre, câmbio, crédito rural apertado e clima (risco de El Niño forte)."
   ],
   "nota": "Análise de contexto com caráter informativo, revisada manualmente. As datas e cenários mudam; confirme com as fontes antes de decisões de compra.",
-  "leituraAuto": "Último fechamento (ago/26): ureia -1,3%, MAP +0,8%, KCl -1,9% ante o mês anterior.",
+  "leituraAuto": "Sem novo fechamento de fertilizantes desde a leitura anterior (ago/26).",
   "noticias": [
     {
       "data": "",
@@ -365,15 +365,15 @@ function badge12(arr){ const p=pct12(arr);
   return t+" "+(p>10?"ALTA":p>0?"leve alta":p<-10?"QUEDA":"leve queda")+" · 12m"; }
 /* KPIS-START */
 let kpis = [
-  { id:"dolar", label:"Dólar", value:"5,13", unit:"R$/US$", variation:-1, trend:"down", alert:"ok", threshold:"> R$ 5,60", spark:macro.dolar },
-  { id:"ureia", label:"Ureia FOB", value:"413", unit:"US$/t", variation:-1.3, trend:"down", alert:"ok", threshold:"> US$ 430/t", spark:fert.ureia, vs:"vs ago/26" },
-  { id:"map", label:"MAP FOB", value:"834", unit:"US$/t", variation:0.8, trend:"up", alert:"warning", threshold:"> US$ 650/t", spark:fert.map, vs:"vs ago/26" },
-  { id:"gas", label:"Gás Natural", value:"2,90", unit:"US$/MMBtu", variation:7.4, trend:"up", alert:"ok", threshold:"> US$ 3,00", spark:macro.gas },
-  { id:"bdi", label:"Frete Marítimo (BDI)", value:"3.628", unit:"pontos", variation:13.9, trend:"up", alert:"warning", threshold:"> 2.300 pts", spark:macro.bdi },
+  { id:"dolar", label:"Dólar", value:"5,13", unit:"R$/US$", variation:0, trend:"stable", alert:"ok", threshold:"> R$ 5,60", spark:macro.dolar },
+  { id:"ureia", label:"Ureia FOB", value:"413", unit:"US$/t", variation:null, trend:"stable", alert:"ok", threshold:"> US$ 430/t", spark:fert.ureia, vs:"fechamento ago/26" },
+  { id:"map", label:"MAP FOB", value:"834", unit:"US$/t", variation:null, trend:"stable", alert:"warning", threshold:"> US$ 650/t", spark:fert.map, vs:"fechamento ago/26" },
+  { id:"gas", label:"Gás Natural", value:"2,90", unit:"US$/MMBtu", variation:0, trend:"stable", alert:"ok", threshold:"> US$ 3,00", spark:macro.gas },
+  { id:"bdi", label:"Frete Marítimo (BDI)", value:"3.575", unit:"pontos", variation:-1.5, trend:"down", alert:"warning", threshold:"> 2.300 pts", spark:macro.bdi },
   { id:"diesel", label:"Diesel S10", value:"7,09", unit:"R$/L", variation:0, trend:"stable", alert:"ok", threshold:"> R$ 7,60/L", spark:macro.diesel },
-  { id:"soja", label:"Soja CEPEA (Nacional)", value:"152,10", unit:"R$/saca", variation:0.5, trend:"stable", alert:"ok", threshold:"< R$ 125,00", spark:soy.soja },
-  { id:"sojaTO", label:"Soja Oeste BA (AIBA)", value:"144,75", unit:"R$/saca", variation:1.9, trend:"up", alert:"warning", threshold:"> R$ 140,00", spark:soy.sojaTO },
-  { id:"trocaMap", label:"Troca Soja/MAP", value:"28,9", unit:"sacas/t", variation:-0.7, trend:"down", alert:"ok", threshold:"> 30 sacas/t", spark:soy.trocaMap },
+  { id:"soja", label:"Soja CEPEA (Nacional)", value:"152,10", unit:"R$/saca", variation:0, trend:"stable", alert:"ok", threshold:"< R$ 125,00", spark:soy.soja },
+  { id:"sojaTO", label:"Soja Oeste BA (AIBA)", value:"144,75", unit:"R$/saca", variation:0, trend:"stable", alert:"warning", threshold:"> R$ 140,00", spark:soy.sojaTO },
+  { id:"trocaMap", label:"Troca Soja/MAP", value:"28,9", unit:"sacas/t", variation:0, trend:"stable", alert:"ok", threshold:"> 30 sacas/t", spark:soy.trocaMap },
 ]; /* KPIS-END */
 const scenarios = [
   { name:"Otimista", cor:"success", icon:"trend-down", impacto:"Queda de 5% a 8%", premissas:["Câmbio: R$ 5,10/US$","Gás Natural: US$ 2,50/MMBtu","Frete Marítimo: -10%","Custos logísticos: -5%"] },
@@ -401,7 +401,7 @@ const alerts = [
   { indicador:"Ureia FOB", valor:"US$ 413/t", gatilho:"> US$ 430/t", status:"ok", acao:"Monitorar" },
   { indicador:"MAP FOB", valor:"US$ 834/t", gatilho:"> US$ 650/t", status:"warning", acao:"Acima do gatilho — reavaliar programação" },
   { indicador:"Gás Natural", valor:"US$ 2,90/MMBtu", gatilho:"> US$ 3,00", status:"ok", acao:"Monitorar" },
-  { indicador:"Frete Marítimo (BDI)", valor:"3.628 pts", gatilho:"> 2.300 pts", status:"warning", acao:"Elevado — encarece importação" },
+  { indicador:"Frete Marítimo (BDI)", valor:"3.575 pts", gatilho:"> 2.300 pts", status:"warning", acao:"Elevado — encarece importação" },
   { indicador:"Diesel S10", valor:"R$ 7,09/L", gatilho:"> R$ 7,60/L", status:"ok", acao:"Monitorar" },
   { indicador:"Soja CEPEA", valor:"R$ 152,10/saca", gatilho:"< R$ 125,00", status:"ok", acao:"Monitorar" },
   { indicador:"Troca Soja/MAP", valor:"28,9 sacas/t", gatilho:"> 30 sacas/t", status:"ok", acao:"Monitorar" },
