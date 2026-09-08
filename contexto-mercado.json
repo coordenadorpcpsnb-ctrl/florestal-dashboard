@@ -1,35 +1,35 @@
 {
   "_leia_me": "Análise qualitativa de contexto de mercado. NÃO é atualizada pela automação semanal — deve ser revisada manualmente (sugestão: mensalmente). Alimenta tanto o dashboard (aba Visão Geral) quanto o relatório em PDF.",
-  "atualizadoEm": "Agosto/2026",
+  "atualizadoEm": "Setembro/2026",
 
   "titulo": "Por que os fertilizantes subiram — e o que esperar",
 
-  "resumo": "O eixo da pressão mudou ao longo de 2026: a ureia recuou dos picos após o alívio das tensões no Oriente Médio, mas os fosfatados (MAP) tornaram-se o ponto crítico — caros e de oferta apertada — por causa das restrições da China e da escassez de enxofre, às vésperas da safra 2026/27.",
+  "resumo": "Em setembro o quadro é de alívio parcial, não de normalização: os preços recuaram dos picos e a China voltou a exportar, mas a oferta segue apertada — sobretudo nos fosfatados (MAP) — e o abastecimento da safra 2026/27 virou a principal preocupação, com importações atrasadas e o governo atuando na logística dos portos.",
 
   "causas": [
-    { "titulo": "Restrições da China aos fosfatados", "texto": "A China suspendeu boa parte das exportações de fosfatados para priorizar o abastecimento interno; fontes do setor estimam que de 40% a 80% dos embarques estejam bloqueados ou sob cota, e as restrições podem durar até meados do segundo semestre de 2026." },
-    { "titulo": "Escassez de enxofre", "texto": "Insumo essencial do MAP, o enxofre chegou a cerca de US$ 1.250/t; os desembarques no Brasil no 1º semestre ficaram ~42% abaixo de 2025 (StoneX), levando fábricas a reduzir produção e apertando ainda mais a oferta de fosfatados." },
-    { "titulo": "Oferta russa e de outros polos reduzida", "texto": "Menor disponibilidade da Rússia, restrições no Marrocos e paralisações pontuais de produtoras limitam a oferta global de fósforo e sustentam o MAP em patamar elevado." },
-    { "titulo": "Conflito no Oriente Médio (efeito decrescente)", "texto": "Foi o principal motor da disparada da ureia no 1º semestre. Com o avanço do acordo entre EUA e Irã, o risco arrefeceu e a ureia recuou — mas o mercado segue cauteloso a novas tensões." },
-    { "titulo": "Dependência de importação e compras atrasadas", "texto": "O Brasil importa cerca de 85% dos fertilizantes. Em 2026 as compras da safra 2026/27 atrasaram, e o produtor ainda descoberto pode enfrentar preço e disponibilidade piores ao acelerar as aquisições." }
+    { "titulo": "Fosfatados (MAP) ainda pressionados", "texto": "É o segmento mais crítico. As importações brasileiras de MAP caíram cerca de 24% no 1º semestre; a oferta chinesa, mesmo com retomada parcial, ainda é limitada, e a escassez de enxofre (matéria-prima do MAP) mantém o custo alto." },
+    { "titulo": "Escassez de enxofre", "texto": "Insumo essencial dos fosfatados, o enxofre saltou de cerca de US$ 100/t no pré-guerra para a faixa de US$ 1.200/t, levando fábricas a reduzir produção e apertando ainda mais a oferta de MAP." },
+    { "titulo": "China retomou exportações (alívio parcial)", "texto": "A volta gradual dos embarques chineses trouxe algum alívio a nitrogenados e fosfatados, mas ainda não elimina o risco de desabastecimento para a safra 2026/27." },
+    { "titulo": "Importações atrasadas e cautelosas", "texto": "No 1º semestre os desembarques totais caíram ~8,6% (ureia −32%, MAP −24%), com compradores adiando negócios diante da volatilidade e da relação de troca ruim. O tempo para garantir o abastecimento do plantio (set–out) ficou curto." },
+    { "titulo": "Oriente Médio e logística", "texto": "As tensões e a disrupção de rotas ligadas ao Estreito de Ormuz afetaram ureia, amônia, enxofre e fosfatos, e ainda pesam sobre o frete e a previsibilidade das entregas." }
   ],
 
-  "numeros": "Referências de portos no meio do ano: a ureia recuou para a faixa de US$ 410–430/t CFR após ter passado de US$ 700/t no auge; o MAP seguiu pressionado, negociado próximo de US$ 850–900/t; o KCl manteve-se relativamente estável, em torno de US$ 380–405/t (Itaú BBA / consultorias). O Ministério da Agricultura chegou a alertar para risco de déficit de 1 a 3 milhões de toneladas de fosfatados em 2026.",
+  "numeros": "No 1º semestre de 2026 as importações brasileiras das principais matérias-primas caíram ~8,6%, com ureia −32%, MAP −24% e enxofre −42% (StoneX). A ureia recuou dos picos do meio do ano, mas a relação de troca segue desfavorável — o Brasil importou cerca de 7% menos fertilizante e ainda assim o produtor gastou mais. A RaboResearch reduziu a projeção de entregas no país para ~45,1 milhões de toneladas em 2026, abaixo do recorde de 2025.",
 
   "perspectiva": [
-    "Ureia (nitrogenados): cenário mais calmo após o recuo, mas ainda sensível a choques geopolíticos e ao gás natural — sem folga estrutural de oferta.",
-    "MAP (fosfatados): é hoje o produto mais crítico; a pressão deve persistir enquanto durarem as restrições chinesas e a escassez de enxofre, com risco de faltar produto no pico de plantio (set–out).",
-    "KCl (potássio): segmento mais equilibrado e com importação recorde; preços relativamente estáveis, embora manutenções industriais no 2º semestre possam alterar o equilíbrio.",
-    "Estratégia sugerida por analistas: evitar ficar descoberto — garantir disponibilidade de fosfatados pode importar mais que o preço; escalonar compras, priorizar KCl (mais líquido) e avaliar substitutos de fósforo como SSP/TSP.",
-    "Riscos a monitorar: prazo real da suspensão das restrições chinesas, evolução do conflito no Oriente Médio, preço do enxofre e câmbio."
+    "Ureia (nitrogenados): preços fora dos extremos e acessibilidade em recuperação desde julho; espera-se retomada gradual das compras até o fim do ano, mas atrasos podem pressionar a 2ª safra de milho (plantio em jan/2027).",
+    "MAP (fosfatados): segue o ponto mais delicado; oferta apertada e enxofre caro limitam quedas, com risco de faltar produto no pico de plantio (set–out).",
+    "KCl (potássio): segmento mais confortável e com preços entre os mais favoráveis em anos; boa janela de reposição.",
+    "Ação do governo: a Casa Civil mantém a Sala de Situação sobre Fertilizantes, e foi publicada resolução (ago/2026, validade de 6 meses) priorizando o desembarque de fertilizantes nos portos públicos para garantir o abastecimento da safra 2026/27.",
+    "Riscos a monitorar: duração do conflito e normalização do Estreito de Ormuz, ritmo real da oferta chinesa, preço do enxofre, câmbio, crédito rural apertado e clima (risco de El Niño forte)."
   ],
 
   "fontes": [
-    { "nome": "Itaú BBA (Agro Mensal), via NN Online — ureia recua; MAP ~US$ 900/t; enxofre ~US$ 1.250/t; KCl ~US$ 405/t", "data": "jun/2026" },
-    { "nome": "StoneX, via Minuto MT / AF News — enxofre -42% no 1º semestre e risco de abastecimento de fosfatados", "data": "jul/2026" },
-    { "nome": "CNA — restrições chinesas ao MAP e queda de 13,7% na importação (jan–ago)", "data": "2026" },
-    { "nome": "Spazio Agro — China pode manter restrições até o 2º semestre; alerta do MAPA de déficit de 1–3 Mt", "data": "abr/2026" },
-    { "nome": "Conecta Agro — ureia teve a maior disparada percentual de 2026, com correção posterior", "data": "ago/2026" }
+    { "nome": "RaboResearch, via AF News — entregas revisadas para ~45,1 Mt; China retoma exportações (alívio parcial); MAP −24% no 1º sem.", "data": "set/2026" },
+    { "nome": "nx1 — Brasil importa ~7% menos fertilizante, mas produtor gasta ~7% mais; quedas são 1º sinal de alívio, não fim da crise", "data": "set/2026" },
+    { "nome": "AF News — governo prioriza desembarque de fertilizantes nos portos (resolução no DOU, 6 meses); Sala de Situação/Casa Civil", "data": "ago/2026" },
+    { "nome": "StoneX, via Minuto MT — importações −8,6% no 1º sem. (ureia −32%, enxofre −42%); prazo curto para abastecer a safra", "data": "jul/2026" },
+    { "nome": "AgFeed — Sala de Situação e pleito de subsídio ao enxofre (de US$ 100 para ~US$ 1,2 mil/t)", "data": "jul/2026" }
   ],
 
   "nota": "Análise de contexto com caráter informativo, revisada manualmente. As datas e cenários mudam; confirme com as fontes antes de decisões de compra."
