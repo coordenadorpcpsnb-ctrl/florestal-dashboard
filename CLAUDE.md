@@ -9,7 +9,7 @@ destes pontos.
 Dashboard de Inteligência de Mercado de Insumos Florestais, para a equipe de
 Planejamento, Controle e Pesquisa Florestal (PCP) da Sinobras Florestal. Roda
 sozinho toda terça-feira via GitHub Actions: busca preços de câmbio, fertilizantes,
-soja, gás, frete e diesel; atualiza um dashboard HTML estático; gera um relatório
+soja, gás e frete; atualiza um dashboard HTML estático; gera um relatório
 executivo em PDF; publica no GitHub Pages; envia por e-mail.
 
 **Toda comunicação e todo texto voltado ao usuário (commits, comentários, UI) é em
@@ -37,7 +37,7 @@ fetch-data.mjs → patch-dashboard.mjs → build-report.mjs → build-email.mjs
 
 | Arquivo | Função |
 |---|---|
-| `fetch-data.mjs` | Orquestra a busca de câmbio, soja, diesel, BDI, chama `fetch-fertilizers.mjs` e `fetch-noticias.mjs`, grava `data.json` |
+| `fetch-data.mjs` | Orquestra a busca de câmbio, soja, BDI, chama `fetch-fertilizers.mjs` e `fetch-noticias.mjs`, grava `data.json` |
 | `fetch-fertilizers.mjs` | Ureia/MAP/KCl via ComexStat + gás via EIA/stooq |
 | `fetch-noticias.mjs` | Notícias recentes de fertilizantes (Notícias Agrícolas) |
 | `patch-dashboard.mjs` | Reescreve os blocos marcados do `dashboard.html` a partir de `data.json` e `contexto-mercado.json` |
@@ -60,12 +60,12 @@ O `dashboard.html` tem blocos delimitados por comentários que o patch reescreve
 | Gás natural | EIA Henry Hub (precisa de `EIA_API_KEY`) | stooq | Sim |
 | BDI (frete) | HANDYBULK | stooq | Sim |
 | Ureia/MAP/KCl FOB | ComexStat (API oficial MDIC) | — | Sim |
-| Diesel S10 | — | manual (`fertilizers-override.json`) | **Não** |
+| Diesel S10 | — | removido do sistema | — |
 | Glifosato | — | removido do sistema | — |
 
 `fertilizers-override.json` é rede de segurança: só entra em jogo se a busca
 automática falhar, exceto quando `forceManual: true`. O array `fontesManuais`
-(hoje só `["diesel"]`) suprime o alerta semanal para fontes sabidamente manuais.
+(hoje vazio) suprime o alerta semanal para fontes sabidamente manuais.
 
 ## Armadilhas conhecidas (leia antes de "consertar" algo)
 
@@ -93,10 +93,10 @@ automática falhar, exceto quando `forceManual: true`. O array `fontesManuais`
   esperado. Validar a lógica com respostas HTTP simuladas (mocks), não assumindo
   que "sem internet = quebrado".
 - **`check-status.mjs` tem rótulos desatualizados**: os nomes exibidos ainda
-  dizem "AwesomeAPI", "ANP" e "stooq" para câmbio, diesel e BDI — mas as fontes
-  reais hoje são BCB PTAX, Petrobras/manual e HANDYBULK. Os *dados* buscados
-  estão corretos; só os textos de rótulo (`FONTES` no topo do arquivo) ficaram
-  para trás. Vale corrigir quando mexer nesse arquivo por outro motivo.
+  dizem "AwesomeAPI" e "stooq" para câmbio e BDI — mas as fontes reais hoje são
+  BCB PTAX e HANDYBULK. Os *dados* buscados estão corretos; só os textos de
+  rótulo (`FONTES` no topo do arquivo) ficaram para trás. Vale corrigir quando
+  mexer nesse arquivo por outro motivo.
 
 ## Como validar antes de entregar qualquer mudança
 
@@ -104,7 +104,7 @@ Nesta ordem, sempre:
 
 1. `node --check arquivo.mjs` em todo `.mjs` tocado (sintaxe)
 2. Se mexeu em `dashboard.html`: teste de renderização com jsdom — carregar a
-   página, trocar entre as 8 abas, contar KPIs/canvases/cards esperados, e
+   página, trocar entre as 7 abas, contar KPIs/canvases/cards esperados, e
    verificar que não sobrou nenhum `${...}` sem interpolar
 3. `npm ci && node run-weekly.mjs` — a esteira completa tem que terminar com
    exit 0

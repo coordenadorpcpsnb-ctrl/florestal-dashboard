@@ -61,13 +61,12 @@ const macroTable=new Table({width:{size:W,type:WidthType.DXA},columnWidths:[3400
   new TableRow({children:[td("Dólar (R$/US$)",3400),td(brl(c.dolar),1980,AlignmentType.RIGHT),td([v(pct(delta.dolar),colorOf(delta.dolar))],1980,AlignmentType.RIGHT),td([new TextRun({text:"Custo de importação",size:17})],2000)]}),
   new TableRow({children:[td("Gás Natural (Henry Hub)",3400),td(`US$ ${brl(c.gas)}`,1980,AlignmentType.RIGHT),td([v(pct(delta.gas),colorOf(delta.gas))],1980,AlignmentType.RIGHT),td([new TextRun({text:"Pressiona ureia",size:17})],2000)]}),
   new TableRow({children:[td("Frete Marítimo (BDI)",3400),td(`${int(c.bdi)} pts`,1980,AlignmentType.RIGHT),td([v(pct(delta.bdi),colorOf(delta.bdi))],1980,AlignmentType.RIGHT),td([new TextRun({text:"Custo de importação",size:17})],2000)]}),
-  new TableRow({children:[td("Diesel S10 (ANP)",3400),td(`R$ ${brl(c.diesel)}/L`,1980,AlignmentType.RIGHT),td([v(pct(delta.diesel),colorOf(delta.diesel))],1980,AlignmentType.RIGHT),td([new TextRun({text:"Frete interno",size:17})],2000)]}),
 ]});
 
 // Causas heurísticas (a partir dos deltas — sem inventar notícias)
 const movers=[
   {n:"Ureia",x:delta.ureia},{n:"MAP",x:delta.map},{n:"KCl",x:delta.kcl},
-  {n:"Dólar",x:delta.dolar},{n:"Gás Natural",x:delta.gas},{n:"BDI",x:delta.bdi},{n:"Diesel",x:delta.diesel},
+  {n:"Dólar",x:delta.dolar},{n:"Gás Natural",x:delta.gas},{n:"BDI",x:delta.bdi},
 ].filter(m=>m.x!=null&&Math.abs(m.x)>=0.5).sort((a,b)=>Math.abs(b.x)-Math.abs(a.x)).slice(0,4);
 const causasBullets = movers.length
   ? movers.map(m=>bullet([new TextRun({text:`${m.n}: `,bold:true,size:18}),new TextRun({text:`${m.x>0?"alta":"queda"} de ${pct(m.x)} no período.`,size:18})]))
@@ -124,7 +123,7 @@ const doc=new Document({
       ] : []),
       new Paragraph({spacing:{before:60,after:40},children:[new TextRun({text:"Observação: as causas qualitativas (notícias, geopolítica, safra) devem ser revisadas manualmente — este resumo é gerado a partir das variações numéricas.",italics:true,size:15,color:MUTE})]}),
       h2("7. Fontes e Notas Metodológicas"),
-      new Paragraph({spacing:{after:40},children:[new TextRun({text:`Fontes automáticas: AwesomeAPI (câmbio), CEPEA/ESALQ (soja), ANP (diesel), stooq (BDI). Fertilizantes e gás natural: override manual (fertilizers-override.json). Status desta execução: ${JSON.stringify(d.status)}.`,size:15,color:MUTE})]}),
+      new Paragraph({spacing:{after:40},children:[new TextRun({text:`Fontes automáticas: AwesomeAPI (câmbio), CEPEA/ESALQ (soja), stooq (BDI). Fertilizantes e gás natural: override manual (fertilizers-override.json). Status desta execução: ${JSON.stringify(d.status)}.`,size:15,color:MUTE})]}),
       new Paragraph({children:[new TextRun({text:"Notas: preços FOB de fertilizantes usam benchmark de importação (COMEX) e dependem de atualização manual periódica. Variações são calculadas frente à leitura anterior registrada. Relações de troca são derivadas (preço FOB em R$ ÷ preço da soja) e têm caráter indicativo.",size:15,color:MUTE})]}),
     ],
   }],

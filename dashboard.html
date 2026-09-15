@@ -272,7 +272,6 @@ const fert = {
 const macro = {
   dolar:[5.10,5.15,5.20,5.25,5.30,5.32,5.35,5.40,5.42,5.40,5.38,5.40,5.42,5.44,5.45,5.46,5.46,5.45,5.46,5.46,5.45,5.46,5.46,5.46,5.46,5.19,5.19,5.19,5.18],
   gas:[2.2,2.3,2.35,2.4,2.45,2.5,2.55,2.6,2.65,2.7,2.72,2.75,2.78,2.8,2.8,2.82,2.83,2.83,2.84,2.84,2.85,2.85,2.85,2.85,2.85,3.10,3.1,3.1,2.7],
-  diesel:[6.10,6.15,6.20,6.25,6.30,6.40,6.50,6.60,6.70,6.80,6.90,7.00,7.10,7.15,7.20,7.25,7.30,7.32,7.35,7.38,7.40,7.41,7.42,7.43,7.43,7.26,7.09,7.09,7.09],
   bdi:[1850,1920,1980,2010,2050,2080,2100,2120,2150,2160,2170,2180,2190,2200,2210,2215,2220,2225,2230,2235,2238,2240,2242,2242,2242,2667,2670,2670,3186],
 };
 const soy = {
@@ -290,7 +289,7 @@ soy.sojaTO = soy.soja.map(v => Math.round(v*0.957*100)/100);
 const LIVE = {
   refMes:"Setembro 2026", refFert:"ago/26", fertFechado:false,
   dolar:"5,09", ureia:"413", map:"834", kcl:"352", gas:"2,81",
-  bdi:"3.507", diesel:"7,09", soja:"152,82", sojaTO:"149,00",
+  bdi:"3.507", soja:"152,82", sojaTO:"149,00",
   trocaMap:"28,6", trocaUreia:"14,4", spread:"3,82",
 };
 /* LIVE-END */
@@ -370,7 +369,6 @@ let kpis = [
   { id:"map", label:"MAP FOB", value:"834", unit:"US$/t", variation:null, trend:"stable", alert:"warning", threshold:"> US$ 650/t", spark:fert.map, vs:"fechamento ago/26" },
   { id:"gas", label:"Gás Natural", value:"2,81", unit:"US$/MMBtu", variation:-3.1, trend:"down", alert:"ok", threshold:"> US$ 3,00", spark:macro.gas },
   { id:"bdi", label:"Frete Marítimo (BDI)", value:"3.507", unit:"pontos", variation:-1.9, trend:"down", alert:"warning", threshold:"> 2.300 pts", spark:macro.bdi },
-  { id:"diesel", label:"Diesel S10", value:"7,09", unit:"R$/L", variation:0, trend:"stable", alert:"ok", threshold:"> R$ 7,60/L", spark:macro.diesel },
   { id:"soja", label:"Soja CEPEA (Nacional)", value:"152,82", unit:"R$/saca", variation:0.5, trend:"stable", alert:"ok", threshold:"< R$ 125,00", spark:soy.soja },
   { id:"sojaTO", label:"Soja Oeste BA (AIBA)", value:"149,00", unit:"R$/saca", variation:2.9, trend:"up", alert:"warning", threshold:"> R$ 140,00", spark:soy.sojaTO },
   { id:"trocaMap", label:"Troca Soja/MAP", value:"28,6", unit:"sacas/t", variation:-1, trend:"down", alert:"ok", threshold:"> 30 sacas/t", spark:soy.trocaMap },
@@ -388,12 +386,7 @@ const scnRecs = [
 const sensitivity = [
   { variavel:"Câmbio (R$/US$)", impacto:0.85, cor:"bordeaux" },{ variavel:"Preço FOB Ureia", impacto:0.78, cor:"bordeaux" },
   { variavel:"Gás Natural", impacto:0.42, cor:"amber" },{ variavel:"Frete Marítimo", impacto:0.18, cor:"emerald" },
-  { variavel:"Diesel (Logística)", impacto:0.12, cor:"emerald" },{ variavel:"Pedágios", impacto:0.03, cor:"emerald" },
-];
-const route = { origem:"Santos (SP)", destino:"São Bento do Tocantins (TO)", distancia:2150, pisoAntt:12285.99, freteMercado:15971.78, custoDiesel:8874.72, pedagio:850, margem:5100, custoTon:499.12, custoKm:7.43 };
-const seasonal = [
-  {mes:"Jan",i:95},{mes:"Fev",i:110},{mes:"Mar",i:122},{mes:"Abr",i:118},{mes:"Mai",i:112},{mes:"Jun",i:102},
-  {mes:"Jul",i:95},{mes:"Ago",i:92},{mes:"Set",i:90},{mes:"Out",i:96},{mes:"Nov",i:100},{mes:"Dez",i:98},
+  { variavel:"Pedágios", impacto:0.03, cor:"emerald" },
 ];
 /* ALERTS-START */
 const alerts = [
@@ -402,7 +395,6 @@ const alerts = [
   { indicador:"MAP FOB", valor:"US$ 834/t", gatilho:"> US$ 650/t", status:"warning", acao:"Acima do gatilho — reavaliar programação" },
   { indicador:"Gás Natural", valor:"US$ 2,81/MMBtu", gatilho:"> US$ 3,00", status:"ok", acao:"Monitorar" },
   { indicador:"Frete Marítimo (BDI)", valor:"3.507 pts", gatilho:"> 2.300 pts", status:"warning", acao:"Elevado — encarece importação" },
-  { indicador:"Diesel S10", valor:"R$ 7,09/L", gatilho:"> R$ 7,60/L", status:"ok", acao:"Monitorar" },
   { indicador:"Soja CEPEA", valor:"R$ 152,82/saca", gatilho:"< R$ 125,00", status:"ok", acao:"Monitorar" },
   { indicador:"Troca Soja/MAP", valor:"28,6 sacas/t", gatilho:"> 30 sacas/t", status:"ok", acao:"Monitorar" },
 ]; /* ALERTS-END */
@@ -420,7 +412,6 @@ const checklist = [
   "Preços de fertilizantes cruzados entre Farmnews, Argus Media e ComexStat",
   "Indicador de soja extraído diretamente do CEPEA/ESALQ (Paranaguá)",
   "Tabela de Frete ANTT 2026 conforme Resolução vigente",
-  "Preço do Diesel S10 da ANP (média semanal)",
   "Calendário de safras CONAB para projeção de demanda",
 ];
 
@@ -431,7 +422,6 @@ const ICONS = {
   overview:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
   fertilizers:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6.5L5.2 18A2 2 0 0 0 7 21h10a2 2 0 0 0 1.8-3L14 9.5V3"/><path d="M7.5 15h9"/></svg>',
   agro:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 20h10M12 20v-9"/><path d="M12 11C12 7 9 5 5 5c0 4 3 6 7 6Z"/><path d="M12 11c0-3 3-5 7-5 0 3-3 5-7 5Z"/></svg>',
-  logistics:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5h11v11H2zM13 8h4l4 4v4h-6"/><circle cx="6" cy="18" r="1.6"/><circle cx="17.5" cy="18" r="1.6"/></svg>',
   model:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 10h2M14 10h2M8 14h2M14 14h2M8 18h2M14 18h2"/></svg>',
   scenarios:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M6 8.5v7M6 6h9a3 3 0 0 1 3 3v3"/><path d="m15 9 3 3 3-3"/></svg>',
   alerts:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>',
@@ -454,7 +444,6 @@ const SECTIONS = [
   { id:"overview",   title:"Visão Geral",     sub:"Inteligência de mercado: insumos florestais e agronegócio" },
   { id:"fertilizers",title:"Fertilizantes",   sub:"Análise de preços FOB e tendências dos principais nutrientes" },
   { id:"agro",       title:"Agronegócio",     sub:"Influência da soja na demanda e logística de fertilizantes" },
-  { id:"logistics",  title:"Logística",       sub:"Custos e sazonalidade da rota Santos → São Bento do Tocantins" },
   { id:"model",      title:"Modelo Econômico",sub:"Decomposição do preço final e análise de sensibilidade" },
   { id:"scenarios",  title:"Cenários",        sub:"Projeções quantitativas para o 2º semestre de 2026" },
   { id:"alerts",     title:"Gatilhos",        sub:"Sistema de monitoramento contínuo com alertas automáticos" },
@@ -492,7 +481,7 @@ function colByName(n){ return C[n]||C.navy2; }
 /* ---------- VISÃO GERAL ---------- */
 function viewOverview() {
   const troca = kpis.find(k=>k.id==="trocaMap").value;
-  return `<div class="exec"><div class="eyebrow">Resumo Executivo · ${LIVE.refMes}</div><h2>Panorama consolidado de insumos, câmbio e logística — leitura mais recente de cada indicador.</h2><p>Fertilizantes (FOB, fechamento ${LIVE.refFert}): Ureia <b>US$ ${LIVE.ureia}/t</b>, MAP <b>US$ ${LIVE.map}/t</b> e KCl <b>US$ ${LIVE.kcl}/t</b>. Câmbio em <b>R$ ${LIVE.dolar}</b> e soja CEPEA em <b>R$ ${LIVE.soja}/saca</b>, resultando em relação de troca soja/MAP de <b>${LIVE.trocaMap} sacas/t</b>. Gás natural a <b>US$ ${LIVE.gas}/MMBtu</b>, frete marítimo (BDI) em <b>${LIVE.bdi} pts</b> e diesel a <b>R$ ${LIVE.diesel}/L</b>.</p></div>
+  return `<div class="exec"><div class="eyebrow">Resumo Executivo · ${LIVE.refMes}</div><h2>Panorama consolidado de insumos, câmbio e logística — leitura mais recente de cada indicador.</h2><p>Fertilizantes (FOB, fechamento ${LIVE.refFert}): Ureia <b>US$ ${LIVE.ureia}/t</b>, MAP <b>US$ ${LIVE.map}/t</b> e KCl <b>US$ ${LIVE.kcl}/t</b>. Câmbio em <b>R$ ${LIVE.dolar}</b> e soja CEPEA em <b>R$ ${LIVE.soja}/saca</b>, resultando em relação de troca soja/MAP de <b>${LIVE.trocaMap} sacas/t</b>. Gás natural a <b>US$ ${LIVE.gas}/MMBtu</b> e frete marítimo (BDI) em <b>${LIVE.bdi} pts</b>.</p></div>
   <div class="kpi-grid">${kpis.map(kpiCardHTML).join("")}</div>
   <div class="grid-2"><div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Preços de Fertilizantes (FOB)</div><div class="panel-sub">US$/t · série mensal</div></div><span class="panel-badge">Tendência</span></div><div class="chart-box sm"><canvas id="ovFert"></canvas></div></div>
   <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Câmbio R$/US$ vs Soja CEPEA</div><div class="panel-sub">Correlação macro · série mensal</div></div><span class="panel-badge">Volatilidade</span></div><div class="chart-box sm"><canvas id="ovMacro"></canvas></div></div></div>
@@ -562,33 +551,6 @@ function renderAgroCharts() {
   const o=baseOpts(); o.scales={ x:o.scales.x, y:{position:"left",grid:{color:C.border},ticks:{color:C.emerald,font:{size:9.5}}}, y1:{position:"right",grid:{display:false},ticks:{color:C.navy2,font:{size:9.5}}} };
   line("agDiv", [Object.assign(ds("Soja R$/saca",soy.soja,C.emerald,true),{yAxisID:"y"}), Object.assign(ds("MAP US$/t",fert.map,C.navy2),{yAxisID:"y1"}), Object.assign(ds("Ureia US$/t",fert.ureia,C.bordeaux),{yAxisID:"y1"})], o);
   line("agTroca", [ds("Soja/MAP",soy.trocaMap,C.navy2), ds("Soja/Ureia",soy.trocaUreia,C.bordeaux)]);
-}
-
-/* ---------- LOGÍSTICA ---------- */
-function viewLogistics() {
-  const f=(n)=>n.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
-  const f0=(n)=>n.toLocaleString("pt-BR",{maximumFractionDigits:0});
-  return `<div class="analysis"><div class="eyebrow">Análise Logística · Rota Crítica</div><h3>${MICRO.pin} Santos (SP) → São Bento do Tocantins (TO)</h3><p>Rota com <b>2.150 km</b>, cruzando 4 estados (SP, MG, GO, TO). Custo atual de <b>R$ 499,12/t</b> ou <b>R$ 7,43/km</b>. Fortemente impactada pela sazonalidade da soja no MATOPIBA.</p></div>
-  <div class="stat-row">
-    <div class="stat"><div class="lbl">${MICRO.ruler} Distância</div><div class="val tnum">2.150 km</div><div class="sub">Santos → S. B. Tocantins</div></div>
-    <div class="stat"><div class="lbl">${MICRO.cash} Piso ANTT</div><div class="val tnum">R$ ${f0(route.pisoAntt)}</div><div class="sub">por viagem · 33t</div></div>
-    <div class="stat"><div class="lbl">${MICRO.truck} Frete Mercado</div><div class="val tnum">R$ ${f0(route.freteMercado)}</div><div class="sub">+30% sobre piso</div></div>
-    <div class="stat"><div class="lbl">${MICRO.cash} Custo/t</div><div class="val tnum">R$ ${f(route.custoTon)}</div><div class="sub">R$ 7,43/km</div></div>
-  </div>
-  <div class="grid-2"><div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Composição do Custo de Frete</div><div class="panel-sub">R$ por viagem (33t)</div></div><span class="panel-badge">MAI/2026</span></div><div class="chart-box sm"><canvas id="lgCost"></canvas></div></div>
-  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Índice Sazonal de Frete</div><div class="panel-sub">Base 100 = média anual · MATOPIBA</div></div><span class="panel-badge">PICO EM MAR</span></div><div class="chart-box sm"><canvas id="lgSeason"></canvas></div></div></div>
-  <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Diesel S10 — Evolução do Preço</div><div class="panel-sub">R$/L · 25 meses · ANP</div></div></div><div class="chart-box sm"><canvas id="lgDiesel"></canvas></div></div>`;
-}
-function renderLogisticsCharts() {
-  const cctx=document.getElementById("lgCost");
-  if(cctx) charts["lgCost"]=new Chart(cctx,{ type:"bar",
-    data:{ labels:["Diesel (combustível)","Piso ANTT","Pedágio","Margem (mercado)"], datasets:[{ data:[route.custoDiesel,route.pisoAntt,route.pedagio,route.margem], backgroundColor:[C.navy2,C.emerald,C.amber,C.bordeaux], borderRadius:4 }] },
-    options:Object.assign(baseOpts(),{ indexAxis:"y", plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>"R$ "+c.parsed.x.toLocaleString("pt-BR",{minimumFractionDigits:2})}}} }) });
-  const sctx=document.getElementById("lgSeason");
-  if(sctx) charts["lgSeason"]=new Chart(sctx,{ type:"bar",
-    data:{ labels:seasonal.map(s=>s.mes), datasets:[{ data:seasonal.map(s=>s.i), backgroundColor:seasonal.map(s=>s.i>=115?C.bordeaux:s.i>=105?C.amber:C.emerald), borderRadius:4 }] },
-    options:Object.assign(baseOpts(),{ plugins:{legend:{display:false}}, scales:{x:baseOpts().scales.x, y:Object.assign(baseOpts().scales.y,{min:80,max:130})} }) });
-  line("lgDiesel", [ds("Diesel S10",macro.diesel,C.navy2,true)]);
 }
 
 /* ---------- MODELO ECONÔMICO ---------- */
@@ -672,14 +634,13 @@ function viewReferences() {
   ${references.map(r=>`<li class="refitem"><div class="refnum tnum">${r.id}</div><div class="refbody"><span class="refsrc">${r.fonte}</span><span class="refdate">${r.data}</span><div class="reftitle">${r.titulo}</div><div class="refurl">${r.url}</div></div><a href="${r.url}" target="_blank" rel="noopener" style="align-self:center;width:15px;height:15px;color:var(--muted)">${MICRO.ext}</a></li>`).join("")}
   </ul></div>
   <div class="panel nomb"><div class="panel-head"><div><div class="panel-title">Checklist de Verificação</div></div></div><ul class="checklist">${checklist.map(c=>`<li>${c}</li>`).join("")}</ul></div>
-  <div class="callout"><div class="ct">${MICRO.alert} Limites e Incertezas</div><p>Algumas séries de preços para os meses mais antigos (Mai–Ago/2024) são estimativas interpoladas a partir de relatórios mensais consolidados. O modelo econômico simplificado não captura efeitos de segunda ordem como expectativas de mercado e arbitragem entre regiões. Os gatilhos propostos são <b>recomendações iniciais</b> e devem ser calibrados conforme histórico interno de operação. <b>Atualização de 24/jun/2026:</b> dólar, soja CEPEA, gás natural (Henry Hub), BDI e diesel foram atualizados com dados de jun/2026. Os preços FOB de fertilizantes refletem o último mês fechado verificável na COMEX (ureia e KCl: mar/26; MAP: jan/26) e usam benchmark de importação, distinto da referência original do relatório — por isso há um degrau no fim da série.</p></div>`;
+  <div class="callout"><div class="ct">${MICRO.alert} Limites e Incertezas</div><p>Algumas séries de preços para os meses mais antigos (Mai–Ago/2024) são estimativas interpoladas a partir de relatórios mensais consolidados. O modelo econômico simplificado não captura efeitos de segunda ordem como expectativas de mercado e arbitragem entre regiões. Os gatilhos propostos são <b>recomendações iniciais</b> e devem ser calibrados conforme histórico interno de operação. <b>Atualização de 24/jun/2026:</b> dólar, soja CEPEA, gás natural (Henry Hub) e BDI foram atualizados com dados de jun/2026. Os preços FOB de fertilizantes refletem o último mês fechado verificável na COMEX (ureia e KCl: mar/26; MAP: jan/26) e usam benchmark de importação, distinto da referência original do relatório — por isso há um degrau no fim da série.</p></div>`;
 }
 
 const BUILDERS = {
   overview:{ html:viewOverview, charts:renderOverviewCharts },
   fertilizers:{ html:viewFertilizers, charts:renderFertilizersCharts },
   agro:{ html:viewAgro, charts:renderAgroCharts },
-  logistics:{ html:viewLogistics, charts:renderLogisticsCharts },
   model:{ html:viewModel, charts:renderModelCharts },
   scenarios:{ html:viewScenarios, charts:function(){} },
   alerts:{ html:viewAlerts, charts:function(){} },
