@@ -9,7 +9,6 @@
     "kcl": 352.1,
     "gas": 2.81,
     "bdi": 3507,
-    "diesel": 7.09,
     "soja": 152.82,
     "sojaTO": 149
   },
@@ -20,7 +19,6 @@
     "kcl": 352.1,
     "gas": 2.9,
     "bdi": 3575,
-    "diesel": 7.09,
     "soja": 152.1,
     "sojaTO": 144.75
   },
@@ -31,7 +29,6 @@
     "kcl": null,
     "gas": -3.1,
     "bdi": -1.9,
-    "diesel": 0,
     "soja": 0.5,
     "sojaTO": 2.9,
     "trocaMap": -1
@@ -45,7 +42,6 @@
     "bdi": "ok (HANDYBULK, 11/09/2026)",
     "soja": "ok (Noticias Agricolas / CEPEA-PR 11/09/2026)",
     "cambio": "ok (BCB PTAX)",
-    "diesel": "falha: Petrobras: HTTP 403 | PortalCanaa: HTTP 403",
     "_comexRetry": "aguardando 15s apos 429 (com-filtro-ncm 2026-08, tentativa 2)",
     "_comexPeriodo": "com-filtro-ncm | 2026-08 | 4 linhas",
     "_comexNcmsEncontrados": "31042090,31021010,31054000,31042010",

@@ -49,7 +49,6 @@ const aUreia  = c.ureia > 470 ? "critical" : c.ureia > 430 ? "warning" : "ok";
 const aMap    = c.map > 650 ? "warning" : "ok";
 const aGas    = c.gas > 3.0 ? "warning" : "ok";
 const aBdi    = c.bdi > 2300 ? "warning" : "ok";
-const aDiesel = c.diesel > 7.60 ? "warning" : "ok";
 const aDolar  = c.dolar > 5.80 ? "critical" : c.dolar > 5.60 ? "warning" : "ok";
 const aSoja   = c.soja < 125 ? "warning" : "ok";
 const aSojaTO = c.sojaTO > 140 ? "warning" : "ok";
@@ -62,7 +61,6 @@ const kpisBlock = [
   kpiLine("map","MAP FOB", int(c.map), "US$/t", delta.map, aMap, "> US$ 650/t", "fert.map", vsFert("map")),
   kpiLine("gas","Gás Natural", brl(c.gas), "US$/MMBtu", delta.gas ?? 0, aGas, "> US$ 3,00", "macro.gas"),
   kpiLine("bdi","Frete Marítimo (BDI)", int(c.bdi), "pontos", delta.bdi ?? 0, aBdi, "> 2.300 pts", "macro.bdi"),
-  kpiLine("diesel","Diesel S10", brl(c.diesel), "R$/L", delta.diesel ?? 0, aDiesel, "> R$ 7,60/L", "macro.diesel"),
   kpiLine("soja","Soja CEPEA (Nacional)", brl(c.soja), "R$/saca", delta.soja ?? 0, aSoja, "< R$ 125,00", "soy.soja"),
   kpiLine("sojaTO","Soja Oeste BA (AIBA)", brl(c.sojaTO), "R$/saca", delta.sojaTO ?? 0, aSojaTO, "> R$ 140,00", "soy.sojaTO"),
   kpiLine("trocaMap","Troca Soja/MAP", brl(troca.map, 1), "sacas/t", delta.trocaMap ?? 0, aTroca, "> 30 sacas/t", "soy.trocaMap"),
@@ -87,7 +85,7 @@ const spread = (c.soja != null && c.sojaTO != null) ? brl(c.soja - c.sojaTO) : "
 const liveBlock = `const LIVE = {
   refMes:"${refMes}", refFert:"${refFert}", fertFechado:${delta.ureia != null},
   dolar:"${brl(c.dolar)}", ureia:"${int(c.ureia)}", map:"${int(c.map)}", kcl:"${int(c.kcl)}", gas:"${brl(c.gas)}",
-  bdi:"${int(c.bdi)}", diesel:"${brl(c.diesel)}", soja:"${brl(c.soja)}", sojaTO:"${brl(c.sojaTO)}",
+  bdi:"${int(c.bdi)}", soja:"${brl(c.soja)}", sojaTO:"${brl(c.sojaTO)}",
   trocaMap:"${brl(troca.map, 1)}", trocaUreia:"${brl(troca.ureia, 1)}", spread:"${spread}",
 };`;
 
@@ -147,7 +145,6 @@ const alertsBlock = `const alerts = [
   { indicador:"MAP FOB", valor:"US$ ${int(c.map)}/t", gatilho:"> US$ 650/t", status:"${st(aMap)}", acao:"${aMap === "ok" ? "Monitorar" : "Acima do gatilho — reavaliar programação"}" },
   { indicador:"Gás Natural", valor:"US$ ${brl(c.gas)}/MMBtu", gatilho:"> US$ 3,00", status:"${st(aGas)}", acao:"${aGas === "ok" ? "Monitorar" : "Pressão sobre nitrogenados"}" },
   { indicador:"Frete Marítimo (BDI)", valor:"${int(c.bdi)} pts", gatilho:"> 2.300 pts", status:"${st(aBdi)}", acao:"${aBdi === "ok" ? "Monitorar" : "Elevado — encarece importação"}" },
-  { indicador:"Diesel S10", valor:"R$ ${brl(c.diesel)}/L", gatilho:"> R$ 7,60/L", status:"${st(aDiesel)}", acao:"${aDiesel === "ok" ? "Monitorar" : "Pressiona frete rodoviário"}" },
   { indicador:"Soja CEPEA", valor:"R$ ${brl(c.soja)}/saca", gatilho:"< R$ 125,00", status:"${st(aSoja)}", acao:"${aSoja === "ok" ? "Monitorar" : "Queda pode atrasar compras do agro"}" },
   { indicador:"Troca Soja/MAP", valor:"${brl(troca.map, 1)} sacas/t", gatilho:"> 30 sacas/t", status:"${st(aTroca)}", acao:"${aTroca === "ok" ? "Monitorar" : "Risco de demanda concentrada no 2º sem."}" },
 ]`;
@@ -177,7 +174,7 @@ if (mMonths) {
     };
     html = html.replace(/const MONTHS = \[([^\]]*)\];/, `const MONTHS = [$1,"${rotuloMes}"];`);
     push("ureia", c.ureia); push("map", c.map); push("kcl", c.kcl);
-    push("dolar", c.dolar); push("gas", c.gas); push("diesel", c.diesel); push("bdi", c.bdi);
+    push("dolar", c.dolar); push("gas", c.gas); push("bdi", c.bdi);
     push("soja", c.soja); push("trocaMap", troca.map); push("trocaUreia", troca.ureia);
     console.log(`[patch] série histórica estendida com ${rotuloMes}.`);
   } else {

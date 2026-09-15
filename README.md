@@ -2,7 +2,7 @@
 
 Automação que roda **toda segunda-feira às 07:00 (horário de Brasília)** no GitHub Actions:
 
-1. **Busca** os indicadores macro (câmbio, soja, diesel, BDI)
+1. **Busca** os indicadores macro (câmbio, soja, BDI)
 2. **Atualiza** os KPIs do `dashboard.html`
 3. **Gera** o `relatorio_executivo.docx` + `.pdf`
 4. **Commita** os arquivos atualizados no repositório
@@ -150,7 +150,6 @@ Quase tudo é buscado automaticamente. A tabela abaixo mostra a origem de cada i
 |---|---|---|
 | Dólar | AwesomeAPI | tempo real |
 | Soja CEPEA | CEPEA/ESALQ (scraping) | diária |
-| Diesel S10 | ANP (scraping) | semanal |
 | Frete Marítimo (BDI) | stooq | diária |
 | **Ureia, MAP, KCl** | **ComexStat — API oficial do MDIC** | **mensal** |
 | **Gás Natural** | **EIA (Henry Hub) ou stooq** | **diária** |

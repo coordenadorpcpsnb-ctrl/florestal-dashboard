@@ -56,7 +56,6 @@ if (c.map > 650)    gatilhos.push(`MAP FOB em US$ ${int(c.map)}/t (gatilho: US$ 
 if (c.dolar > 5.60) gatilhos.push(`Dólar em R$ ${brl(c.dolar)} (gatilho: R$ 5,60)`);
 if (c.gas > 3.0)    gatilhos.push(`Gás natural em US$ ${brl(c.gas)}/MMBtu (gatilho: US$ 3,00)`);
 if (c.bdi > 2300)   gatilhos.push(`BDI em ${int(c.bdi)} pts (gatilho: 2.300 pts)`);
-if (c.diesel > 7.60)gatilhos.push(`Diesel em R$ ${brl(c.diesel)}/L (gatilho: R$ 7,60/L)`);
 if (c.soja < 125)   gatilhos.push(`Soja CEPEA em R$ ${brl(c.soja)}/saca (gatilho: abaixo de R$ 125,00)`);
 if ((troca.map ?? 0) > 30) gatilhos.push(`Relação de troca soja/MAP em ${brl(troca.map,1)} sacas/t (gatilho: 30)`);
 
@@ -101,7 +100,6 @@ const html = `<div style="max-width:640px;margin:0 auto;font:14px/1.5 Arial,sans
     `<tr>${cel("Dólar")}${num(`R$ ${brl(c.dolar)}`)}${varCell(delta.dolar)}</tr>`,
     `<tr>${cel("Gás Natural (Henry Hub)")}${num(`US$ ${brl(c.gas)}`)}${varCell(delta.gas)}</tr>`,
     `<tr>${cel("Frete Marítimo (BDI)")}${num(`${int(c.bdi)} pts`)}${varCell(delta.bdi)}</tr>`,
-    `<tr>${cel("Diesel S10")}${num(`R$ ${brl(c.diesel)}/L`)}${varCell(delta.diesel)}</tr>`,
   ])}
 
   <p style="font-size:13px;margin:20px 0 6px">O relatório executivo completo está <b>anexado em PDF</b>.</p>

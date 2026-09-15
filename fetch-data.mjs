@@ -1,7 +1,7 @@
 /**
  * fetch-data.mjs — Busca os indicadores macro e monta o data.json
  *
- * Auto-buscados:  Câmbio (AwesomeAPI), Soja CEPEA (scrape), Diesel S10 (scrape ANP), BDI (stooq),
+ * Auto-buscados:  Câmbio (AwesomeAPI), Soja CEPEA (scrape), BDI (stooq),
  *                 Ureia/MAP/KCl (ComexStat — API oficial MDIC), Gás Natural (EIA ou stooq)
  *
  * fertilizers-override.json continua funcionando como:
@@ -174,87 +174,6 @@ async function getSojaRegional() {
 }
 
 /**
- * Diesel S10 (R$/L, preço ao consumidor final).
- * 1) Petrobras — média Brasil, elaborada a partir de dados da ANP. Oficial e atualizada semanalmente.
- * 2) Portal Canaã — média do Tocantins (regional), usado se a Petrobras falhar.
- * A coleta é datada; se estiver muito antiga, o status avisa.
- */
-async function getDiesel() {
-  const erros = [];
-  const hoje = new Date();
-
-  /** calcula a idade, em dias, de uma data DD/MM/AAAA */
-  const idadeDias = (txt) => {
-    const m = txt?.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-    if (!m) return null;
-    const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
-    return Math.round((hoje - d) / 864e5);
-  };
-
-  // 1) Petrobras — média Brasil
-  try {
-    const r = await fetch("https://precos.petrobras.com.br/precos-diesel", {
-      headers: { "User-Agent": UA, "Accept-Language": "pt-BR,pt;q=0.9", Accept: "text/html" },
-      signal: AbortSignal.timeout(20000),
-    });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const texto = cheerio.load(await r.text()).text().replace(/\s+/g, " ");
-
-    // tenta os formatos em que o valor aparece na página
-    const padroes = [
-      /Pre[çc]o\s+M[ée]dio\s+do\s+Brasil[:\s]*R?\$?\s*(\d{1,2}[,.]\d{2})/i,
-      /Pre[çc]o\s+M[ée]dio\s*>?\s*BR\s*(\d{1,2}[,.]\d{2})/i,
-    ];
-    let preco = null;
-    for (const p of padroes) {
-      const m = texto.match(p);
-      if (m) { preco = parseFloat(m[1].replace(",", ".")); break; }
-    }
-    if (preco === null || Number.isNaN(preco) || preco < 3 || preco > 15)
-      throw new Error(`parse falhou :: ${cortar(texto, 160)}`);
-
-    const per = texto.match(/Per[íi]odo\s+de\s+coleta\s+de\s+([\d/]+)\s+a\s+([\d/]+)/i);
-    const idade = per ? idadeDias(per[2]) : null;
-    status.diesel = `ok (Petrobras, media Brasil${per ? `, coleta ate ${per[2]}` : ""})`;
-    if (idade != null && idade > 45) status.diesel += ` [ATENCAO: coleta com ${idade} dias]`;
-    return preco;
-  } catch (e) { erros.push("Petrobras: " + e.message); }
-
-  // 2) Portal Canaã — média do Tocantins
-  try {
-    const r = await fetch("https://combustivel.portalcanaa.com.br/?estado=tocantins", {
-      headers: { "User-Agent": UA, "Accept-Language": "pt-BR,pt;q=0.9", Accept: "text/html" },
-      signal: AbortSignal.timeout(15000),
-    });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const html = await r.text();
-    const $ = cheerio.load(html);
-
-    let preco = null;
-    $("table tr").each((_i, tr) => {
-      if (preco !== null) return;
-      const tds = $(tr).find("td");
-      if (tds.length < 2) return;
-      if (!/diesel\s*s\s*-?\s*10/i.test($(tds[0]).text())) return;
-      const bruto = $(tds[1]).text().trim().replace(/R\$\s*/i, "");
-      // a página usa ponto como separador decimal (ex.: 7.31)
-      const v = parseFloat(bruto.includes(",") ? bruto.replace(/\./g, "").replace(",", ".") : bruto);
-      if (!Number.isNaN(v) && v > 3 && v < 15) preco = v;
-    });
-    if (preco === null) throw new Error("linha 'Diesel S10' nao encontrada");
-
-    const coleta = cheerio.load(html).text().match(/[ÚU]ltima\s+coleta[:\s]*([\d/]+)/i);
-    const idade = coleta ? idadeDias(coleta[1]) : null;
-    status.diesel = `ok (Portal Canaa, Tocantins${coleta ? `, coleta ${coleta[1]}` : ""})`;
-    if (idade != null && idade > 45) status.diesel += ` [ATENCAO: coleta com ${idade} dias]`;
-    return preco;
-  } catch (e) { erros.push("PortalCanaa: " + e.message); }
-
-  status.diesel = "falha: " + erros.join(" | ");
-  return null;
-}
-
-/**
  * BDI (Baltic Dry Index) — HANDYBULK publica o índice diariamente em texto corrido.
  * Site estático, sem bloqueio de bot. Formato das entradas:
  *   "21-July-2026"
@@ -319,8 +238,8 @@ const prev = existsSync(DATA) ? JSON.parse(readFileSync(DATA, "utf-8")) : null;
 const prevCur = prev?.current ?? {};
 const fb = (v, key) => (v == null ? (prevCur[key] ?? null) : v); // fallback ao último valor
 
-log("buscando câmbio, soja, diesel, BDI...");
-const [cambio, soja, sojaRegional, diesel, bdi] = await Promise.all([getCambio(), getSoja(), getSojaRegional(), getDiesel(), getBdi()]);
+log("buscando câmbio, soja, BDI...");
+const [cambio, soja, sojaRegional, bdi] = await Promise.all([getCambio(), getSoja(), getSojaRegional(), getBdi()]);
 
 log("buscando fertilizantes (ComexStat) e gás natural...");
 const fert = await buscarFertilizantes(status);
@@ -348,7 +267,6 @@ const current = {
   kcl:       escolher(fert.kcl,   ov.kcl,   prevCur.kcl),
   gas:       escolher(gasAuto,    ov.gasNatural, prevCur.gas),
   bdi:       escolher(bdi,    ov.bdi,    prevCur.bdi),
-  diesel:    escolher(diesel, ov.diesel, prevCur.diesel),
   soja:      escolher(soja,   ov.soja,   prevCur.soja),
 };
 // Soja regional: valor real (AIBA Oeste da Bahia) > override > estimativa (95,7% do CEPEA) > leitura anterior
@@ -404,5 +322,5 @@ const out = {
 writeFileSync(DATA, JSON.stringify(out, null, 2), "utf-8");
 
 log("status das fontes: " + JSON.stringify(status));
-log(`câmbio=${current.dolar} soja=${current.soja} diesel=${current.diesel} bdi=${current.bdi} | ureia=${current.ureia} map=${current.map} kcl=${current.kcl} gás=${current.gas}`);
+log(`câmbio=${current.dolar} soja=${current.soja} bdi=${current.bdi} | ureia=${current.ureia} map=${current.map} kcl=${current.kcl} gás=${current.gas}`);
 log("data.json gravado.");

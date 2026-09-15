@@ -28,7 +28,6 @@ const current = d.current ?? {};
 const FONTES = {
   cambio:  { nome: "Câmbio (AwesomeAPI)",      campo: "dolar",  unidade: "R$/US$" },
   soja:    { nome: "Soja (CEPEA/ESALQ)",       campo: "soja",   unidade: "R$/saca" },
-  diesel:  { nome: "Diesel S10 (ANP)",         campo: "diesel", unidade: "R$/L" },
   bdi:     { nome: "Frete Marítimo (stooq)",   campo: "bdi",    unidade: "pontos" },
   ureia:   { nome: "Ureia (ComexStat)",        campo: "ureia",  unidade: "US$/t" },
   map:     { nome: "MAP (ComexStat)",          campo: "map",    unidade: "US$/t" },
