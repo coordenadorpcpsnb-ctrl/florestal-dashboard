@@ -1,8 +1,18 @@
 {
-  "updatedAt": "2026-09-14T16:07:22.488Z",
-  "updatedAtBR": "14/09/2026, 16:07:22",
+  "updatedAt": "2026-09-15T10:52:38.207Z",
+  "updatedAtBR": "15/09/2026, 10:52:38",
   "ref": "Set/2026",
   "current": {
+    "dolar": 5.17,
+    "ureia": 491,
+    "map": 640,
+    "kcl": 328,
+    "gas": 2.81,
+    "bdi": 3445,
+    "soja": 152.9,
+    "sojaTO": 146
+  },
+  "previous": {
     "dolar": 5.09,
     "ureia": 412.8,
     "map": 834.3,
@@ -12,42 +22,30 @@
     "soja": 152.82,
     "sojaTO": 149
   },
-  "previous": {
-    "dolar": 5.13,
-    "ureia": 412.8,
-    "map": 834.3,
-    "kcl": 352.1,
-    "gas": 2.9,
-    "bdi": 3575,
-    "soja": 152.1,
-    "sojaTO": 144.75
-  },
   "delta": {
-    "dolar": -0.8,
-    "ureia": null,
-    "map": null,
-    "kcl": null,
-    "gas": -3.1,
-    "bdi": -1.9,
-    "soja": 0.5,
-    "sojaTO": 2.9,
-    "trocaMap": -1
+    "dolar": 1.6,
+    "ureia": 18.9,
+    "map": -23.3,
+    "kcl": -6.8,
+    "gas": 0,
+    "bdi": -1.8,
+    "soja": 0.1,
+    "sojaTO": -2,
+    "trocaMap": -21.7
   },
   "troca": {
-    "map": 28.6,
-    "ureia": 14.4
+    "map": 22.4,
+    "ureia": 17.3
   },
   "status": {
+    "bdi": "ok (HANDYBULK, 14/09/2026)",
     "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
-    "bdi": "ok (HANDYBULK, 11/09/2026)",
-    "soja": "ok (Noticias Agricolas / CEPEA-PR 11/09/2026)",
+    "soja": "ok (Noticias Agricolas / CEPEA-PR 14/09/2026)",
     "cambio": "ok (BCB PTAX)",
-    "_comexRetry": "aguardando 15s apos 429 (com-filtro-ncm 2026-08, tentativa 2)",
-    "_comexPeriodo": "com-filtro-ncm | 2026-08 | 4 linhas",
-    "_comexNcmsEncontrados": "31042090,31021010,31054000,31042010",
-    "ureia": "ok (ComexStat 2026-08)",
-    "map": "ok (ComexStat 2026-08)",
-    "kcl": "ok (ComexStat 2026-08)",
+    "_comexDiag": "sem-filtro 2026-04: HTTP 403 :: <!DOCTYPE html> <!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]--> <!--[if I",
+    "ureia": "falha: sem-filtro 2026-04: HTTP 403 :: <!DOCTYPE html> <!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]--> <!--[if I",
+    "map": "falha: sem-filtro 2026-04: HTTP 403 :: <!DOCTYPE html> <!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]--> <!--[if I",
+    "kcl": "falha: sem-filtro 2026-04: HTTP 403 :: <!DOCTYPE html> <!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]--> <!--[if I",
     "gas": "ok (EIA Henry Hub)",
     "noticias": "ok (40 de https://www.noticiasagricolas.com.br/tags/fertilizantes/)"
   },
@@ -57,6 +55,11 @@
     "kcl": "2026-08"
   },
   "noticiasFert": [
+    {
+      "data": null,
+      "titulo": "Agronegócio 14/09/2026 - 15:20 Importações de nitrogenados caem e acendem alerta para estoques no Brasil",
+      "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/427942-importacoes-de-nitrogenados-caem-e-acendem-alerta-para-estoques-no-brasil.html"
+    },
     {
       "data": null,
       "titulo": "Tempo e Clima 04/08/2026 - 12:41 El Niño reforça importância da nutrição das plantas para reduzir perdas no campo",
@@ -71,11 +74,6 @@
       "data": null,
       "titulo": "Agronegócio 19/06/2026 - 11:01 Importação dos EUA de fertilizante com origem no Oriente Médio zera em maio",
       "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/423163-importacao-dos-eua-de-fertilizante-com-origem-no-oriente-medio-zera-em-maio.html"
-    },
-    {
-      "data": null,
-      "titulo": "Agronegócio 16/06/2026 - 16:30 Ureia cai mais de 40% e volta ao nível pré-crise com avanço de acordo entre EUA e Irã",
-      "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/422949-ureia-cai-mais-de-40-e-volta-ao-nivel-pre-crise-com-avanco-de-acordo-entre-eua-e-ira.html"
     }
   ]
 }

@@ -287,10 +287,10 @@ soy.sojaTO = soy.soja.map(v => Math.round(v*0.957*100)/100);
 /* LIVE-START */
 // Valores da ultima leitura, reescritos pela automacao (patch-dashboard.mjs).
 const LIVE = {
-  refMes:"Setembro 2026", refFert:"ago/26", fertFechado:false,
-  dolar:"5,09", ureia:"413", map:"834", kcl:"352", gas:"2,81",
-  bdi:"3.507", soja:"152,82", sojaTO:"149,00",
-  trocaMap:"28,6", trocaUreia:"14,4", spread:"3,82",
+  refMes:"Setembro 2026", refFert:"ago/26", fertFechado:true,
+  dolar:"5,17", ureia:"491", map:"640", kcl:"328", gas:"2,81",
+  bdi:"3.445", soja:"152,90", sojaTO:"146,00",
+  trocaMap:"22,4", trocaUreia:"17,3", spread:"6,90",
 };
 /* LIVE-END */
 
@@ -329,8 +329,13 @@ const CONTEXTO = {
     "Riscos a monitorar: duração do conflito e normalização do Estreito de Ormuz, ritmo real da oferta chinesa, preço do enxofre, câmbio, crédito rural apertado e clima (risco de El Niño forte)."
   ],
   "nota": "Análise de contexto com caráter informativo, revisada manualmente. As datas e cenários mudam; confirme com as fontes antes de decisões de compra.",
-  "leituraAuto": "Sem novo fechamento de fertilizantes desde a leitura anterior (ago/26).",
+  "leituraAuto": "Último fechamento (ago/26): ureia +18,9%, MAP -23,3%, KCl -6,8% ante o mês anterior.",
   "noticias": [
+    {
+      "data": "",
+      "titulo": "Agronegócio 14/09/2026 - 15:20 Importações de nitrogenados caem e acendem alerta para estoques no Brasil",
+      "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/427942-importacoes-de-nitrogenados-caem-e-acendem-alerta-para-estoques-no-brasil.html"
+    },
     {
       "data": "",
       "titulo": "Tempo e Clima 04/08/2026 - 12:41 El Niño reforça importância da nutrição das plantas para reduzir perdas no campo",
@@ -345,11 +350,6 @@ const CONTEXTO = {
       "data": "",
       "titulo": "Agronegócio 19/06/2026 - 11:01 Importação dos EUA de fertilizante com origem no Oriente Médio zera em maio",
       "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/423163-importacao-dos-eua-de-fertilizante-com-origem-no-oriente-medio-zera-em-maio.html"
-    },
-    {
-      "data": "",
-      "titulo": "Agronegócio 16/06/2026 - 16:30 Ureia cai mais de 40% e volta ao nível pré-crise com avanço de acordo entre EUA e Irã",
-      "url": "https://www.noticiasagricolas.com.br/noticias/agronegocio/422949-ureia-cai-mais-de-40-e-volta-ao-nivel-pre-crise-com-avanco-de-acordo-entre-eua-e-ira.html"
     }
   ]
 };
@@ -364,14 +364,14 @@ function badge12(arr){ const p=pct12(arr);
   return t+" "+(p>10?"ALTA":p>0?"leve alta":p<-10?"QUEDA":"leve queda")+" · 12m"; }
 /* KPIS-START */
 let kpis = [
-  { id:"dolar", label:"Dólar", value:"5,09", unit:"R$/US$", variation:-0.8, trend:"down", alert:"ok", threshold:"> R$ 5,60", spark:macro.dolar },
-  { id:"ureia", label:"Ureia FOB", value:"413", unit:"US$/t", variation:null, trend:"stable", alert:"ok", threshold:"> US$ 430/t", spark:fert.ureia, vs:"fechamento ago/26" },
-  { id:"map", label:"MAP FOB", value:"834", unit:"US$/t", variation:null, trend:"stable", alert:"warning", threshold:"> US$ 650/t", spark:fert.map, vs:"fechamento ago/26" },
-  { id:"gas", label:"Gás Natural", value:"2,81", unit:"US$/MMBtu", variation:-3.1, trend:"down", alert:"ok", threshold:"> US$ 3,00", spark:macro.gas },
-  { id:"bdi", label:"Frete Marítimo (BDI)", value:"3.507", unit:"pontos", variation:-1.9, trend:"down", alert:"warning", threshold:"> 2.300 pts", spark:macro.bdi },
-  { id:"soja", label:"Soja CEPEA (Nacional)", value:"152,82", unit:"R$/saca", variation:0.5, trend:"stable", alert:"ok", threshold:"< R$ 125,00", spark:soy.soja },
-  { id:"sojaTO", label:"Soja Oeste BA (AIBA)", value:"149,00", unit:"R$/saca", variation:2.9, trend:"up", alert:"warning", threshold:"> R$ 140,00", spark:soy.sojaTO },
-  { id:"trocaMap", label:"Troca Soja/MAP", value:"28,6", unit:"sacas/t", variation:-1, trend:"down", alert:"ok", threshold:"> 30 sacas/t", spark:soy.trocaMap },
+  { id:"dolar", label:"Dólar", value:"5,17", unit:"R$/US$", variation:1.6, trend:"up", alert:"ok", threshold:"> R$ 5,60", spark:macro.dolar },
+  { id:"ureia", label:"Ureia FOB", value:"491", unit:"US$/t", variation:18.9, trend:"up", alert:"critical", threshold:"> US$ 430/t", spark:fert.ureia, vs:"vs ago/26" },
+  { id:"map", label:"MAP FOB", value:"640", unit:"US$/t", variation:-23.3, trend:"down", alert:"ok", threshold:"> US$ 650/t", spark:fert.map, vs:"vs ago/26" },
+  { id:"gas", label:"Gás Natural", value:"2,81", unit:"US$/MMBtu", variation:0, trend:"stable", alert:"ok", threshold:"> US$ 3,00", spark:macro.gas },
+  { id:"bdi", label:"Frete Marítimo (BDI)", value:"3.445", unit:"pontos", variation:-1.8, trend:"down", alert:"warning", threshold:"> 2.300 pts", spark:macro.bdi },
+  { id:"soja", label:"Soja CEPEA (Nacional)", value:"152,90", unit:"R$/saca", variation:0.1, trend:"stable", alert:"ok", threshold:"< R$ 125,00", spark:soy.soja },
+  { id:"sojaTO", label:"Soja Oeste BA (AIBA)", value:"146,00", unit:"R$/saca", variation:-2, trend:"down", alert:"warning", threshold:"> R$ 140,00", spark:soy.sojaTO },
+  { id:"trocaMap", label:"Troca Soja/MAP", value:"22,4", unit:"sacas/t", variation:-21.7, trend:"down", alert:"ok", threshold:"> 30 sacas/t", spark:soy.trocaMap },
 ]; /* KPIS-END */
 const scenarios = [
   { name:"Otimista", cor:"success", icon:"trend-down", impacto:"Queda de 5% a 8%", premissas:["Câmbio: R$ 5,10/US$","Gás Natural: US$ 2,50/MMBtu","Frete Marítimo: -10%","Custos logísticos: -5%"] },
@@ -390,13 +390,13 @@ const sensitivity = [
 ];
 /* ALERTS-START */
 const alerts = [
-  { indicador:"Dólar", valor:"R$ 5,09", gatilho:"> R$ 5,60", status:"ok", acao:"Monitorar" },
-  { indicador:"Ureia FOB", valor:"US$ 413/t", gatilho:"> US$ 430/t", status:"ok", acao:"Monitorar" },
-  { indicador:"MAP FOB", valor:"US$ 834/t", gatilho:"> US$ 650/t", status:"warning", acao:"Acima do gatilho — reavaliar programação" },
+  { indicador:"Dólar", valor:"R$ 5,17", gatilho:"> R$ 5,60", status:"ok", acao:"Monitorar" },
+  { indicador:"Ureia FOB", valor:"US$ 491/t", gatilho:"> US$ 430/t", status:"critical", acao:"Avaliar antecipação de compra / trava de preço" },
+  { indicador:"MAP FOB", valor:"US$ 640/t", gatilho:"> US$ 650/t", status:"ok", acao:"Monitorar" },
   { indicador:"Gás Natural", valor:"US$ 2,81/MMBtu", gatilho:"> US$ 3,00", status:"ok", acao:"Monitorar" },
-  { indicador:"Frete Marítimo (BDI)", valor:"3.507 pts", gatilho:"> 2.300 pts", status:"warning", acao:"Elevado — encarece importação" },
-  { indicador:"Soja CEPEA", valor:"R$ 152,82/saca", gatilho:"< R$ 125,00", status:"ok", acao:"Monitorar" },
-  { indicador:"Troca Soja/MAP", valor:"28,6 sacas/t", gatilho:"> 30 sacas/t", status:"ok", acao:"Monitorar" },
+  { indicador:"Frete Marítimo (BDI)", valor:"3.445 pts", gatilho:"> 2.300 pts", status:"warning", acao:"Elevado — encarece importação" },
+  { indicador:"Soja CEPEA", valor:"R$ 152,90/saca", gatilho:"< R$ 125,00", status:"ok", acao:"Monitorar" },
+  { indicador:"Troca Soja/MAP", valor:"22,4 sacas/t", gatilho:"> 30 sacas/t", status:"ok", acao:"Monitorar" },
 ]; /* ALERTS-END */
 const references = [
   { id:1, fonte:"Farmnews", data:"16/03/2026", titulo:"Preço do cloreto de potássio, ureia e MAP entre fev/2025 e fev/2026", url:"https://www.farmnews.com.br/mercado/preco-do-cloreto-de-potassio-ureia-e-map-entre-fevereiro-de-2025-e-2026/" },
