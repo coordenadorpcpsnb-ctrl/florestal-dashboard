@@ -243,7 +243,7 @@
       <div><div class="brand-name">Inteligência</div><div class="brand-sub">Florestal</div></div>
     </div>
     <nav id="nav"></nav>
-    <div class="nav-foot"><span class="lbl">Última atualização</span><br><span class="em" id="updatedAt">24 Jun 2026</span><br>Próx: 08 Jul 2026</div>
+    <div class="nav-foot"><span class="lbl">Última atualização</span><br><span class="em" id="updatedAt">24 Jun 2026</span><br>Próx: <span id="nextUpdate">08 Jul 2026</span></div>
   </aside>
   <main>
     <header class="topbar">
@@ -254,7 +254,7 @@
       </div>
       <div class="topbar-actions">
         <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Mai/24 — Jun/26</span>
-        <span class="pill"><span class="led live"></span>Dados base · Set/2026</span>
+        <span class="pill"><span class="led live"></span>Dados base · <span id="dadosBase">Set/2026</span></span>
         <button class="btn primary" id="btnExport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Exportar</button>
       </div>
     </header>
@@ -662,6 +662,23 @@ function switchTo(id){
   document.getElementById("content").innerHTML='<div class="view active">'+BUILDERS[id].html()+'</div>';
   requestAnimationFrame(function(){ BUILDERS[id].charts(); });
 }
+/** Preenche o rodape com a data da leitura atual e calcula a proxima terca-feira. */
+function renderFooter() {
+  const base = document.getElementById("dadosBase");
+  const updated = document.getElementById("updatedAt");
+  if (base) base.textContent = LIVE.refMes.replace(/(\w{3})\w* (\d{4})/, (_, m, y) => m + "/" + y);
+  if (updated) updated.textContent = LIVE.refMes;
+
+  const next = document.getElementById("nextUpdate");
+  if (next) {
+    const hoje = new Date();
+    const diasAteTerca = (2 - hoje.getDay() + 7) % 7 || 7;
+    const proxima = new Date(hoje.getTime() + diasAteTerca * 864e5);
+    const meses = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+    next.textContent = `${String(proxima.getDate()).padStart(2,"0")} ${meses[proxima.getMonth()]} ${proxima.getFullYear()}`;
+  }
+}
+renderFooter();
 document.getElementById("btnExport").addEventListener("click",function(){ window.print(); });
 renderNav();
 switchTo("overview");
