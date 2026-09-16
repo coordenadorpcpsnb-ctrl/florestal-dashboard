@@ -1,8 +1,18 @@
 {
-  "updatedAt": "2026-09-15T10:52:38.207Z",
-  "updatedAtBR": "15/09/2026, 10:52:38",
+  "updatedAt": "2026-09-16T11:52:30.871Z",
+  "updatedAtBR": "16/09/2026, 11:52:30",
   "ref": "Set/2026",
   "current": {
+    "dolar": 5.15,
+    "ureia": 412.8,
+    "map": 834.3,
+    "kcl": 352.1,
+    "gas": 2.81,
+    "bdi": 3360,
+    "soja": 153.59,
+    "sojaTO": 144.75
+  },
+  "previous": {
     "dolar": 5.17,
     "ureia": 491,
     "map": 640,
@@ -12,40 +22,31 @@
     "soja": 152.9,
     "sojaTO": 146
   },
-  "previous": {
-    "dolar": 5.09,
-    "ureia": 412.8,
-    "map": 834.3,
-    "kcl": 352.1,
-    "gas": 2.81,
-    "bdi": 3507,
-    "soja": 152.82,
-    "sojaTO": 149
-  },
   "delta": {
-    "dolar": 1.6,
-    "ureia": 18.9,
-    "map": -23.3,
-    "kcl": -6.8,
+    "dolar": -0.4,
+    "ureia": null,
+    "map": null,
+    "kcl": null,
     "gas": 0,
-    "bdi": -1.8,
-    "soja": 0.1,
-    "sojaTO": -2,
-    "trocaMap": -21.7
+    "bdi": -2.5,
+    "soja": 0.5,
+    "sojaTO": -0.9,
+    "trocaMap": 28.6
   },
   "troca": {
-    "map": 22.4,
-    "ureia": 17.3
+    "map": 28.8,
+    "ureia": 14.5
   },
   "status": {
-    "bdi": "ok (HANDYBULK, 14/09/2026)",
     "sojaRegional": "ok (Oeste da Bahia/BA (AIBA))",
-    "soja": "ok (Noticias Agricolas / CEPEA-PR 14/09/2026)",
     "cambio": "ok (BCB PTAX)",
-    "_comexDiag": "sem-filtro 2026-04: HTTP 403 :: <!DOCTYPE html> <!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]--> <!--[if I",
-    "ureia": "falha: sem-filtro 2026-04: HTTP 403 :: <!DOCTYPE html> <!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]--> <!--[if I",
-    "map": "falha: sem-filtro 2026-04: HTTP 403 :: <!DOCTYPE html> <!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]--> <!--[if I",
-    "kcl": "falha: sem-filtro 2026-04: HTTP 403 :: <!DOCTYPE html> <!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]--> <!--[if I",
+    "bdi": "ok (HANDYBULK, 15/09/2026)",
+    "soja": "ok (Noticias Agricolas / CEPEA-PR 15/09/2026)",
+    "_comexPeriodo": "com-filtro-ncm | 2026-08 | 4 linhas",
+    "_comexNcmsEncontrados": "31042090,31021010,31054000,31042010",
+    "ureia": "ok (ComexStat 2026-08)",
+    "map": "ok (ComexStat 2026-08)",
+    "kcl": "ok (ComexStat 2026-08)",
     "gas": "ok (EIA Henry Hub)",
     "noticias": "ok (40 de https://www.noticiasagricolas.com.br/tags/fertilizantes/)"
   },
