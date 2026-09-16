@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "description": "Historico de precos de fertilizantes formulados efetivamente cotados ou comprados pela empresa junto a fornecedores externos. Cada registro representa um preco comercial observado (cotacao ou compra), NAO o custo industrial do fabricante: beneficiamento, formulacao, producao, mistura, granulacao, embalagem, perdas industriais, margem comercial, custos administrativos e a composicao detalhada de micronutrientes podem estar embutidos no preco final, mas nao podem ser individualizados a partir destes registros. Esta base sera usada futuramente para estimar indices de pressao de materias-primas e faixas de referencia de negociacao -- nunca para apurar o custo de producao do fornecedor nem um preco exato. Nao inserir aqui dados ficticios, confidenciais ou de exemplo: registros de teste ficam em test/formulated-price-history.test.mjs e no README.",
+  "records": []
+}

@@ -284,4 +284,191 @@ fertilizers-override.json# valores manuais + rede de seguranca
 data.json                # última leitura + variações (não editar à mão)
 dashboard.html           # o dashboard
 logo.png                 # logo usado no cabeçalho do relatório
+data/
+  formulated-prices-history.json  # histórico de preços dos formulados (ver seção 10)
+schemas/
+  formulated-price-history.schema.json  # contrato formal dos campos do histórico
+formulated-price-history.mjs      # módulo: carrega, valida e normaliza o histórico
+validate-formulated-history.mjs   # CLI: `npm run validate:formulated-history`
+test/
+  formulated-price-history.test.mjs  # testes do módulo acima (`npm test`)
 ```
+
+---
+
+## 10. Base histórica de preços dos formulados
+
+> Esta seção documenta uma base **separada** do restante do dashboard. Nada aqui é
+> lido pela esteira semanal (`run-weekly.mjs`), pelo `dashboard.html` ou pelo
+> relatório executivo — é uma etapa 1 de arquitetura, isolada de propósito.
+
+### Objetivo
+
+O restante deste projeto monitora **direcionadores de mercado** das matérias-primas
+dos fertilizantes (ureia, MAP, KCl, câmbio, frete marítimo, gás natural). Mas a
+empresa não compra essas matérias-primas isoladamente — ela compra **fertilizantes
+formulados**, já misturados e granulados por fornecedores externos.
+
+Esta base guarda o **histórico de preços efetivamente cotados ou comprados** desses
+formulados, para no futuro ser comparado com o histórico dos direcionadores acima —
+por exemplo, para estimar um índice de pressão de matérias-primas ou uma faixa
+estimada de negociação. Nada disso está implementado ainda nesta etapa: só a
+estrutura de dados, a validação e os testes.
+
+### Preço da matéria-prima × preço do formulado — e por que não dá pra calcular o custo do fabricante
+
+- O preço FOB de ureia/MAP/KCl que o dashboard já monitora é o preço **internacional
+  da matéria-prima pura**, medido nas estatísticas de comércio exterior.
+- O preço de um formulado é o preço **comercial final** cobrado pelo fornecedor por um
+  produto já pronto (ex.: uma fórmula NPK 04-14-08), que embute — sem que a gente
+  consiga separar — custos como beneficiamento, formulação, produção, mistura,
+  granulação, embalagem, perdas industriais, margem comercial, custos administrativos
+  e a composição detalhada de micronutrientes.
+- **Não temos acesso a esses custos internos do fabricante.** Por isso este módulo
+  não calcula, e não deve ser usado para calcular, o custo real de produção do
+  formulado, o custo industrial do fornecedor, um "preço exato" do produto ou o custo
+  real por hectare. Esses componentes ficam como uma **caixa-preta observável apenas
+  pelo preço final** — o que a base registra é o preço praticado, não a composição de
+  custo por trás dele.
+
+### Campos disponíveis
+
+| Campo | Obrigatório | Tipo / aceita `null` | Observação |
+|---|---|---|---|
+| `id` | sim | texto, único, não vazio | chave do registro dentro da base |
+| `dataCotacao` | sim | data ISO `YYYY-MM-DD` | data em que o preço foi cotado/registrado |
+| `dataCompra` | não | data ISO ou `null` | preenchido só quando virou compra de fato |
+| `anoReferencia` | sim | inteiro de 4 dígitos | deve bater com o ano de `dataCotacao` |
+| `produto` | sim | texto | nome comercial ou interno do formulado |
+| `formula` | sim (chave sempre presente) | texto ou `null` | ex. `"04-14-08"`; `null` quando desconhecida — nunca presumida a partir do nome comercial |
+| `categoriaFormula` | não | texto ou `null` | vocabulário aberto nesta etapa (ex.: plantio, manutenção, correção, formulação especial) |
+| `fornecedor` | sim | texto | nunca deve ser usado para inferir custo/margem do fornecedor |
+| `preco` | sim | número > 0 | preço comercial observado, na unidade de `unidadePreco` |
+| `moeda` | sim | `"BRL"` (por enquanto) | ver "Unidades" abaixo |
+| `unidadePreco` | sim | `"BRL_TON"` (por enquanto) | ver "Unidades" abaixo |
+| `modalidadeEntrega` | sim | enum (ver abaixo) | use `NAO_INFORMADO` quando desconhecida |
+| `destino` | não | texto ou `null` | local de entrega, para comparações futuras |
+| `volumeToneladas` | não | número > 0 ou `null` | volume da cotação/compra |
+| `prazoPagamentoDias` | não | inteiro ≥ 0 ou `null` | |
+| `validadeProposta` | não | data ISO ou `null` | |
+| `fonteRegistro` | sim | enum (ver abaixo) | categoria da fonte — nunca o documento em si |
+| `observacoes` | não | texto ou `null` | texto livre, sem dados confidenciais |
+
+O contrato completo e formal desses campos está em
+[`schemas/formulated-price-history.schema.json`](schemas/formulated-price-history.schema.json)
+(JSON Schema draft 2020-12).
+
+### Unidades
+
+- **Moeda (`moeda`):** só `BRL` é aceito nesta etapa. O campo existe como uma lista
+  fechada (`MOEDAS_SUPORTADAS` em `formulated-price-history.mjs`) pensada para
+  crescer no futuro — mas adicionar uma moeda nova **não** implica conversão cambial
+  automática, que não está implementada.
+- **Unidade de preço (`unidadePreco`):** só `BRL_TON` é aceito nesta etapa — reais
+  por tonelada do formulado (não da matéria-prima).
+
+### Modalidades de entrega
+
+`FOB_FABRICA`, `CIF_DESTINO`, `RETIRADA`, `NAO_INFORMADO`.
+
+> **Atenção:** este é o FOB **comercial do formulado** (retirada na fábrica do
+> fornecedor), que **não é o mesmo conceito** do FOB internacional usado nos preços
+> de ureia/MAP/KCl monitorados no resto do dashboard (FOB de exportação/importação
+> nas estatísticas de comércio exterior). Não misture os dois.
+>
+> `CIF_DESTINO` e `FOB_FABRICA` também **não são diretamente comparáveis entre si**
+> sem um ajuste logístico (frete, seguro) — um preço CIF mais alto que um FOB não
+> significa necessariamente um produto mais caro na origem.
+
+### Como adicionar um registro
+
+1. Edite `data/formulated-prices-history.json` e acrescente um objeto ao array
+   `records`, preenchendo todos os campos obrigatórios (veja a tabela acima — os
+   opcionais podem ficar como `null`, mas a chave deve existir).
+2. Rode a validação (abaixo) antes de commitar.
+3. **Nunca** coloque neste arquivo preço real, nome real de fornecedor, volume real,
+   contrato, ou qualquer dado confidencial — o repositório é **público**. Use a base
+   só para dados que a empresa já trataria como divulgáveis internamente, e mantenha
+   o controle de acesso adequado para os dados sensíveis fora do Git.
+
+Exemplo — **EXEMPLO FICTÍCIO**, apenas ilustrativo, não é um dado real e não deve
+ser copiado para a base:
+
+```json
+{
+  "id": "EXEMPLO-FICTICIO-2026-001",
+  "dataCotacao": "2026-03-10",
+  "dataCompra": null,
+  "anoReferencia": 2026,
+  "produto": "Formulado Exemplo 04-14-08",
+  "formula": "04-14-08",
+  "categoriaFormula": "plantio",
+  "fornecedor": "Fornecedor Exemplo Ltda (NÃO É UM FORNECEDOR REAL)",
+  "preco": 3199.9,
+  "moeda": "BRL",
+  "unidadePreco": "BRL_TON",
+  "modalidadeEntrega": "CIF_DESTINO",
+  "destino": "Exemplo - TO",
+  "volumeToneladas": 100,
+  "prazoPagamentoDias": 30,
+  "validadeProposta": "2026-03-20",
+  "fonteRegistro": "COTACAO",
+  "observacoes": "Registro de exemplo do README — não representa um preço real."
+}
+```
+
+### Como executar a validação
+
+```bash
+npm run validate:formulated-history
+```
+
+O comando:
+1. carrega `data/formulated-prices-history.json`;
+2. valida a estrutura raiz (`schemaVersion`, `description`, `records`);
+3. valida cada registro e detecta `id` duplicado;
+4. informa quantos registros foram encontrados;
+5. termina com **código 0** se a base for válida (inclusive uma base vazia — `records: []`
+   é sempre válida) e com **código diferente de zero** se houver qualquer erro.
+
+Os testes automatizados do módulo rodam com:
+
+```bash
+npm test
+```
+
+### Como interpretar os erros
+
+Cada erro reportado tem um `type` (categoria), o índice e/ou `id` do registro, o
+`field` afetado e uma mensagem em português. Os tipos possíveis:
+
+| Tipo | Significado |
+|---|---|
+| `ESTRUTURAL` | problema no envelope raiz (`schemaVersion`, `description` ou `records` ausente/errado) |
+| `CAMPO_OBRIGATORIO_AUSENTE` | um campo obrigatório não está presente (ou está vazio) |
+| `DATA_INVALIDA` | data fora do formato `YYYY-MM-DD` ou que não existe no calendário |
+| `UNIDADE_INVALIDA` | `unidadePreco` fora da lista aceita |
+| `VALOR_INVALIDO` | valor de um campo fora da regra (ex.: preço ≤ 0, enum inválido) |
+| `ID_DUPLICADO` | dois ou mais registros com o mesmo `id` |
+| `ANO_INCONSISTENTE` | `anoReferencia` não bate com o ano de `dataCotacao` |
+| `ARQUIVO_INEXISTENTE` | `data/formulated-prices-history.json` não foi encontrado |
+| `JSON_INVALIDO` | o arquivo existe, mas não é um JSON válido |
+
+Uma base **vazia** (`records: []`) nunca é um erro — é o estado inicial esperado.
+
+### Boas práticas ao registrar preços
+
+- **Não misture preços de formulações diferentes** (ex.: 04-14-08 com 08-20-20) numa
+  mesma análise ou comparação — são produtos diferentes, com custo de matéria-prima
+  diferente.
+- **CIF destino e FOB fábrica não são diretamente comparáveis** sem ajuste logístico
+  (ver seção "Modalidades de entrega" acima).
+- **Distinga preço cotado de preço efetivamente comprado**: uma cotação
+  (`dataCompra: null`) pode não se concretizar, ou fechar em condições diferentes da
+  proposta original — por isso os campos `dataCotacao` e `dataCompra` são separados,
+  e `fonteRegistro` indica se o registro veio de uma cotação, um pedido de compra,
+  uma nota fiscal, um contrato ou um registro interno.
+- **Nenhum dado confidencial** (preço real, fornecedor real, volume real, número de
+  contrato, condições comerciais sigilosas) deve ir para este repositório público.
+  Trate a base real com a mesma cautela que qualquer outro dado comercial sensível
+  da empresa.
