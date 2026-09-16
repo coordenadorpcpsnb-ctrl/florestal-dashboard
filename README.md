@@ -285,13 +285,16 @@ data.json                # última leitura + variações (não editar à mão)
 dashboard.html           # o dashboard
 logo.png                 # logo usado no cabeçalho do relatório
 data/
-  formulated-prices-history.json  # histórico de preços dos formulados (ver seção 10)
+  formulated-prices-history.json  # histórico PÚBLICO de preços, sempre vazio (ver seção 10)
+  private/                        # NÃO versionado (.gitignore) -- dados reais ficam aqui, local
 schemas/
   formulated-price-history.schema.json  # contrato formal dos campos do histórico
 formulated-price-history.mjs      # módulo: carrega, valida e normaliza o histórico
-validate-formulated-history.mjs   # CLI: `npm run validate:formulated-history`
+validate-formulated-history.mjs   # CLI: `npm run validate:formulated-history [caminho]`
 test/
-  formulated-price-history.test.mjs  # testes do módulo acima (`npm test`)
+  formulated-price-history.test.mjs           # testes de campo/validação
+  formulated-price-history.contract.test.mjs  # schema <-> JS sempre sincronizados
+  formulated-price-history.cli.test.mjs       # testes do CLI via subprocesso
 ```
 
 ---
@@ -333,30 +336,41 @@ estrutura de dados, a validação e os testes.
 
 ### Campos disponíveis
 
-| Campo | Obrigatório | Tipo / aceita `null` | Observação |
+| Campo | Presença física | Tipo / aceita `null` | Observação |
 |---|---|---|---|
-| `id` | sim | texto, único, não vazio | chave do registro dentro da base |
-| `dataCotacao` | sim | data ISO `YYYY-MM-DD` | data em que o preço foi cotado/registrado |
-| `dataCompra` | não | data ISO ou `null` | preenchido só quando virou compra de fato |
-| `anoReferencia` | sim | inteiro de 4 dígitos | deve bater com o ano de `dataCotacao` |
-| `produto` | sim | texto | nome comercial ou interno do formulado |
-| `formula` | sim (chave sempre presente) | texto ou `null` | ex. `"04-14-08"`; `null` quando desconhecida — nunca presumida a partir do nome comercial |
-| `categoriaFormula` | não | texto ou `null` | vocabulário aberto nesta etapa (ex.: plantio, manutenção, correção, formulação especial) |
-| `fornecedor` | sim | texto | nunca deve ser usado para inferir custo/margem do fornecedor |
-| `preco` | sim | número > 0 | preço comercial observado, na unidade de `unidadePreco` |
-| `moeda` | sim | `"BRL"` (por enquanto) | ver "Unidades" abaixo |
-| `unidadePreco` | sim | `"BRL_TON"` (por enquanto) | ver "Unidades" abaixo |
-| `modalidadeEntrega` | sim | enum (ver abaixo) | use `NAO_INFORMADO` quando desconhecida |
-| `destino` | não | texto ou `null` | local de entrega, para comparações futuras |
-| `volumeToneladas` | não | número > 0 ou `null` | volume da cotação/compra |
-| `prazoPagamentoDias` | não | inteiro ≥ 0 ou `null` | |
-| `validadeProposta` | não | data ISO ou `null` | |
-| `fonteRegistro` | sim | enum (ver abaixo) | categoria da fonte — nunca o documento em si |
-| `observacoes` | não | texto ou `null` | texto livre, sem dados confidenciais |
+| `id` | **obrigatória** | texto, único, não vazio | chave do registro dentro da base |
+| `dataCotacao` | **obrigatória** | data ISO `YYYY-MM-DD` | data em que o preço foi cotado/registrado |
+| `dataCompra` | opcional (pode faltar) | data ISO ou `null` | preenchido só quando virou compra de fato |
+| `anoReferencia` | **obrigatória** | inteiro de 4 dígitos | deve bater com o ano de `dataCotacao` |
+| `produto` | **obrigatória** | texto | nome comercial ou interno do formulado |
+| `formula` | opcional (pode faltar) | texto ou `null` | ex. `"04-14-08"`; ausente ou `null` quando desconhecida — nunca presumida a partir do nome comercial |
+| `categoriaFormula` | opcional (pode faltar) | texto ou `null` | vocabulário aberto nesta etapa (ex.: plantio, manutenção, correção, formulação especial) |
+| `fornecedor` | **obrigatória** | texto | nunca deve ser usado para inferir custo/margem do fornecedor |
+| `preco` | **obrigatória** | número > 0 | preço comercial observado, na unidade de `unidadePreco` |
+| `moeda` | **obrigatória** | `"BRL"` (por enquanto) | ver "Unidades" abaixo |
+| `unidadePreco` | **obrigatória** | `"BRL_TON"` (por enquanto) | ver "Unidades" abaixo |
+| `modalidadeEntrega` | **obrigatória** | enum (ver abaixo), nunca `null` | use `NAO_INFORMADO` quando desconhecida — não omitir |
+| `destino` | opcional (pode faltar) | texto ou `null` | local de entrega, para comparações futuras |
+| `volumeToneladas` | opcional (pode faltar) | número > 0 ou `null` | volume da cotação/compra |
+| `prazoPagamentoDias` | opcional (pode faltar) | inteiro ≥ 0 ou `null` | |
+| `validadeProposta` | opcional (pode faltar) | data ISO ou `null` | |
+| `fonteRegistro` | **obrigatória** | enum (ver abaixo) | categoria da fonte — nunca o documento em si |
+| `observacoes` | opcional (pode faltar) | texto ou `null` | texto livre, sem dados confidenciais |
+
+**Só estes 17 campos são aceitos** — a base rejeita qualquer chave fora dessa lista,
+tanto no envelope raiz (`schemaVersion`/`description`/`records`) quanto em cada
+registro, com um erro do tipo `CAMPO_DESCONHECIDO` (ver "Como interpretar os erros").
+
+Um campo **opcional** pode simplesmente não existir no objeto do registro, ou existir
+com valor `null`, ou existir com um valor válido — as três formas são aceitas. Um
+campo **obrigatório** precisa existir e ter um valor real (nunca `null`, nunca ausente).
 
 O contrato completo e formal desses campos está em
 [`schemas/formulated-price-history.schema.json`](schemas/formulated-price-history.schema.json)
-(JSON Schema draft 2020-12).
+(JSON Schema draft 2020-12) — os testes em
+[`test/formulated-price-history.contract.test.mjs`](test/formulated-price-history.contract.test.mjs)
+leem esse arquivo e comparam com as constantes do módulo JavaScript, para pegar
+divergência entre os dois automaticamente.
 
 ### Unidades
 
@@ -380,16 +394,53 @@ O contrato completo e formal desses campos está em
 > sem um ajuste logístico (frete, seguro) — um preço CIF mais alto que um FOB não
 > significa necessariamente um produto mais caro na origem.
 
+### Dados privados: este repositório é público
+
+**Este repositório é público.** A base versionada em
+`data/formulated-prices-history.json` **deve permanecer vazia** (`records: []`) —
+ela existe só como estrutura, referência, prova de que a validação funciona e
+fallback seguro. Preço, fornecedor, volume, condições de pagamento e destino são,
+em geral, informação comercial confidencial da empresa, e **dados reais nunca devem
+ser commitados** nesse arquivo nem em nenhum outro arquivo público deste repositório.
+
+Para trabalhar com dados reais (fora desta etapa, quando essa necessidade surgir):
+
+- Use um arquivo **local, fora do controle de versão**, no caminho recomendado
+  `data/private/formulated-prices-history.private.json`. O `.gitignore` já protege
+  esse caminho (`/data/private/` e `*.private.json`) — nada nele é versionado.
+- Valide esse arquivo privado com o mesmo CLI, passando o caminho explicitamente
+  (veja "Como executar a validação" abaixo). O validador nunca procura um arquivo
+  privado sozinho, e nunca cai de volta na base pública se o caminho que você deu
+  não existir — um caminho errado sempre vira erro, nunca um "sucesso" silencioso
+  validando outra coisa.
+- O CLI nunca imprime o conteúdo de um registro (preço, fornecedor, observações
+  etc.) no console, mesmo ao validar um arquivo privado — só o tipo de erro, o
+  índice, o `id` e o nome do campo. Ainda assim, **nunca copie a saída do CLI, nem
+  o próprio arquivo privado, para um lugar público** (comentário de PR, corpo de
+  Issue, artifact do GitHub Actions, log de CI) — trate a saída do terminal como
+  parte do mesmo perímetro confidencial do arquivo que ela descreve.
+
+**Se um dado real for commitado por engano:** apagar o arquivo (ou o trecho) num
+commit posterior **não o remove do histórico do Git** — qualquer pessoa com acesso
+ao repositório ainda consegue recuperá-lo por um commit antigo. Isso não se resolve
+sozinho e não é algo que este projeto tenta consertar automaticamente: **nenhum
+procedimento destrutivo de reescrita de histórico (rebase, filter-branch,
+force-push, etc.) é executado por nenhum script daqui.** Se isso acontecer, acione
+o processo de segurança e saneamento de histórico adotado pela sua organização
+(geralmente envolve avaliar o alcance do vazamento e, se necessário, reescrever e
+forçar a publicação de um histórico limpo sob coordenação de quem administra o
+repositório) — não tente resolver sozinho com um novo commit "removendo" o dado.
+
 ### Como adicionar um registro
 
 1. Edite `data/formulated-prices-history.json` e acrescente um objeto ao array
-   `records`, preenchendo todos os campos obrigatórios (veja a tabela acima — os
-   opcionais podem ficar como `null`, mas a chave deve existir).
+   `records`, preenchendo os campos obrigatórios (veja a tabela acima). Os campos
+   opcionais podem ficar de fora do objeto por completo, ou como `null` — as duas
+   formas são válidas; não é preciso escrever a chave se não há valor.
 2. Rode a validação (abaixo) antes de commitar.
-3. **Nunca** coloque neste arquivo preço real, nome real de fornecedor, volume real,
-   contrato, ou qualquer dado confidencial — o repositório é **público**. Use a base
-   só para dados que a empresa já trataria como divulgáveis internamente, e mantenha
-   o controle de acesso adequado para os dados sensíveis fora do Git.
+3. **Nunca** coloque neste arquivo público preço real, nome real de fornecedor,
+   volume real, contrato, ou qualquer dado confidencial — veja "Dados privados"
+   acima para onde esse tipo de dado deve ficar.
 
 Exemplo — **EXEMPLO FICTÍCIO**, apenas ilustrativo, não é um dado real e não deve
 ser copiado para a base:
@@ -423,19 +474,40 @@ ser copiado para a base:
 npm run validate:formulated-history
 ```
 
+Sem argumentos, valida sempre a base pública padrão
+(`data/formulated-prices-history.json`). Para validar outro arquivo — por exemplo,
+um arquivo privado em `data/private/` — passe o caminho explicitamente:
+
+```bash
+node validate-formulated-history.mjs caminho/para/arquivo.json
+# ou, via npm (repare no "--"):
+npm run validate:formulated-history -- caminho/para/arquivo.json
+```
+
 O comando:
-1. carrega `data/formulated-prices-history.json`;
-2. valida a estrutura raiz (`schemaVersion`, `description`, `records`);
-3. valida cada registro e detecta `id` duplicado;
+1. carrega o arquivo pedido (a base pública, se nenhum caminho for informado; o
+   caminho explícito, se um for informado — sem procurar nada por conta própria e
+   sem cair de volta na base pública se o caminho não existir);
+2. valida a estrutura raiz (`schemaVersion`, `description`, `records`, sem chaves
+   desconhecidas);
+3. valida cada registro (sem chaves desconhecidas) e detecta `id` duplicado;
 4. informa quantos registros foram encontrados;
 5. termina com **código 0** se a base for válida (inclusive uma base vazia — `records: []`
    é sempre válida) e com **código diferente de zero** se houver qualquer erro.
 
-Os testes automatizados do módulo rodam com:
+O CLI nunca imprime o conteúdo de um registro (preço, fornecedor, observações) —
+só tipo de erro, índice, `id` e nome do campo (ver "Dados privados" acima).
+
+Os testes automatizados rodam com:
 
 ```bash
 npm test
 ```
+
+Isso roda três arquivos: os testes de campo/validação
+(`test/formulated-price-history.test.mjs`), os testes de sincronia entre o schema e
+o JavaScript (`test/formulated-price-history.contract.test.mjs`) e os testes do CLI
+via subprocesso (`test/formulated-price-history.cli.test.mjs`).
 
 ### Como interpretar os erros
 
@@ -445,7 +517,8 @@ Cada erro reportado tem um `type` (categoria), o índice e/ou `id` do registro, 
 | Tipo | Significado |
 |---|---|
 | `ESTRUTURAL` | problema no envelope raiz (`schemaVersion`, `description` ou `records` ausente/errado) |
-| `CAMPO_OBRIGATORIO_AUSENTE` | um campo obrigatório não está presente (ou está vazio) |
+| `CAMPO_DESCONHECIDO` | uma chave fora da lista de campos aceitos (na raiz ou num registro) |
+| `CAMPO_OBRIGATORIO_AUSENTE` | um campo obrigatório não está presente (ou está vazio/`null`) |
 | `DATA_INVALIDA` | data fora do formato `YYYY-MM-DD` ou que não existe no calendário |
 | `UNIDADE_INVALIDA` | `unidadePreco` fora da lista aceita |
 | `VALOR_INVALIDO` | valor de um campo fora da regra (ex.: preço ≤ 0, enum inválido) |

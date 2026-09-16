@@ -52,25 +52,38 @@ function registroCompletoFicticio(overrides = {}) {
   };
 }
 
-/** Registro minimo: so os campos obrigatorios, opcionais explicitamente null. FICTICIO. */
+/**
+ * Registro minimo DE VERDADE: so as 10 chaves fisicamente obrigatorias, sem
+ * nenhuma das 8 chaves opcionais presente (nem como null -- ausentes mesmo).
+ * FICTICIO.
+ */
 function registroMinimoFicticio(overrides = {}) {
   return {
     id: "teste-minimo-001",
     dataCotacao: "2026-03-10",
-    dataCompra: null,
     anoReferencia: 2026,
     produto: "Formulado Teste Minimo",
-    formula: null,
     fornecedor: "Fornecedor Ficticio Minimo",
     preco: 1,
     moeda: "BRL",
     unidadePreco: "BRL_TON",
     modalidadeEntrega: "NAO_INFORMADO",
+    fonteRegistro: "REGISTRO_INTERNO",
+    ...overrides,
+  };
+}
+
+/** As mesmas chaves de registroMinimoFicticio(), mas com os 8 opcionais presentes e null. FICTICIO. */
+function registroMinimoComOpcionaisNulosFicticio(overrides = {}) {
+  return {
+    ...registroMinimoFicticio(),
+    dataCompra: null,
+    formula: null,
+    categoriaFormula: null,
     destino: null,
     volumeToneladas: null,
     prazoPagamentoDias: null,
     validadeProposta: null,
-    fonteRegistro: "REGISTRO_INTERNO",
     observacoes: null,
     ...overrides,
   };
@@ -101,9 +114,14 @@ test("registro completo (todos os campos preenchidos) e valido", () => {
   assert.deepEqual(r.errors, []);
 });
 
-// === 3. registro minimo valido ===
-test("registro minimo (so obrigatorios, opcionais null) e valido", () => {
-  const r = validateHistory(baseCom([registroMinimoFicticio()]));
+// === 3. registro minimo valido (de verdade sem as chaves opcionais) ===
+test("registro minimo, sem nenhuma chave opcional presente, e valido", () => {
+  const registro = registroMinimoFicticio();
+  // confirma que o fixture realmente omite as 8 chaves opcionais (nao so preenche com null)
+  for (const opcional of ["dataCompra", "formula", "categoriaFormula", "destino", "volumeToneladas", "prazoPagamentoDias", "validadeProposta", "observacoes"]) {
+    assert.equal(opcional in registro, false, `fixture minimo nao deveria ter a chave "${opcional}"`);
+  }
+  const r = validateHistory(baseCom([registro]));
   assert.equal(r.valid, true);
   assert.equal(r.recordCount, 1);
   assert.deepEqual(r.errors, []);
@@ -204,6 +222,110 @@ test("null em campos opcionais (dataCompra, destino, volumeToneladas, observacoe
 test("formula null (informacao desconhecida) e aceita", () => {
   const r = validateHistory(baseCom([registroCompletoFicticio({ formula: null })]));
   assert.equal(r.valid, true);
+});
+
+test("formula ausente (nem sequer a chave) e aceita", () => {
+  const registro = registroCompletoFicticio();
+  delete registro.formula;
+  const r = validateHistory(baseCom([registro]));
+  assert.equal(r.valid, true);
+});
+
+// === Correcao 1: campo desconhecido e rejeitado (CAMPO_DESCONHECIDO) ===
+
+test("campo desconhecido na raiz e rejeitado", () => {
+  const base = { ...baseVazia(), campoQueNaoExisteNaRaiz: "valor-ficticio" };
+  const r = validateHistory(base);
+  assert.equal(r.valid, false);
+  const erros = r.errors.filter((e) => e.type === TIPOS_ERRO.CAMPO_DESCONHECIDO);
+  assert.equal(erros.length, 1);
+  assert.equal(erros[0].field, "campoQueNaoExisteNaRaiz");
+  assert.equal(erros[0].index, undefined);
+});
+
+test("campo desconhecido em um registro e rejeitado, com indice e id informados", () => {
+  const registro = registroMinimoFicticio({ campoQueNaoExiste: "valor-ficticio" });
+  const r = validateHistory(baseCom([registro]));
+  assert.equal(r.valid, false);
+  const erros = r.errors.filter((e) => e.type === TIPOS_ERRO.CAMPO_DESCONHECIDO);
+  assert.equal(erros.length, 1);
+  assert.equal(erros[0].field, "campoQueNaoExiste");
+  assert.equal(erros[0].index, 0);
+  assert.equal(erros[0].id, "teste-minimo-001");
+});
+
+test("mais de um campo desconhecido no mesmo registro gera um erro por campo", () => {
+  const registro = registroMinimoFicticio({ campoExtraUm: 1, campoExtraDois: 2 });
+  const r = validateHistory(baseCom([registro]));
+  assert.equal(r.valid, false);
+  const erros = r.errors.filter((e) => e.type === TIPOS_ERRO.CAMPO_DESCONHECIDO);
+  assert.equal(erros.length, 2);
+  assert.deepEqual(erros.map((e) => e.field).sort(), ["campoExtraDois", "campoExtraUm"]);
+});
+
+test("mensagens de erro nunca ecoam o valor de preco, fornecedor ou observacoes", () => {
+  const registro = registroCompletoFicticio({ preco: -777.77, fornecedor: "FORNECEDOR-SIGILOSO-DE-TESTE", observacoes: "OBSERVACAO-SIGILOSA-DE-TESTE" });
+  delete registro.fornecedor; // forca tambem o erro de campo obrigatorio ausente
+  const erros = validateRecord(registro, 0);
+  const textoDosErros = JSON.stringify(erros);
+  assert.doesNotMatch(textoDosErros, /-777\.77/);
+  assert.doesNotMatch(textoDosErros, /FORNECEDOR-SIGILOSO-DE-TESTE/);
+  assert.doesNotMatch(textoDosErros, /OBSERVACAO-SIGILOSA-DE-TESTE/);
+});
+
+// === Correcao 2: significado estrutural dos campos opcionais ===
+
+test("campo opcional ausente (so um, ex.: destino) e valido", () => {
+  const registro = registroCompletoFicticio();
+  delete registro.destino;
+  const r = validateHistory(baseCom([registro]));
+  assert.equal(r.valid, true);
+  assert.deepEqual(r.errors, []);
+});
+
+test("todos os 8 campos opcionais ausentes simultaneamente sao validos", () => {
+  const r = validateHistory(baseCom([registroMinimoFicticio()]));
+  assert.equal(r.valid, true);
+  assert.deepEqual(r.errors, []);
+});
+
+test("campo opcional presente com null e valido (registro minimo + opcionais nulos)", () => {
+  const r = validateHistory(baseCom([registroMinimoComOpcionaisNulosFicticio()]));
+  assert.equal(r.valid, true);
+  assert.deepEqual(r.errors, []);
+});
+
+test("campo opcional presente com valor valido e valido", () => {
+  const registro = registroMinimoFicticio({ formula: "04-14-08", volumeToneladas: 50 });
+  const r = validateHistory(baseCom([registro]));
+  assert.equal(r.valid, true);
+  assert.deepEqual(r.errors, []);
+});
+
+test("campo opcional presente com valor invalido e rejeitado", () => {
+  const registro = registroMinimoFicticio({ formula: "", volumeToneladas: -10 });
+  const r = validateHistory(baseCom([registro]));
+  assert.equal(r.valid, false);
+  assert.ok(r.errors.some((e) => e.type === TIPOS_ERRO.VALOR_INVALIDO && e.field === "formula"));
+  assert.ok(r.errors.some((e) => e.type === TIPOS_ERRO.VALOR_INVALIDO && e.field === "volumeToneladas"));
+});
+
+// === normalizeRecord: nao cria campos ausentes, nao remove campo desconhecido ===
+
+test("normalizeRecord nao cria automaticamente os campos opcionais ausentes", () => {
+  const minimo = registroMinimoFicticio();
+  const normalizado = normalizeRecord(minimo);
+  for (const opcional of ["dataCompra", "formula", "categoriaFormula", "destino", "volumeToneladas", "prazoPagamentoDias", "validadeProposta", "observacoes"]) {
+    assert.equal(opcional in normalizado, false, `normalizeRecord nao deveria ter criado a chave "${opcional}"`);
+  }
+});
+
+test("normalizeRecord preserva campo desconhecido em vez de remove-lo", () => {
+  const registro = registroMinimoFicticio({ campoDesconhecidoDeTeste: "  valor com espacos  " });
+  const normalizado = normalizeRecord(registro);
+  assert.equal("campoDesconhecidoDeTeste" in normalizado, true);
+  // campo desconhecido nao esta na lista de campos normalizaveis: preservado exatamente como veio
+  assert.equal(normalizado.campoDesconhecidoDeTeste, "  valor com espacos  ");
 });
 
 // === 13. arquivo com JSON invalido ===

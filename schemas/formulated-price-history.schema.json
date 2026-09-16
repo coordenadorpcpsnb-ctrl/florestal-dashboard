@@ -35,21 +35,14 @@
       "required": [
         "id",
         "dataCotacao",
-        "dataCompra",
         "anoReferencia",
         "produto",
-        "formula",
         "fornecedor",
         "preco",
         "moeda",
         "unidadePreco",
         "modalidadeEntrega",
-        "destino",
-        "volumeToneladas",
-        "prazoPagamentoDias",
-        "validadeProposta",
-        "fonteRegistro",
-        "observacoes"
+        "fonteRegistro"
       ],
       "properties": {
         "id": {
@@ -77,7 +70,7 @@
           "minLength": 1
         },
         "formula": {
-          "description": "Formula NPK (ou equivalente) do produto, quando conhecida (ex.: '04-14-08'). Obrigatoria como campo (a chave sempre existe), mas aceita null quando a informacao nao estiver disponivel. Nao presumir composicao a partir apenas do nome comercial.",
+          "description": "Formula NPK (ou equivalente) do produto, quando conhecida (ex.: '04-14-08'). Campo opcional: pode estar ausente ou null quando a informacao nao estiver disponivel. Nao presumir composicao a partir apenas do nome comercial.",
           "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
         },
         "categoriaFormula": {

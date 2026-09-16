@@ -11,6 +11,15 @@
  * Este modulo replica essas regras em JavaScript puro (sem dependencia de biblioteca de
  * JSON Schema) porque unicidade de id e a consistencia entre anoReferencia e dataCotacao
  * nao sao expressaveis em JSON Schema puro, e o projeto evita dependencias novas.
+ * test/formulated-price-history.contract.test.mjs le o schema e compara com as
+ * constantes exportadas aqui embaixo, para pegar divergencia entre os dois.
+ *
+ * Etapa 1.1: chaves fora da lista permitida (raiz ou registro) sao rejeitadas
+ * (TIPOS_ERRO.CAMPO_DESCONHECIDO) -- alinhando com additionalProperties:false do
+ * schema. Mensagens de erro nunca ecoam o VALOR de um campo (so o nome do campo,
+ * o indice e o id do registro), porque este modulo tambem e usado para validar
+ * caminhos privados que podem conter dados sensiveis (ver README, secao 10) e
+ * nada disso deve vazar para console/log/Issue/artifact.
  *
  * Nao e chamado por fetch-data.mjs, patch-dashboard.mjs, build-report.mjs, build-email.mjs
  * nem run-weekly.mjs. E' standalone: rode via `npm run validate:formulated-history` ou
@@ -19,6 +28,25 @@
 import { readFileSync } from "node:fs";
 
 export const SCHEMA_VERSION = 1;
+
+/** Chaves aceitas no objeto raiz da base. Qualquer outra chave e CAMPO_DESCONHECIDO. */
+export const CAMPOS_RAIZ_OBRIGATORIOS = Object.freeze(["schemaVersion", "description", "records"]);
+export const CAMPOS_RAIZ_PERMITIDOS = CAMPOS_RAIZ_OBRIGATORIOS;
+
+/** Chaves que precisam existir fisicamente em todo registro (nunca null, nunca ausentes). */
+export const CAMPOS_RECORD_OBRIGATORIOS = Object.freeze([
+  "id", "dataCotacao", "anoReferencia", "produto", "fornecedor",
+  "preco", "moeda", "unidadePreco", "modalidadeEntrega", "fonteRegistro",
+]);
+
+/** Chaves que podem estar ausentes; quando presentes, aceitam null ou um valor valido. */
+export const CAMPOS_RECORD_OPCIONAIS = Object.freeze([
+  "dataCompra", "formula", "categoriaFormula", "destino",
+  "volumeToneladas", "prazoPagamentoDias", "validadeProposta", "observacoes",
+]);
+
+/** Uniao das duas listas acima -- qualquer chave de registro fora daqui e CAMPO_DESCONHECIDO. */
+export const CAMPOS_RECORD_PERMITIDOS = Object.freeze([...CAMPOS_RECORD_OBRIGATORIOS, ...CAMPOS_RECORD_OPCIONAIS]);
 
 /** Moedas aceitas nesta etapa. Lista pensada para crescer sem quebrar registros antigos;
  *  nao implica conversao cambial automatica quando uma nova moeda for adicionada. */
@@ -45,6 +73,7 @@ const RE_ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 /** Tipos de erro distinguidos pelo validador, conforme pedido nesta etapa. */
 export const TIPOS_ERRO = Object.freeze({
   ESTRUTURAL: "ESTRUTURAL",
+  CAMPO_DESCONHECIDO: "CAMPO_DESCONHECIDO",
   CAMPO_OBRIGATORIO_AUSENTE: "CAMPO_OBRIGATORIO_AUSENTE",
   DATA_INVALIDA: "DATA_INVALIDA",
   UNIDADE_INVALIDA: "UNIDADE_INVALIDA",
@@ -90,6 +119,13 @@ export function validateRecord(record, index) {
     return [erro(TIPOS_ERRO.ESTRUTURAL, `registro no indice ${index} nao e um objeto`, { index })];
   }
 
+  // --- campos desconhecidos (additionalProperties:false do schema, aplicado em JS) ---
+  for (const chave of Object.keys(record)) {
+    if (!CAMPOS_RECORD_PERMITIDOS.includes(chave)) {
+      add(TIPOS_ERRO.CAMPO_DESCONHECIDO, chave, `campo desconhecido no registro: "${chave}"`);
+    }
+  }
+
   // --- id ---
   if (!naoNulo(record.id) || record.id === "") {
     add(TIPOS_ERRO.CAMPO_OBRIGATORIO_AUSENTE, "id", "id e obrigatorio e nao pode ser vazio");
@@ -102,23 +138,23 @@ export function validateRecord(record, index) {
   if (!naoNulo(record.dataCotacao)) {
     add(TIPOS_ERRO.CAMPO_OBRIGATORIO_AUSENTE, "dataCotacao", "dataCotacao e obrigatoria");
   } else if (!isValidIsoDate(record.dataCotacao)) {
-    add(TIPOS_ERRO.DATA_INVALIDA, "dataCotacao", `dataCotacao invalida: "${record.dataCotacao}" (esperado YYYY-MM-DD, data real do calendario)`);
+    add(TIPOS_ERRO.DATA_INVALIDA, "dataCotacao", "dataCotacao invalida (esperado YYYY-MM-DD, data real do calendario)");
   } else {
     anoCotacao = anoDe(record.dataCotacao);
   }
 
   // --- dataCompra (opcional, aceita null) ---
   if (naoNulo(record.dataCompra) && !isValidIsoDate(record.dataCompra)) {
-    add(TIPOS_ERRO.DATA_INVALIDA, "dataCompra", `dataCompra invalida: "${record.dataCompra}" (esperado YYYY-MM-DD ou null)`);
+    add(TIPOS_ERRO.DATA_INVALIDA, "dataCompra", "dataCompra invalida (esperado YYYY-MM-DD ou null)");
   }
 
   // --- anoReferencia ---
   if (!naoNulo(record.anoReferencia)) {
     add(TIPOS_ERRO.CAMPO_OBRIGATORIO_AUSENTE, "anoReferencia", "anoReferencia e obrigatorio");
   } else if (!Number.isInteger(record.anoReferencia) || record.anoReferencia < 1000 || record.anoReferencia > 9999) {
-    add(TIPOS_ERRO.VALOR_INVALIDO, "anoReferencia", `anoReferencia deve ser um inteiro de 4 digitos, recebido: ${JSON.stringify(record.anoReferencia)}`);
+    add(TIPOS_ERRO.VALOR_INVALIDO, "anoReferencia", "anoReferencia deve ser um inteiro de 4 digitos");
   } else if (anoCotacao !== null && record.anoReferencia !== anoCotacao) {
-    add(TIPOS_ERRO.ANO_INCONSISTENTE, "anoReferencia", `anoReferencia (${record.anoReferencia}) nao bate com o ano de dataCotacao (${anoCotacao})`);
+    add(TIPOS_ERRO.ANO_INCONSISTENTE, "anoReferencia", "anoReferencia nao bate com o ano de dataCotacao");
   }
 
   // --- produto ---
@@ -128,11 +164,9 @@ export function validateRecord(record, index) {
     add(TIPOS_ERRO.VALOR_INVALIDO, "produto", "produto deve ser texto");
   }
 
-  // --- formula (chave obrigatoria, valor aceita null) ---
-  if (!("formula" in record)) {
-    add(TIPOS_ERRO.CAMPO_OBRIGATORIO_AUSENTE, "formula", "formula e obrigatoria como campo (use null quando desconhecida)");
-  } else if (record.formula !== null && (typeof record.formula !== "string" || record.formula === "")) {
-    add(TIPOS_ERRO.VALOR_INVALIDO, "formula", "formula deve ser texto nao vazio ou null");
+  // --- formula (opcional: pode estar ausente ou null; se presente, texto nao vazio) ---
+  if (naoNulo(record.formula) && (typeof record.formula !== "string" || record.formula === "")) {
+    add(TIPOS_ERRO.VALOR_INVALIDO, "formula", "formula deve ser texto nao vazio quando informada");
   }
 
   // --- categoriaFormula (opcional) ---
@@ -153,28 +187,28 @@ export function validateRecord(record, index) {
   if (!naoNulo(record.preco)) {
     add(TIPOS_ERRO.CAMPO_OBRIGATORIO_AUSENTE, "preco", "preco e obrigatorio");
   } else if (!numeroFinito(record.preco) || record.preco <= 0) {
-    add(TIPOS_ERRO.VALOR_INVALIDO, "preco", `preco deve ser um numero maior que zero, recebido: ${JSON.stringify(record.preco)}`);
+    add(TIPOS_ERRO.VALOR_INVALIDO, "preco", "preco deve ser um numero maior que zero");
   }
 
   // --- moeda ---
   if (!naoNulo(record.moeda)) {
     add(TIPOS_ERRO.CAMPO_OBRIGATORIO_AUSENTE, "moeda", "moeda e obrigatoria");
   } else if (!MOEDAS_SUPORTADAS.includes(record.moeda)) {
-    add(TIPOS_ERRO.VALOR_INVALIDO, "moeda", `moeda "${record.moeda}" nao suportada nesta etapa (aceitas: ${MOEDAS_SUPORTADAS.join(", ")})`);
+    add(TIPOS_ERRO.VALOR_INVALIDO, "moeda", `moeda nao suportada nesta etapa (aceitas: ${MOEDAS_SUPORTADAS.join(", ")})`);
   }
 
   // --- unidadePreco ---
   if (!naoNulo(record.unidadePreco)) {
     add(TIPOS_ERRO.CAMPO_OBRIGATORIO_AUSENTE, "unidadePreco", "unidadePreco e obrigatoria");
   } else if (!UNIDADES_PRECO_SUPORTADAS.includes(record.unidadePreco)) {
-    add(TIPOS_ERRO.UNIDADE_INVALIDA, "unidadePreco", `unidadePreco "${record.unidadePreco}" nao suportada (aceitas: ${UNIDADES_PRECO_SUPORTADAS.join(", ")})`);
+    add(TIPOS_ERRO.UNIDADE_INVALIDA, "unidadePreco", `unidadePreco nao suportada (aceitas: ${UNIDADES_PRECO_SUPORTADAS.join(", ")})`);
   }
 
   // --- modalidadeEntrega ---
   if (!naoNulo(record.modalidadeEntrega)) {
     add(TIPOS_ERRO.CAMPO_OBRIGATORIO_AUSENTE, "modalidadeEntrega", "modalidadeEntrega e obrigatoria (use NAO_INFORMADO quando desconhecida)");
   } else if (!MODALIDADES_ENTREGA_VALIDAS.includes(record.modalidadeEntrega)) {
-    add(TIPOS_ERRO.VALOR_INVALIDO, "modalidadeEntrega", `modalidadeEntrega "${record.modalidadeEntrega}" invalida (aceitas: ${MODALIDADES_ENTREGA_VALIDAS.join(", ")})`);
+    add(TIPOS_ERRO.VALOR_INVALIDO, "modalidadeEntrega", `modalidadeEntrega invalida (aceitas: ${MODALIDADES_ENTREGA_VALIDAS.join(", ")})`);
   }
 
   // --- destino (opcional) ---
@@ -184,24 +218,24 @@ export function validateRecord(record, index) {
 
   // --- volumeToneladas (opcional) ---
   if (naoNulo(record.volumeToneladas) && (!numeroFinito(record.volumeToneladas) || record.volumeToneladas <= 0)) {
-    add(TIPOS_ERRO.VALOR_INVALIDO, "volumeToneladas", `volumeToneladas deve ser um numero maior que zero ou null, recebido: ${JSON.stringify(record.volumeToneladas)}`);
+    add(TIPOS_ERRO.VALOR_INVALIDO, "volumeToneladas", "volumeToneladas deve ser um numero maior que zero quando informado");
   }
 
   // --- prazoPagamentoDias (opcional) ---
   if (naoNulo(record.prazoPagamentoDias) && (!Number.isInteger(record.prazoPagamentoDias) || record.prazoPagamentoDias < 0)) {
-    add(TIPOS_ERRO.VALOR_INVALIDO, "prazoPagamentoDias", `prazoPagamentoDias deve ser um inteiro >= 0 ou null, recebido: ${JSON.stringify(record.prazoPagamentoDias)}`);
+    add(TIPOS_ERRO.VALOR_INVALIDO, "prazoPagamentoDias", "prazoPagamentoDias deve ser um inteiro >= 0 quando informado");
   }
 
   // --- validadeProposta (opcional) ---
   if (naoNulo(record.validadeProposta) && !isValidIsoDate(record.validadeProposta)) {
-    add(TIPOS_ERRO.DATA_INVALIDA, "validadeProposta", `validadeProposta invalida: "${record.validadeProposta}" (esperado YYYY-MM-DD ou null)`);
+    add(TIPOS_ERRO.DATA_INVALIDA, "validadeProposta", "validadeProposta invalida (esperado YYYY-MM-DD ou null)");
   }
 
   // --- fonteRegistro ---
   if (!naoNulo(record.fonteRegistro)) {
     add(TIPOS_ERRO.CAMPO_OBRIGATORIO_AUSENTE, "fonteRegistro", "fonteRegistro e obrigatoria");
   } else if (!FONTES_REGISTRO_VALIDAS.includes(record.fonteRegistro)) {
-    add(TIPOS_ERRO.VALOR_INVALIDO, "fonteRegistro", `fonteRegistro "${record.fonteRegistro}" invalida (aceitas: ${FONTES_REGISTRO_VALIDAS.join(", ")})`);
+    add(TIPOS_ERRO.VALOR_INVALIDO, "fonteRegistro", `fonteRegistro invalida (aceitas: ${FONTES_REGISTRO_VALIDAS.join(", ")})`);
   }
 
   // --- observacoes (opcional) ---
@@ -218,8 +252,13 @@ export function validateRoot(data) {
   if (data === null || typeof data !== "object" || Array.isArray(data)) {
     return [erro(TIPOS_ERRO.ESTRUTURAL, "a base deve ser um objeto JSON com schemaVersion, description e records")];
   }
+  for (const chave of Object.keys(data)) {
+    if (!CAMPOS_RAIZ_PERMITIDOS.includes(chave)) {
+      errors.push(erro(TIPOS_ERRO.CAMPO_DESCONHECIDO, `campo desconhecido na raiz: "${chave}"`, { field: chave }));
+    }
+  }
   if (data.schemaVersion !== SCHEMA_VERSION) {
-    errors.push(erro(TIPOS_ERRO.ESTRUTURAL, `schemaVersion deve ser ${SCHEMA_VERSION}, recebido: ${JSON.stringify(data.schemaVersion)}`));
+    errors.push(erro(TIPOS_ERRO.ESTRUTURAL, `schemaVersion deve ser ${SCHEMA_VERSION}`));
   }
   if (typeof data.description !== "string" || data.description.trim() === "") {
     errors.push(erro(TIPOS_ERRO.ESTRUTURAL, "description e obrigatoria e deve ser um texto nao vazio"));

@@ -3,3 +3,8 @@ node_modules/
 issue-body.md
 email-body.html
 email-subject.txt
+
+# Dados privados de precos de formulados (dados reais/confidenciais nunca
+# devem ser versionados neste repositorio publico -- ver README, secao 10).
+/data/private/
+*.private.json
