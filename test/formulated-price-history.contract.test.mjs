@@ -19,6 +19,7 @@ import {
   CAMPOS_RAIZ_OBRIGATORIOS,
   CAMPOS_RECORD_PERMITIDOS,
   CAMPOS_RECORD_OBRIGATORIOS,
+  CAMPOS_RECORD_OPCIONAIS,
   MODALIDADES_ENTREGA_VALIDAS,
   FONTES_REGISTRO_VALIDAS,
   MOEDAS_SUPORTADAS,
@@ -86,4 +87,23 @@ test("contrato: nenhum campo obrigatorio do registro esta fora da lista de campo
 test("contrato: schemaVersion do schema (const) bate com SCHEMA_VERSION do JS", async () => {
   const { SCHEMA_VERSION } = await import("../formulated-price-history.mjs");
   assert.equal(schema.properties.schemaVersion.const, SCHEMA_VERSION);
+});
+
+// === Correcao documental Etapa 2: a estrutura tem 18 propriedades (10 obrigatorias
+// + 8 opcionais), nao 17. Estes testes travam essa contagem explicitamente. ===
+
+test("CAMPOS_RECORD_PERMITIDOS tem exatamente 18 campos", () => {
+  assert.equal(CAMPOS_RECORD_PERMITIDOS.length, 18);
+});
+
+test("uniao de CAMPOS_RECORD_OBRIGATORIOS (10) e CAMPOS_RECORD_OPCIONAIS (8) == CAMPOS_RECORD_PERMITIDOS, sem sobreposicao", () => {
+  assert.equal(CAMPOS_RECORD_OBRIGATORIOS.length, 10);
+  assert.equal(CAMPOS_RECORD_OPCIONAIS.length, 8);
+  assert.equal(CAMPOS_RECORD_OBRIGATORIOS.length + CAMPOS_RECORD_OPCIONAIS.length, CAMPOS_RECORD_PERMITIDOS.length);
+
+  const uniao = [...new Set([...CAMPOS_RECORD_OBRIGATORIOS, ...CAMPOS_RECORD_OPCIONAIS])];
+  assertSameSet(uniao, CAMPOS_RECORD_PERMITIDOS, "uniao obrigatorios+opcionais vs permitidos");
+
+  const sobreposicao = CAMPOS_RECORD_OBRIGATORIOS.filter((c) => CAMPOS_RECORD_OPCIONAIS.includes(c));
+  assert.deepEqual(sobreposicao, [], "nenhum campo deveria estar em obrigatorios E opcionais ao mesmo tempo");
 });

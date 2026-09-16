@@ -289,12 +289,19 @@ data/
   private/                        # NÃO versionado (.gitignore) -- dados reais ficam aqui, local
 schemas/
   formulated-price-history.schema.json  # contrato formal dos campos do histórico
+templates/
+  formulated-prices-history-template.csv  # modelo CSV público, só dados fictícios (ver seção 11)
 formulated-price-history.mjs      # módulo: carrega, valida e normaliza o histórico
 validate-formulated-history.mjs   # CLI: `npm run validate:formulated-history [caminho]`
+formulated-price-csv.mjs          # módulo: parser CSV puro + conversão de tipos
+import-formulated-history.mjs     # CLI: `npm run import:formulated-history -- entrada.csv saida.private.json [--write]`
 test/
   formulated-price-history.test.mjs           # testes de campo/validação
   formulated-price-history.contract.test.mjs  # schema <-> JS sempre sincronizados
-  formulated-price-history.cli.test.mjs       # testes do CLI via subprocesso
+  formulated-price-history.cli.test.mjs       # testes do CLI de validação via subprocesso
+  formulated-price-csv.test.mjs               # testes do parser CSV
+  import-formulated-history.test.mjs          # testes de merge/conflito/ordenação do importador
+  import-formulated-history.cli.test.mjs      # testes do CLI de importação via subprocesso
 ```
 
 ---
@@ -357,7 +364,7 @@ estrutura de dados, a validação e os testes.
 | `fonteRegistro` | **obrigatória** | enum (ver abaixo) | categoria da fonte — nunca o documento em si |
 | `observacoes` | opcional (pode faltar) | texto ou `null` | texto livre, sem dados confidenciais |
 
-**Só estes 17 campos são aceitos** — a base rejeita qualquer chave fora dessa lista,
+**Só estes 18 campos são aceitos** (10 obrigatórios + 8 opcionais) — a base rejeita qualquer chave fora dessa lista,
 tanto no envelope raiz (`schemaVersion`/`description`/`records`) quanto em cada
 registro, com um erro do tipo `CAMPO_DESCONHECIDO` (ver "Como interpretar os erros").
 
@@ -545,3 +552,142 @@ Uma base **vazia** (`records: []`) nunca é um erro — é o estado inicial espe
   contrato, condições comerciais sigilosas) deve ir para este repositório público.
   Trate a base real com a mesma cautela que qualquer outro dado comercial sensível
   da empresa.
+
+---
+
+## 11. Importação de CSV para o histórico de formulados
+
+> Esta seção documenta uma ferramenta **local**: o importador nunca escreve na base
+> pública, nunca é chamado pela esteira semanal, e não conecta a base privada a
+> nenhum outro lugar do projeto. Ele **não calcula** índice de pressão, preço
+> histórico corrigido, faixa de negociação, previsão nem custo industrial do
+> fabricante — só converte um CSV em registros no mesmo formato JSON validado que a
+> seção 10 descreve.
+
+### Formato do CSV
+
+- **UTF-8**, com ou sem BOM no início do arquivo.
+- **Delimitador `;`** (ponto e vírgula) — não é vírgula, por causa do padrão pt-BR
+  de decimal com vírgula.
+- Primeira linha é **sempre o cabeçalho**, obrigatório.
+- Uma linha por cotação ou compra.
+- Campos com `;` ou quebra de linha dentro precisam ir entre aspas duplas (`"..."`);
+  uma aspa dupla literal dentro de um campo assim vira `""` (padrão RFC 4180).
+- Aceita quebra de linha `CRLF` ou `LF`, com ou sem quebra de linha na última linha.
+- **Sem suporte a XLSX** nesta etapa — só CSV.
+
+O **cabeçalho canônico** (ordem oficial, usada no template) é:
+
+```
+id;dataCotacao;dataCompra;anoReferencia;produto;formula;categoriaFormula;fornecedor;preco;moeda;unidadePreco;modalidadeEntrega;destino;volumeToneladas;prazoPagamentoDias;validadeProposta;fonteRegistro;observacoes
+```
+
+O arquivo real **não precisa seguir essa ordem** — o importador aceita qualquer
+ordem de colunas, desde que os 18 nomes sejam os certos e não haja repetição. Uma
+coluna com nome desconhecido, duplicada, ou uma coluna **obrigatória** ausente do
+cabeçalho impede a importação inteira. Colunas **opcionais** podem simplesmente não
+aparecer no cabeçalho.
+
+### Números: decimal e separador de milhar
+
+- `preco` e `volumeToneladas` aceitam decimal com **vírgula OU ponto** (`1234,56`
+  ou `1234.56`).
+- **Separador de milhar não é aceito nesta etapa**, em nenhum formato — `1.234,56`,
+  `1,234.56` e `1.234.567` são todos rejeitados. Escreva o número sem separador de
+  milhar (`1234.56`).
+- `anoReferencia` e `prazoPagamentoDias` só aceitam **inteiro** — `30.5` ou `30,5`
+  são rejeitados.
+- Um campo **opcional** vazio na célula do CSV vira **ausência da propriedade** no
+  registro gerado (não `null`, não string vazia) — é a mesma regra para todos os 8
+  campos opcionais, documentada aqui para não haver ambiguidade.
+- Um campo **obrigatório** vazio na célula do CSV é sempre erro — nunca vira `0`,
+  nunca vira uma data inventada, nunca é preenchido automaticamente.
+
+### Exemplo — modelo público fictício
+
+[`templates/formulated-prices-history-template.csv`](templates/formulated-prices-history-template.csv)
+tem o cabeçalho canônico e até 2 linhas de dados **inequivocamente fictícios**
+(`FORMULADO_FICTICIO_A`, `FORNECEDOR_FICTICIO_A`, `DESTINO_FICTICIO`,
+`fp-exemplo-000001`) — serve só para mostrar o formato. **Nunca** use esse arquivo
+como base real; ele existe só como documentação executável (os testes confirmam que
+ele passa no parser e no validador, e que não contém nada que pareça um dado real).
+
+### ID técnico
+
+O campo `id` **precisa vir preenchido no CSV** — o importador nunca gera um `id`
+sozinho. Use um identificador técnico e opaco, por exemplo `fp-2026-000001`
+(`fp` de "formulado", ano, sequencial). O `id` **nunca** deve conter fornecedor,
+número de contrato, nome de fazenda/unidade, preço, centro de custo, nome de
+pessoa ou qualquer condição comercial — é só uma chave, não um resumo do registro.
+
+### Como rodar (dry-run e `--write`)
+
+```bash
+# dry-run (padrão): analisa e valida, NAO grava nada
+npm run import:formulated-history -- caminho/entrada.csv caminho/saida.private.json
+
+# grava de verdade, só se tudo for valido
+npm run import:formulated-history -- caminho/entrada.csv caminho/saida.private.json --write
+```
+
+**Sem `--write`** (comportamento padrão): lê o CSV, converte, valida, imprime um
+resumo (linhas lidas, linhas vazias ignoradas, registros convertidos/válidos/
+inválidos, conflitos de id) e **não grava nada**, nunca. Termina com código `0`
+só se a importação inteira for válida; código diferente de zero se houver qualquer
+erro — isso vale mesmo em dry-run, para você conferir antes de rodar com `--write`.
+
+**Com `--write`**: só grava se **toda** a importação for válida (nenhum erro,
+nenhum conflito). Se a saída já existir, ela é carregada e validada primeiro; se já
+existir mas estiver inválida, **nada é sobrescrito**. Registros existentes nunca são
+removidos nem atualizados automaticamente — só `id`s novos são adicionados.
+
+- **Idempotente**: rodar a mesma importação duas vezes contra a mesma saída não
+  duplica nada — na segunda vez, todo `id` já presente e com o mesmo conteúdo é
+  contado como "já existente", não como novo.
+- **Conflito**: se um `id` do CSV já existe na saída mas com **qualquer** diferença
+  de conteúdo, a importação inteira falha com um erro de conflito para aquele `id`
+  — o arquivo de saída **não é alterado**. Corrija o CSV ou o registro existente
+  manualmente antes de tentar de novo; o importador nunca decide sozinho qual
+  versão é a "certa".
+- **Gravação atômica**: a escrita acontece num arquivo temporário no mesmo
+  diretório do destino, que é validado antes de substituir o arquivo final por
+  `rename`. Se qualquer coisa falhar no meio do caminho, o temporário é apagado e
+  o destino final não chega a ser tocado.
+- Os registros são gravados em **ordem determinística** (por `dataCotacao`
+  crescente, depois `id` crescente) — não por fornecedor, produto ou preço — para
+  que o arquivo produza diffs previsíveis localmente (mesmo estando fora do Git).
+
+### Caminho de saída: sempre privado
+
+- **Nunca** aceito como saída: `data/formulated-prices-history.json` (a base
+  pública) — rejeitado explicitamente, sempre.
+- A saída **precisa terminar em `.private.json`** — é a regra tecnicamente
+  aplicada (a mesma que já protege esse padrão no `.gitignore`). O caminho
+  recomendado, mas não tecnicamente obrigatório, é dentro de `data/private/`
+  (ex.: `data/private/formulated-prices-history.private.json`).
+- O importador **nunca procura** um arquivo privado sozinho — entrada e saída são
+  sempre caminhos explícitos que você informa.
+
+### Política de logs
+
+O importador (dry-run ou `--write`) **nunca imprime** preço, fornecedor, produto,
+fórmula, volume, destino, prazo, observações ou o conteúdo bruto de uma linha do
+CSV. Só aparecem no terminal: número da linha, `id` técnico, nome do campo e a
+categoria do erro. Trate a saída do terminal com a mesma cautela do arquivo privado
+que ela descreve — não cole em Issues, comentários de PR ou qualquer lugar público.
+
+### Cotação × compra (lembrete)
+
+Assim como na seção 10: `dataCotacao` é obrigatória (quando o registro é só uma
+cotação, `dataCompra` fica ausente ou `null`); `dataCompra` só é preenchida quando
+a cotação virou compra de fato. `fonteRegistro` indica de onde veio o dado
+(`COTACAO`, `PEDIDO_COMPRA`, `NOTA_FISCAL`, `CONTRATO`, `REGISTRO_INTERNO`) — não
+confunda uma proposta que não se concretizou com uma compra efetivada.
+
+### O que esta importação NÃO faz
+
+Ela só converte CSV → JSON validado. **Não** calcula índice de pressão de
+matérias-primas, preço histórico corrigido, faixa estimada de negociação,
+regressão, previsão, comparação com ureia/MAP/KCl nem custo por hectare — e
+**não** apura o custo industrial do fabricante (ver seção 10). Tudo isso, se vier
+a existir, é trabalho de uma etapa futura, separada desta.
