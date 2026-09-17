@@ -231,19 +231,88 @@ test("validateObservation: metadata.commitHashes rejeita hash mal formado", () =
 
 // === Etapa 5.1: metadata.repeatedFromPrevious / matchesOverrideValue ===
 
-test("validateObservation: metadata.repeatedFromPrevious e matchesOverrideValue sao obrigatorios e booleanos", () => {
-  const semRepetido = observacaoFicticia();
-  delete semRepetido.metadata.repeatedFromPrevious;
-  assert.ok(validateObservation(semRepetido, 0).some((e) => e.type === "CAMPO_OBRIGATORIO_AUSENTE" && e.field === "metadata.repeatedFromPrevious"));
+// ============================================================================
+// Etapa 5.2: repeatedFromPrevious/matchesOverrideValue viraram OPCIONAIS na
+// validacao (compatibilidade retroativa com saidas validas da Etapa 5,
+// gravadas ANTES desses dois campos existirem -- schemaVersion continua 1).
+// Itens 1-11 da lista de testes obrigatorios da Etapa 5.2.
+// ============================================================================
 
-  const semOverride = observacaoFicticia();
-  delete semOverride.metadata.matchesOverrideValue;
-  assert.ok(validateObservation(semOverride, 0).some((e) => e.type === "CAMPO_OBRIGATORIO_AUSENTE" && e.field === "metadata.matchesOverrideValue"));
+/** Observacao no formato EXATO que a Etapa 5 produzia -- sem os dois campos
+ *  de metadata que so passaram a existir na Etapa 5.1. Fixture ficticia. */
+function observacaoV1SemCamposNovos() {
+  const obs = observacaoFicticia();
+  const { repeatedFromPrevious, matchesOverrideValue, ...metadataAntiga } = obs.metadata;
+  return { ...obs, metadata: metadataAntiga };
+}
 
+test("1. arquivo v1 antigo sem repeatedFromPrevious e valido", () => {
+  const obs = observacaoFicticia();
+  delete obs.metadata.repeatedFromPrevious;
+  assert.deepEqual(validateObservation(obs, 0), []);
+});
+
+test("2. arquivo v1 antigo sem matchesOverrideValue e valido", () => {
+  const obs = observacaoFicticia();
+  delete obs.metadata.matchesOverrideValue;
+  assert.deepEqual(validateObservation(obs, 0), []);
+});
+
+test("3. ambos ausentes simultaneamente sao validos (formato exato da Etapa 5)", () => {
+  assert.deepEqual(validateObservation(observacaoV1SemCamposNovos(), 0), []);
+});
+
+test("4. ausencia NAO e convertida em false -- validateObservation nao adiciona os campos, nem os altera", () => {
+  const obs = observacaoV1SemCamposNovos();
+  validateObservation(obs, 0);
+  assert.ok(!("repeatedFromPrevious" in obs.metadata));
+  assert.ok(!("matchesOverrideValue" in obs.metadata));
+});
+
+test("5. ausencia permanece apos serializar/reserializar o objeto (JSON.stringify + JSON.parse)", () => {
+  const obs = observacaoV1SemCamposNovos();
+  const reserializado = JSON.parse(JSON.stringify(obs));
+  assert.ok(!("repeatedFromPrevious" in reserializado.metadata));
+  assert.ok(!("matchesOverrideValue" in reserializado.metadata));
+  assert.deepEqual(validateObservation(reserializado, 0), []);
+});
+
+test("6. repeatedFromPrevious presente como true e valido", () => {
+  assert.deepEqual(validateObservation(observacaoFicticia({ metadata: { ...observacaoFicticia().metadata, repeatedFromPrevious: true } }), 0), []);
+});
+
+test("7. repeatedFromPrevious presente como false e valido (false != ausente -- verificacao rodou e nao houve correspondencia)", () => {
+  assert.deepEqual(validateObservation(observacaoFicticia({ metadata: { ...observacaoFicticia().metadata, repeatedFromPrevious: false } }), 0), []);
+});
+
+test("8. repeatedFromPrevious presente com nao-booleano e invalido", () => {
   assert.ok(validateObservation(observacaoFicticia({ metadata: { ...observacaoFicticia().metadata, repeatedFromPrevious: "sim" } }), 0).some((e) => e.field === "metadata.repeatedFromPrevious"));
-  assert.ok(validateObservation(observacaoFicticia({ metadata: { ...observacaoFicticia().metadata, matchesOverrideValue: 1 } }), 0).some((e) => e.field === "metadata.matchesOverrideValue"));
+});
 
-  assert.deepEqual(validateObservation(observacaoFicticia({ metadata: { ...observacaoFicticia().metadata, repeatedFromPrevious: true, matchesOverrideValue: true } }), 0), []);
+test("9. matchesOverrideValue presente como true e valido", () => {
+  assert.deepEqual(validateObservation(observacaoFicticia({ metadata: { ...observacaoFicticia().metadata, matchesOverrideValue: true } }), 0), []);
+});
+
+test("10. matchesOverrideValue presente como false e valido", () => {
+  assert.deepEqual(validateObservation(observacaoFicticia({ metadata: { ...observacaoFicticia().metadata, matchesOverrideValue: false } }), 0), []);
+});
+
+test("11. matchesOverrideValue presente com nao-booleano e invalido", () => {
+  assert.ok(validateObservation(observacaoFicticia({ metadata: { ...observacaoFicticia().metadata, matchesOverrideValue: 1 } }), 0).some((e) => e.field === "metadata.matchesOverrideValue"));
+});
+
+test("13a. schema: 'required' de metadata NAO inclui mais repeatedFromPrevious/matchesOverrideValue (viraram opcionais)", () => {
+  const metaSchema = schema.$defs.observation.properties.metadata;
+  assert.ok(!metaSchema.required.includes("repeatedFromPrevious"));
+  assert.ok(!metaSchema.required.includes("matchesOverrideValue"));
+  // mas continuam aceitos como propriedade (nao viram CAMPO_DESCONHECIDO)
+  assert.ok(Object.keys(metaSchema.properties).includes("repeatedFromPrevious"));
+  assert.ok(Object.keys(metaSchema.properties).includes("matchesOverrideValue"));
+});
+
+test("14a. schemaVersion permanece 1 apos a correcao de compatibilidade da Etapa 5.2", () => {
+  assert.equal(SCHEMA_VERSION, 1);
+  assert.equal(schema.properties.schemaVersion.const, 1);
 });
 
 test("validateObservation: metadata precisa ser objeto (nao array, nao null)", () => {

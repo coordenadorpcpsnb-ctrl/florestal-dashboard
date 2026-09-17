@@ -904,6 +904,32 @@ resolvidos automaticamente — aparecem marcados na própria saída.
 - **`repeatedFromPrevious` e `matchesOverrideValue` são metadados de
   auditoria**, nunca prova: nenhum dos dois altera `sourceStatus` sozinho.
 
+### Compatibilidade do schema v1 (Etapa 5.2)
+
+`repeatedFromPrevious` e `matchesOverrideValue` (`metadata` de cada observação)
+são **opcionais** na validação — `schemaVersion` continua `1`. Um arquivo
+gerado pela Etapa 5 (antes de esses dois campos existirem) permanece válido
+sem eles. A diferença entre **campo ausente** e **`false`** é proposital e
+nunca deve ser confundida:
+
+- **ausente**: o metadado não foi calculado/está indisponível (típico de uma
+  saída antiga da Etapa 5) — nunca convertido automaticamente para `false`.
+- **`false`**: a verificação rodou e não houve correspondência.
+- **`true`**: a verificação rodou e houve correspondência (nunca, sozinha,
+  prova de `FALLBACK_ULTIMO_CONHECIDO`/`OVERRIDE_MANUAL` — ver acima).
+
+Toda **extração nova** (a partir desta etapa) continua preenchendo sempre os
+dois campos. `validateHistory`/`readHistoryFile`/`loadAndValidateHistoryFile`
+só leem e validam — nunca inserem um campo ausente. `OVERRIDE_MANUAL` exige
+comprovação do caminho de seleção real do código (`forceManual` ativo com
+valor manual presente no mesmo commit, ou falha comprovada da busca automática
+com valor manual presente e coincidente) — nunca só a coincidência de valor.
+
+A cobertura sanitizada (dry-run e `--output`) é **diagnóstica**, não previsão:
+mostra contagens e intervalos de referência para ajudar a decidir se um
+indicador precisa de fonte histórica complementar — nunca qualidade de preço,
+confiança estatística ou recomendação.
+
 **Esta ferramenta não deve ser usada para previsão** de preço, e **nesta etapa
 não cruza** o histórico de direcionadores com o histórico de formulados —
 esse cruzamento é trabalho de uma etapa futura, própria, depois de revisão

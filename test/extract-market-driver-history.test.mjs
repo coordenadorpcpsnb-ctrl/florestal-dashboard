@@ -26,6 +26,8 @@ import {
   deduplicarObservacoes,
   classificarFrequencia,
   calcularCobertura,
+  classificarCoberturaIndicador,
+  CLASSIFICACAO_COBERTURA,
   extrairSerieTemporal,
   formatarResumoCobertura,
 } from "../extract-market-driver-history.mjs";
@@ -724,4 +726,209 @@ test("5.1-30/31/32. sourceMessage nunca contem o status bruto, um valor numerico
   assert.doesNotMatch(String(r.sourceMessage), /HTTP 500/);
   assert.doesNotMatch(String(r.sourceMessage), /999999\.87/);
   assert.doesNotMatch(String(r.sourceMessage), /<|>/);
+});
+
+// ============================================================================
+// ETAPA 5.2 -- confirmacao rigorosa (re-auditada) da regra de OVERRIDE_MANUAL,
+// nos tres casos descritos no enunciado: A (forcado), B (apos falha), C
+// (coincidencia sem uso comprovado). Numeracao 15-26 da lista de testes.
+// ============================================================================
+
+test("A. Override FORCADO comprovado: forceManual ativo NESSE commit + indicador coberto + valor manual presente + valor coincidente -> OVERRIDE_MANUAL", () => {
+  const r = classificarProveniencia({
+    indicator: "dolar", value: 5.19, statusTexto: "ok (BCB PTAX)", anterior: 5.15,
+    overrideNesseCommit: { dolar: 5.19, forceManual: true }, chaveOverride: "dolar",
+  });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+  assert.equal(r.sourceMessage, CATEGORIA_MENSAGEM.STATUS_OVERRIDE_COMPROVADO);
+  assert.equal(r.matchesOverrideValue, true);
+});
+
+test("16. override FORCADO sem valor manual presente para o indicador nao e comprovado (fica NAO_IDENTIFICAVEL, nao OVERRIDE_MANUAL)", () => {
+  const r = classificarProveniencia({
+    indicator: "dolar", value: 5.19, statusTexto: "falha: timeout", anterior: 5.15,
+    overrideNesseCommit: { forceManual: true }, chaveOverride: "dolar", // sem chave "dolar" no override
+  });
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+});
+
+test("17. override FORCADO com valor divergente (gravado != override lido) nao e comprovado", () => {
+  const r = classificarProveniencia({
+    indicator: "dolar", value: 5.30, statusTexto: "ok (BCB PTAX)", anterior: 5.15,
+    overrideNesseCommit: { dolar: 5.19, forceManual: true }, chaveOverride: "dolar",
+  });
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
+});
+
+test("B. Override APOS FALHA automatica comprovavel: forceManual desativado + automatico falhou (status) + valor manual presente e coincidente -> OVERRIDE_MANUAL (ordem real de escolher(): auto=null ?? manual)", () => {
+  const r = classificarProveniencia({
+    indicator: "ureia", value: 555, statusTexto: "falha: NCM ausente na resposta", anterior: 400,
+    overrideNesseCommit: { ureia: 555 }, chaveOverride: "ureia", // forceManual ausente/false: precedencia normal
+  });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+  assert.equal(r.sourceMessage, CATEGORIA_MENSAGEM.STATUS_OVERRIDE_COMPROVADO);
+});
+
+test("18. override apos falha comprovavel (repete o caso B com forceManual explicitamente false)", () => {
+  const r = classificarProveniencia({
+    indicator: "map", value: 640, statusTexto: "falha: valor implausivel (999)", anterior: 600,
+    overrideNesseCommit: { map: 640, forceManual: false }, chaveOverride: "map",
+  });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+});
+
+test("19. falha AMBIGUA (sem match de override, sem marcador de fallback) NAO comprova override nem fallback -- NAO_IDENTIFICAVEL", () => {
+  const r = classificarProveniencia({
+    indicator: "map", value: 601, statusTexto: "falha: timeout", anterior: 600,
+    overrideNesseCommit: { map: 640 }, chaveOverride: "map", // override existe mas NAO bate com o valor gravado
+  });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+});
+
+test("C. Coincidencia SEM uso comprovado: automatico teve sucesso -> OBSERVADO (nunca OVERRIDE_MANUAL), matchesOverrideValue fica true so como auditoria", () => {
+  const r = classificarProveniencia({
+    indicator: "kcl", value: 328, statusTexto: "ok (ComexStat 2026-01)", anterior: 342,
+    overrideNesseCommit: { kcl: 328 }, chaveOverride: "kcl",
+  });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.OBSERVADO);
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+  assert.equal(r.matchesOverrideValue, true);
+});
+
+test("20. automatico com sucesso NAO vira override por coincidencia (mesmo caso C, foco na regra 'sucesso nunca e override')", () => {
+  const r = classificarProveniencia({
+    indicator: "bdi", value: 2670, statusTexto: "ok (HANDYBULK, 15/09/2026)", anterior: 2667,
+    overrideNesseCommit: { bdi: 2670 }, chaveOverride: "bdi",
+  });
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+});
+
+test("21. matchesOverrideValue pode ser true junto de OBSERVADO", () => {
+  const r = classificarProveniencia({ indicator: "kcl", value: 328, statusTexto: "ok (ComexStat 2026-01)", anterior: null, overrideNesseCommit: { kcl: 328 }, chaveOverride: "kcl" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.OBSERVADO);
+  assert.equal(r.matchesOverrideValue, true);
+});
+
+test("22. matchesOverrideValue pode ser true junto de NAO_IDENTIFICAVEL (origem automatica nao demonstravel)", () => {
+  const r = classificarProveniencia({ indicator: "kcl", value: 328, statusTexto: "texto de status nao reconhecido", anterior: null, overrideNesseCommit: { kcl: 328 }, chaveOverride: "kcl" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
+  assert.equal(r.matchesOverrideValue, true);
+});
+
+test("23. matchesOverrideValue sozinho NAO determina sourceStatus -- mesmo matchesOverrideValue=true produz status diferentes conforme o resto da evidencia", () => {
+  const comSucesso = classificarProveniencia({ indicator: "kcl", value: 328, statusTexto: "ok (ComexStat 2026-01)", anterior: null, overrideNesseCommit: { kcl: 328 }, chaveOverride: "kcl" });
+  const comFalha = classificarProveniencia({ indicator: "kcl", value: 328, statusTexto: "falha: timeout", anterior: 999, overrideNesseCommit: { kcl: 328 }, chaveOverride: "kcl" });
+  assert.equal(comSucesso.matchesOverrideValue, true);
+  assert.equal(comFalha.matchesOverrideValue, true);
+  assert.notEqual(comSucesso.sourceStatus, comFalha.sourceStatus); // OBSERVADO vs OVERRIDE_MANUAL
+});
+
+test("24b. override de OUTRO indicador no mesmo commit nao contamina (chaveOverride aponta so para o indicador atual)", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 640, statusTexto: "falha: timeout", anterior: 400, overrideNesseCommit: { map: 640, kcl: 328 }, chaveOverride: "ureia" });
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+  assert.equal(r.matchesOverrideValue, false);
+});
+
+test("25b. override de OUTRO commit nunca e usado -- overrideNesseCommit representa sempre so o commit do proprio snapshot (nunca um valor 'atual'/de outro commit)", () => {
+  // o unico jeito de um valor de outro commit vazar seria overrideNesseCommit
+  // vir de uma leitura diferente -- aqui confirmamos que overrideNesseCommit=null
+  // (o commit atual nao tem override legivel) nunca produz OVERRIDE_MANUAL,
+  // mesmo que o valor "faca sentido" como um override valido em outro contexto.
+  const r = classificarProveniencia({ indicator: "ureia", value: 555, statusTexto: "falha: timeout", anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" });
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+});
+
+test("26. forceManual (flag global do arquivo de override) nao gera OVERRIDE_MANUAL para um indicador sem valor manual proprio, mesmo com outro indicador coberto", () => {
+  const r = classificarProveniencia({
+    indicator: "ureia", value: 400, statusTexto: "ok (ComexStat 2026-01)", anterior: 400,
+    overrideNesseCommit: { forceManual: true, map: 640 }, chaveOverride: "ureia", // so "map" tem valor; "ureia" nao
+  });
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.OBSERVADO); // status ok, sem match de override -- observado normal
+});
+
+// ============================================================================
+// ETAPA 5.2 -- cobertura sanitizada (itens 27-32).
+// ============================================================================
+
+function montarCoberturaComRepeticaoEOverride() {
+  const commits = [{
+    hash: HASH_A, commitDate: "2026-01-10T10:00:05+00:00",
+    dataJson: snapshotTexto({
+      current: { dolar: 5.0, ureia: 400, map: 640, kcl: 300, gas: 2.5, bdi: 2000, soja: 130, sojaTO: 124 },
+      previous: { dolar: 5.0, ureia: 400, map: 600, kcl: 300, gas: 2.5, bdi: 2000, soja: 130, sojaTO: 124 },
+      status: { ...JSON.parse(snapshotTexto()).status, ureia: "ok (ComexStat 2026-01)", map: "falha: NCM ausente" },
+    }),
+    override: JSON.stringify({ map: 640 }),
+  }];
+  return extrairSerieTemporal({ adapterGit: adapterFicticio(commits) });
+}
+
+test("27. cobertura conta repeatedFromPreviousCount separadamente de matchesOverrideValueCount (nao conflados)", () => {
+  const { cobertura } = montarCoberturaComRepeticaoEOverride();
+  assert.ok(cobertura.repeatedFromPreviousCount >= 1); // ureia: 400==400
+  assert.ok(cobertura.matchesOverrideValueCount >= 1); // map: bate com override
+});
+
+test("28. cobertura conta matchesOverrideValueCount como metrica propria (nao e igual a contagem de OVERRIDE_MANUAL)", () => {
+  const { cobertura, serie } = montarCoberturaComRepeticaoEOverride();
+  const overrideManualCount = serie.observations.filter((o) => o.sourceStatus === "OVERRIDE_MANUAL").length;
+  // aqui coincidem (map realmente virou OVERRIDE_MANUAL), mas as duas metricas
+  // sao conceitualmente distintas -- confirmamos que o campo existe e e numerico.
+  assert.equal(typeof cobertura.matchesOverrideValueCount, "number");
+  assert.ok(cobertura.matchesOverrideValueCount >= overrideManualCount);
+});
+
+test("29. cobertura por status (statusContagemGlobal) reflete a proveniencia calculada, nao so 'tem numero'", () => {
+  const { cobertura } = montarCoberturaComRepeticaoEOverride();
+  assert.equal(typeof cobertura.statusContagemGlobal.OBSERVADO, "number");
+  assert.equal(typeof cobertura.statusContagemGlobal.OVERRIDE_MANUAL, "number");
+  assert.ok(cobertura.statusContagemGlobal.OVERRIDE_MANUAL >= 1); // map
+  const soma = Object.values(cobertura.statusContagemGlobal).reduce((a, b) => a + b, 0);
+  assert.equal(soma, cobertura.observacoesDeduplicadas);
+});
+
+test("30. cobertura por rastreabilidade (confiancaContagemGlobal) reflete as regras de classificarConfianca", () => {
+  const { cobertura } = montarCoberturaComRepeticaoEOverride();
+  const soma = Object.values(cobertura.confiancaContagemGlobal).reduce((a, b) => a + b, 0);
+  assert.equal(soma, cobertura.observacoesDeduplicadas);
+  assert.ok(Object.keys(cobertura.confiancaContagemGlobal).every((c) => Object.values(CONFIANCA_EXTRACAO).includes(c)));
+});
+
+test("31. indicador SEM referencia economica e contado separadamente (semReferenciaEconomica) do indicador COM referencia", () => {
+  const { cobertura } = montarCoberturaComRepeticaoEOverride();
+  assert.equal(cobertura.porIndicador.dolar.semReferenciaEconomica, 1); // dolar nunca tem referencia
+  assert.equal(cobertura.porIndicador.ureia.semReferenciaEconomica, 0); // ureia tem referencePeriod
+  assert.equal(cobertura.porIndicador.dolar.classificacaoCobertura, CLASSIFICACAO_COBERTURA.SEM_REFERENCIA_ECONOMICA);
+  assert.equal(cobertura.porIndicador.ureia.classificacaoCobertura, CLASSIFICACAO_COBERTURA.COBERTURA_ESTRUTURADA_LIMITADA);
+});
+
+test("32. commits NAO sao tratados como periodos economicos -- 3 commits do mesmo mes de referencia contam como 1 referencia distinta, nao 3", () => {
+  const mesmoMes = ["10", "17", "24"].map((dia, i) => ({
+    hash: [HASH_A, HASH_B, HASH_C][i], commitDate: `2026-01-${dia}T10:00:05+00:00`,
+    dataJson: snapshotTexto({ updatedAt: `2026-01-${dia}T10:00:00.000Z` }), // refsFertilizantes.ureia = "2026-01" em todos
+  }));
+  const { cobertura } = extrairSerieTemporal({ adapterGit: adapterFicticio(mesmoMes) });
+  assert.equal(cobertura.porIndicador.ureia.referenciasEconomicasDistintas, 1);
+  // mas a frequencia observada ainda reflete que houve 3 commits (rastreabilidade, nao "3 periodos")
+  assert.equal(cobertura.porIndicador.ureia.observacoesDeduplicadas, 1);
+});
+
+test("classificarCoberturaIndicador: SEM_REFERENCIA_ECONOMICA quando 0 referencias distintas, independente do status", () => {
+  const r = classificarCoberturaIndicador("dolar", { referenciasEconomicasDistintas: 0, observacoesDeduplicadas: 5, statusContagem: { OBSERVADO: 5 } });
+  assert.equal(r, CLASSIFICACAO_COBERTURA.SEM_REFERENCIA_ECONOMICA);
+});
+
+test("classificarCoberturaIndicador: COBERTURA_NAO_IDENTIFICAVEL quando toda observacao ficou NAO_IDENTIFICAVEL apesar de ter referencia", () => {
+  const r = classificarCoberturaIndicador("bdi", { referenciasEconomicasDistintas: 2, observacoesDeduplicadas: 2, statusContagem: { NAO_IDENTIFICAVEL: 2 } });
+  assert.equal(r, CLASSIFICACAO_COBERTURA.COBERTURA_NAO_IDENTIFICAVEL);
+});
+
+test("classificarCoberturaIndicador: nunca implica qualidade de preco, confianca estatistica ou previsao (so os 4 rotulos descritivos existem)", () => {
+  assert.equal(Object.keys(CLASSIFICACAO_COBERTURA).length, 4);
+  for (const rotulo of Object.values(CLASSIFICACAO_COBERTURA)) {
+    assert.doesNotMatch(rotulo, /PREVIS|CONFIANC|QUALIDADE|RECOMENDA/i);
+  }
 });

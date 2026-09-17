@@ -67,9 +67,18 @@ export const CAMPOS_OBSERVACAO_PERMITIDOS = CAMPOS_OBSERVACAO_OBRIGATORIOS;
 
 export const CAMPOS_METADATA_OBRIGATORIOS = Object.freeze([
   "supportingSnapshotCount", "firstCollectedAt", "lastCollectedAt", "commitHashes", "conflict", "conflictType",
-  "repeatedFromPrevious", "matchesOverrideValue",
 ]);
-export const CAMPOS_METADATA_PERMITIDOS = CAMPOS_METADATA_OBRIGATORIOS;
+/** Etapa 5.2: repeatedFromPrevious/matchesOverrideValue viraram OPCIONAIS na
+ *  validacao (schemaVersion continua 1) -- um arquivo valido da Etapa 5 (sem
+ *  esses dois campos) precisa continuar valido. Quando presentes, ainda
+ *  precisam ser booleanos (ver validateMetadata). Ausencia != false: so
+ *  significa "nao calculado/indisponivel". Este modulo nao tem nenhuma funcao
+ *  de normalizacao que reescreva `observations`/`metadata` -- validateHistory/
+ *  readHistoryFile/loadAndValidateHistoryFile so leem e validam, nunca
+ *  preenchem campo ausente nenhum (nem aqui nem em nenhum outro lugar deste
+ *  arquivo). */
+export const CAMPOS_METADATA_OPCIONAIS = Object.freeze(["repeatedFromPrevious", "matchesOverrideValue"]);
+export const CAMPOS_METADATA_PERMITIDOS = Object.freeze([...CAMPOS_METADATA_OBRIGATORIOS, ...CAMPOS_METADATA_OPCIONAIS]);
 
 /** Indicadores comprovadamente presentes no codigo/historico atual. Ver nota no
  *  cabeçalho sobre por que diesel/glifosato/troca ficam de fora. */

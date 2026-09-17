@@ -153,7 +153,7 @@
           "description": "Metadados de suporte da deduplicacao/conflito. Nunca contem valor de preco de formulado, fornecedor ou qualquer dado privado.",
           "type": "object",
           "additionalProperties": false,
-          "required": ["supportingSnapshotCount", "firstCollectedAt", "lastCollectedAt", "commitHashes", "conflict", "conflictType", "repeatedFromPrevious", "matchesOverrideValue"],
+          "required": ["supportingSnapshotCount", "firstCollectedAt", "lastCollectedAt", "commitHashes", "conflict", "conflictType"],
           "properties": {
             "supportingSnapshotCount": {
               "description": "Quantos snapshots sustentam esta observacao deduplicada (>=1).",
@@ -183,11 +183,11 @@
               "oneOf": [{ "type": "string", "enum": ["VALORES_DIVERGENTES", "STATUS_DIVERGENTE"] }, { "type": "null" }]
             },
             "repeatedFromPrevious": {
-              "description": "true quando o valor desta observacao coincide com o campo `previous` do mesmo indicador em algum snapshot que a sustenta. Registra so a COINCIDENCIA -- nunca prova sozinho fallback/congelamento (Etapa 5.1: repeticao nao prova proveniencia).",
+              "description": "OPCIONAL (Etapa 5.2, para nao quebrar arquivos validos da Etapa 5 -- schemaVersion continua 1). Quando presente: true quando o valor desta observacao coincide com o campo `previous` do mesmo indicador em algum snapshot que a sustenta; false quando a verificacao rodou e nao houve coincidencia. Ausente significa so 'nao calculado/indisponivel' -- NUNCA equivale a false. Registra so a COINCIDENCIA -- nunca prova sozinho fallback/congelamento (Etapa 5.1: repeticao nao prova proveniencia).",
               "type": "boolean"
             },
             "matchesOverrideValue": {
-              "description": "true quando o valor desta observacao coincide com fertilizers-override.json no mesmo commit de algum snapshot que a sustenta. Registra so a COINCIDENCIA -- nunca prova sozinho que o override foi de fato usado (Etapa 5.1: coincidencia nao prova override).",
+              "description": "OPCIONAL (Etapa 5.2, para nao quebrar arquivos validos da Etapa 5 -- schemaVersion continua 1). Quando presente: true quando o valor desta observacao coincide com fertilizers-override.json no mesmo commit de algum snapshot que a sustenta; false quando a verificacao rodou e nao houve coincidencia. Ausente significa so 'nao calculado/indisponivel' -- NUNCA equivale a false. Registra so a COINCIDENCIA -- nunca prova sozinho que o override foi de fato usado (Etapa 5.1: coincidencia nao prova override).",
               "type": "boolean"
             }
           }

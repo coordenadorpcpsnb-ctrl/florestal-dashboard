@@ -593,6 +593,36 @@ export function classificarFrequencia(candidatasDoIndicador, indicator) {
 // Relatorio de cobertura (nao faz parte do schema persistido -- e o resumo
 // que o CLI imprime, sanitizado, e que os testes verificam).
 // ---------------------------------------------------------------------------
+/**
+ * Classificacao PURAMENTE DESCRITIVA da cobertura de um indicador -- nunca
+ * qualidade de preco, confianca estatistica, capacidade de previsao nem
+ * recomendacao de compra (Etapa 5.2). Regra deterministica:
+ *   - SEM_REFERENCIA_ECONOMICA: nenhuma referencia (data ou periodo) jamais
+ *     identificada para o indicador (hoje: dolar/gas/sojaTO).
+ *   - COBERTURA_NAO_IDENTIFICAVEL: tem alguma referencia, mas toda observacao
+ *     deduplicada ficou com sourceStatus NAO_IDENTIFICAVEL.
+ *   - COBERTURA_ESTRUTURADA_LIMITADA: referencia vem de campo estruturado
+ *     (referencePeriod, hoje so ureia/map/kcl via refsFertilizantes) --
+ *     "limitada" porque o numero de referencias distintas no historico real
+ *     e pequeno (ver documento de alinhamento temporal).
+ *   - COBERTURA_PARCIAL: referencia vem de inferencia de texto (referenceDate
+ *     via regra documentada, hoje bdi/soja).
+ */
+export const CLASSIFICACAO_COBERTURA = Object.freeze({
+  COBERTURA_ESTRUTURADA_LIMITADA: "COBERTURA_ESTRUTURADA_LIMITADA",
+  COBERTURA_PARCIAL: "COBERTURA_PARCIAL",
+  SEM_REFERENCIA_ECONOMICA: "SEM_REFERENCIA_ECONOMICA",
+  COBERTURA_NAO_IDENTIFICAVEL: "COBERTURA_NAO_IDENTIFICAVEL",
+});
+
+export function classificarCoberturaIndicador(indicator, { referenciasEconomicasDistintas, observacoesDeduplicadas, statusContagem }) {
+  if (referenciasEconomicasDistintas === 0) return CLASSIFICACAO_COBERTURA.SEM_REFERENCIA_ECONOMICA;
+  const naoIdentificaveis = statusContagem?.[STATUS_OBSERVACAO.NAO_IDENTIFICAVEL] ?? 0;
+  if (observacoesDeduplicadas > 0 && naoIdentificaveis === observacoesDeduplicadas) return CLASSIFICACAO_COBERTURA.COBERTURA_NAO_IDENTIFICAVEL;
+  if (INDICADORES_MENSAIS.includes(indicator)) return CLASSIFICACAO_COBERTURA.COBERTURA_ESTRUTURADA_LIMITADA;
+  return CLASSIFICACAO_COBERTURA.COBERTURA_PARCIAL;
+}
+
 export function calcularCobertura({ commitsAuditados, snapshotsEncontrados, snapshotsValidos, snapshotsInvalidos, candidatasTodas, observacoesFinal, conflitos }) {
   const porIndicador = {};
   for (const indicator of INDICADORES_SUPORTADOS) {
@@ -600,6 +630,7 @@ export function calcularCobertura({ commitsAuditados, snapshotsEncontrados, snap
     const obsDoIndicador = observacoesFinal.filter((o) => o.indicator === indicator);
     const referenciasDistintas = new Set(obsDoIndicador.map((o) => o.referenceDate ?? o.referencePeriod).filter(Boolean)).size;
     const collectedAtDistintos = new Set(candidatasDoIndicador.map((c) => c.collectedAt).filter(Boolean)).size;
+    const semReferencia = obsDoIndicador.filter((o) => o.referenceDate === null && o.referencePeriod === null).length;
 
     const statusContagem = {};
     for (const s of Object.values(STATUS_OBSERVACAO)) statusContagem[s] = obsDoIndicador.filter((o) => o.sourceStatus === s).length;
@@ -608,9 +639,10 @@ export function calcularCobertura({ commitsAuditados, snapshotsEncontrados, snap
     const periodosRef = obsDoIndicador.map((o) => o.referencePeriod).filter(Boolean).sort();
     const collectedAts = candidatasDoIndicador.map((c) => c.collectedAt).filter(Boolean).sort();
 
-    porIndicador[indicator] = {
+    const statsIndicador = {
       observacoesDeduplicadas: obsDoIndicador.length,
       referenciasEconomicasDistintas: referenciasDistintas,
+      semReferenciaEconomica: semReferencia,
       datasDeColetaDistintas: collectedAtDistintos,
       valoresAusentes: statusContagem[STATUS_OBSERVACAO.AUSENTE],
       statusContagem,
@@ -622,12 +654,29 @@ export function calcularCobertura({ commitsAuditados, snapshotsEncontrados, snap
       ultimoCollectedAt: collectedAts[collectedAts.length - 1] ?? null,
       frequenciaObservada: classificarFrequencia(candidatasDoIndicador, indicator),
     };
+    statsIndicador.classificacaoCobertura = classificarCoberturaIndicador(indicator, statsIndicador);
+    porIndicador[indicator] = statsIndicador;
   }
+
+  // agregados GLOBAIS (todos os indicadores juntos) -- item novo da Etapa 5.2.
+  const statusContagemGlobal = {};
+  for (const s of Object.values(STATUS_OBSERVACAO)) statusContagemGlobal[s] = observacoesFinal.filter((o) => o.sourceStatus === s).length;
+  const confiancaContagemGlobal = {};
+  for (const c of Object.values(CONFIANCA_EXTRACAO)) confiancaContagemGlobal[c] = observacoesFinal.filter((o) => o.extractionConfidence === c).length;
+  const repeatedFromPreviousCount = observacoesFinal.filter((o) => o.metadata?.repeatedFromPrevious === true).length;
+  const matchesOverrideValueCount = observacoesFinal.filter((o) => o.metadata?.matchesOverrideValue === true).length;
+  const semReferenciaEconomicaTotal = observacoesFinal.filter((o) => o.referenceDate === null && o.referencePeriod === null).length;
+
   return {
     commitsAuditados, snapshotsEncontrados, snapshotsValidos, snapshotsInvalidos,
     observacoesCandidatas: candidatasTodas.length,
     observacoesDeduplicadas: observacoesFinal.length,
     conflitos,
+    statusContagemGlobal,
+    confiancaContagemGlobal,
+    repeatedFromPreviousCount,
+    matchesOverrideValueCount,
+    semReferenciaEconomicaTotal,
     porIndicador,
   };
 }
@@ -762,17 +811,41 @@ export function escreverSaidaAtomica(caminhoFinal, dataObj) {
 /** Resumo sanitizado impresso no console: so contagens e enums -- nunca valor
  *  de indicador, texto de status bruto, hash de commit, autor, e-mail ou
  *  caminho absoluto. */
+/**
+ * Resumo sanitizado (dry-run/--output imprimem exatamente isto). SO contagens,
+ * intervalos de referencia e enums -- NUNCA valor de indicador, autor, e-mail,
+ * hash, texto de status bruto, caminho absoluto, conteudo de snapshot, dado
+ * privado, produto formulado ou fornecedor (Etapa 5.2).
+ */
 export function formatarResumoCobertura(cobertura) {
   const linhas = [];
   linhas.push(`commits auditados: ${cobertura.commitsAuditados}`);
   linhas.push(`snapshots encontrados: ${cobertura.snapshotsEncontrados} | validos: ${cobertura.snapshotsValidos} | invalidos: ${cobertura.snapshotsInvalidos}`);
   linhas.push(`observacoes candidatas: ${cobertura.observacoesCandidatas} | deduplicadas: ${cobertura.observacoesDeduplicadas} | conflitos: ${cobertura.conflitos}`);
+
+  linhas.push("contagem por sourceStatus (todos os indicadores):");
+  for (const [status, n] of Object.entries(cobertura.statusContagemGlobal)) linhas.push(`  - ${status}: ${n}`);
+
+  linhas.push("contagem por extractionConfidence (todos os indicadores):");
+  for (const [conf, n] of Object.entries(cobertura.confiancaContagemGlobal)) linhas.push(`  - ${conf}: ${n}`);
+
+  linhas.push(`repeatedFromPrevious=true: ${cobertura.repeatedFromPreviousCount} (so auditoria -- nunca prova fallback)`);
+  linhas.push(`matchesOverrideValue=true: ${cobertura.matchesOverrideValueCount} (so auditoria -- nunca prova override)`);
+  linhas.push(`observacoes sem referencia economica (referenceDate e referencePeriod nulos): ${cobertura.semReferenciaEconomicaTotal}`);
+
   linhas.push("por indicador:");
   for (const [indicador, s] of Object.entries(cobertura.porIndicador)) {
     linhas.push(
       `  - ${indicador}: ${s.observacoesDeduplicadas} observacao(oes), ${s.referenciasEconomicasDistintas} referencia(s) economica(s) distinta(s), ` +
-      `${s.datasDeColetaDistintas} data(s) de coleta distinta(s), ${s.valoresAusentes} ausente(s), frequencia observada: ${s.frequenciaObservada}`
+      `${s.semReferenciaEconomica} sem referencia, ${s.datasDeColetaDistintas} data(s) de coleta distinta(s), ${s.valoresAusentes} ausente(s), ` +
+      `frequencia observada: ${s.frequenciaObservada}, cobertura: ${s.classificacaoCobertura}`
     );
+    if (s.primeiroReferencePeriod || s.ultimoReferencePeriod) {
+      linhas.push(`    referencePeriod: ${s.primeiroReferencePeriod ?? "—"} a ${s.ultimoReferencePeriod ?? "—"}`);
+    }
+    if (s.primeiraReferenceDate || s.ultimaReferenceDate) {
+      linhas.push(`    referenceDate: ${s.primeiraReferenceDate ?? "—"} a ${s.ultimaReferenceDate ?? "—"}`);
+    }
   }
   return linhas.join("\n");
 }

@@ -92,6 +92,36 @@ test("--output sobrescreve com sucesso uma saida anterior valida deste extrator 
   assert.equal(existsSync(saida), true);
 });
 
+test("37. saida ANTIGA (formato exato da Etapa 5, sem repeatedFromPrevious/matchesOverrideValue em metadata) continua valida e e reconhecida/sobrescrita normalmente pelo --output", async () => {
+  const { loadAndValidateHistoryFile } = await import("../market-driver-history.mjs");
+  const saida = join(dir, "market-history.json");
+  const serieAntiga = {
+    schemaVersion: 1,
+    description: "serie ficticia no formato exato da Etapa 5 (sem os dois campos da Etapa 5.1)",
+    generatedAt: "2026-01-01T00:00:00.000Z",
+    source: { type: "GIT_HISTORY", file: "data.json", commitCountAudited: 1, snapshotCountParsed: 1, snapshotCountRejected: 0 },
+    observations: [{
+      indicator: "dolar", value: 5.0, unit: "BRL_USD", referenceDate: null, referencePeriod: null,
+      collectedAt: "2026-01-01T00:00:00.000Z", commitDate: "2026-01-01T00:00:00.000Z", commitHash: "abc1234567",
+      sourceStatus: "OBSERVADO", sourceName: "BCB PTAX", sourceMessage: "ok", extractionConfidence: "PARCIAL",
+      deduplicationKey: "dolar|x|BRL_USD|abc1234567",
+      metadata: { supportingSnapshotCount: 1, firstCollectedAt: "2026-01-01T00:00:00.000Z", lastCollectedAt: "2026-01-01T00:00:00.000Z", commitHashes: ["abc1234567"], conflict: false, conflictType: null },
+    }],
+  };
+  writeFileSync(saida, JSON.stringify(serieAntiga, null, 2) + "\n", "utf-8");
+
+  // 1) o validador do proprio modulo aceita o arquivo antigo como valido
+  const validacaoAntes = loadAndValidateHistoryFile(saida);
+  assert.equal(validacaoAntes.valid, true, JSON.stringify(validacaoAntes.errors));
+
+  // 2) --output reconhece a saida antiga como "existente e valida" e a sobrescreve (nao rejeita como SAIDA_EXISTENTE_INVALIDA)
+  const r = run(["--output", saida]);
+  assert.equal(r.status, 0);
+  assert.doesNotMatch(r.out, /SAIDA_EXISTENTE_INVALIDA/);
+  const conteudoNovo = JSON.parse(readFileSync(saida, "utf-8"));
+  assert.equal(conteudoNovo.schemaVersion, 1);
+});
+
 // === 55-59. rejeicao de caminho de saida ===
 
 test("55. data.json como saida e rejeitado, sem tocar no arquivo real", () => {
@@ -347,9 +377,13 @@ test("5.1-11/12. historico real: se existir alguma observacao FALLBACK_ULTIMO_CO
   assert.ok(repetidasSemFallback.every((o) => o.sourceStatus !== "FALLBACK_ULTIMO_CONHECIDO"));
 });
 
-test("5.1-10 inspecao de status na saida real sem publicar valores: contagem de sourceStatus por tipo, sem nenhum valor numerico junto", () => {
+test("5.1-10/5.2 inspecao de status na saida real: o resumo pode mostrar CONTAGEM agregada por sourceStatus (exigido pela Etapa 5.2), mas nunca um valor de indicador junto de um status individual", () => {
   const r = run([]);
   assert.equal(r.status, 0);
-  // o resumo do console nunca lista sourceStatus/valores individuais, so contagens agregadas
-  assert.doesNotMatch(r.out, /OBSERVADO|FALLBACK_ULTIMO_CONHECIDO|OVERRIDE_MANUAL|NAO_IDENTIFICAVEL/);
+  // agora e esperado que apareca (contagem agregada por tipo, nao por observacao):
+  assert.match(r.out, /contagem por sourceStatus/);
+  assert.match(r.out, /OBSERVADO: \d+/);
+  // mas nunca um numero de indicador (preco/valor) colado a um status, nem hash de commit
+  assert.doesNotMatch(r.out, /OBSERVADO.*\b\d+\.\d{2,}\b/); // heuristica: sem decimal "de preco" na mesma linha de status
+  assert.doesNotMatch(r.out, /[0-9a-f]{10}/); // nenhum hash de commit truncado
 });

@@ -551,6 +551,13 @@ Sugestão de escopo, **apenas indicado, não implementado aqui**:
 > a exigir evidência explícita no texto de status (hoje, só comprovada para
 > `sojaTO`) ou nas regras determinísticas de `fetch-data.mjs`. Ver README,
 > seção 13, subseção "Proveniência exige evidência explícita".
+>
+> **Nota (Etapa 5.2):** os dois campos de metadata acima viraram opcionais na
+> validação (compatibilidade retroativa com saídas da Etapa 5; `schemaVersion`
+> continua `1`), e o resumo de cobertura ganhou uma classificação descritiva
+> por indicador (`COBERTURA_ESTRUTURADA_LIMITADA`/`COBERTURA_PARCIAL`/
+> `SEM_REFERENCIA_ECONOMICA`/`COBERTURA_NAO_IDENTIFICAVEL`) — ver README,
+> seção 13, subseções "Compatibilidade do schema v1" e a cobertura sanitizada.
 
 ## 20. Apêndice — comandos de auditoria executados
 
