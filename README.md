@@ -144,15 +144,22 @@ mais recentes — prático para compartilhar com a equipe.
 
 ## 6. Fontes dos dados e o que ainda é manual
 
-Quase tudo é buscado automaticamente. A tabela abaixo mostra a origem de cada indicador:
+*(Seção corrigida na Etapa 6.1 para refletir a ordem real de busca em
+`fetch-data.mjs`/`fetch-fertilizers.mjs` — a versão anterior desta tabela
+estava desatualizada; ver auditoria em
+[`docs/market-history-sources-assessment.md`](docs/market-history-sources-assessment.md#44-fontes-atuais-do-código--auditoria-e-correção-da-divergência-com-o-readme).)*
 
-| Indicador | Fonte automática | Frequência |
-|---|---|---|
-| Dólar | AwesomeAPI | tempo real |
-| Soja CEPEA | CEPEA/ESALQ (scraping) | diária |
-| Frete Marítimo (BDI) | stooq | diária |
-| **Ureia, MAP, KCl** | **ComexStat — API oficial do MDIC** | **mensal** |
-| **Gás Natural** | **EIA (Henry Hub) ou stooq** | **diária** |
+Quase tudo é buscado automaticamente. A tabela abaixo mostra a fonte primária e
+os fallbacks reais de cada indicador, na ordem em que o código os tenta:
+
+| Indicador | Fonte primária | Fallback(s), nesta ordem | Frequência |
+|---|---|---|---|
+| Dólar | BCB PTAX (Banco Central) | Frankfurter → AwesomeAPI | a cada execução |
+| Soja CEPEA | Notícias Agrícolas (republica o indicador CEPEA/ESALQ Paraná) | CEPEA/ESALQ direto | a cada execução |
+| Soja regional (Oeste da Bahia) | Notícias Agrícolas (mercado físico, praça AIBA) | estimativa (95,7% do CEPEA nacional) ou última leitura conhecida, se a busca falhar | a cada execução |
+| Frete Marítimo (BDI) | HANDYBULK | stooq | a cada execução |
+| **Ureia, MAP, KCl** | **ComexStat — API oficial do MDIC** | — (rede de segurança em `fertilizers-override.json`) | **mensal** |
+| **Gás Natural** | **EIA (Henry Hub), se `EIA_API_KEY` estiver configurada** | **stooq (futuro NG)** | a cada execução |
 
 **Fertilizantes:** o preço é o FOB médio de importação brasileira, calculado como
 `valor FOB (US$) ÷ peso líquido (t)` a partir dos NCMs oficiais:
@@ -179,8 +186,12 @@ Sem configuração, o gás vem do stooq (futuro NG — boa aproximação). Para 
 
 ### O que continua manual
 
-Apenas o **BDI (frete marítimo)** — a fonte passou a exigir JavaScript e não há
-alternativa pública gratuita. Edite em `fertilizers-override.json`:
+Hoje **nenhum indicador está travado como fonte manual permanente** — o campo
+`fontesManuais` em `fertilizers-override.json` está vazio (`[]`). Todos os
+indicadores, incluindo o BDI, são buscados automaticamente (ver tabela acima).
+Isso pode mudar se uma fonte passar a bloquear a busca automática; quando isso
+acontecer, o indicador afetado deve ser listado em `fontesManuais` para não
+gerar alerta semanal indevido, por exemplo:
 
 ```json
 {
@@ -190,8 +201,8 @@ alternativa pública gratuita. Edite em `fertilizers-override.json`:
 }
 ```
 
-Os demais valores nesse arquivo funcionam como **rede de segurança**: só são usados
-se a busca automática falhar.
+Os valores em `fertilizers-override.json` funcionam, hoje, como **rede de
+segurança**: só são usados se a busca automática falhar.
 
 **Travar valores manualmente:** se em algum momento você quiser fixar os números
 (por exemplo, para usar um benchmark diferente), mude `"forceManual": true`.

@@ -664,3 +664,360 @@ de preço. Os únicos próximos passos sugeridos por este documento são:
    histórica reconstruível hoje (dólar, gás natural e soja regional, seção
    10) — decisão de ordem e de quando implementar, não implementação em si,
    que permanece fora do escopo desta etapa.
+
+---
+
+## 31. Adendo Etapa 6.1 — objetivo e escopo desta verificação aprofundada
+
+As seções 1–30 acima são o documento original da Etapa 6 e **não foram
+reescritas**. Este adendo (seções 31–44) aprofunda e consolida a verificação
+das fontes prioritárias (BCB, ComexStat/MDIC, EIA, CEPEA/ESALQ, Baltic
+Exchange, World Bank Commodity Markets/Pink Sheet, CONAB e uma eventual fonte
+institucional de soja regional), aplicando uma regra de prova mais estrita do
+que a usada na Etapa 6: **resultado de busca (WebSearch) não é, sozinho,
+prova suficiente para o status `CONFIRMADO`** — apenas a leitura direta da
+documentação oficial (abertura literal da página) confirma um campo. Onde a
+Etapa 6 tratou um resumo de busca como suficientemente confiável para uma
+recomendação, isso é revisto aqui.
+
+Nenhuma coleta, API, scraping, download, armazenamento de série, catálogo
+técnico, `formulationId`, dado de formulação/micronutriente, cruzamento com
+formulados, regressão ou previsão foi implementado nesta etapa. Nenhum
+workflow, dashboard ou `package.json` foi alterado. Nenhum push foi feito.
+
+## 32. Restrição técnica de acesso constatada nesta etapa
+
+Nesta etapa, antes de qualquer classificação, foi testada a abertura direta
+(ferramenta de leitura de página, não de busca) das páginas oficiais das oito
+fontes prioritárias. **Todas as tentativas de abertura direta foram
+bloqueadas pelo proxy de rede deste ambiente de execução**, com o mesmo tipo
+de erro (`EGRESS_BLOCKED`), para os seguintes domínios testados nesta etapa:
+
+- `dadosabertos.bcb.gov.br`, `www.bcb.gov.br`, `api.bcb.gov.br` (Banco
+  Central)
+- `api-comexstat.mdic.gov.br` (ComexStat/MDIC)
+- `www.eia.gov` (EIA)
+- `cepea.org.br` (CEPEA/ESALQ)
+- `www.balticexchange.com` (Baltic Exchange)
+- `www.worldbank.org` (World Bank)
+- `www.gov.br` (CONAB)
+
+Como controle, a mesma ferramenta de leitura direta **funcionou normalmente**
+para um domínio fora da lista de fontes de dado (`github.com`), confirmando
+que o bloqueio é específico aos domínios institucionais de dado, não uma
+falha geral da ferramenta. Isso é consistente com a armadilha já documentada
+em `CLAUDE.md`: *"Sandbox/ambiente de execução aqui bloqueia rede externa (só
+libera npm/GitHub/PyPI)... isso é esperado."*
+
+A ferramenta de busca (WebSearch, que roda fora deste sandbox) continuou
+funcionando e foi usada para localizar candidatas e pistas — mas, pela regra
+da seção 33, **um resultado de busca nunca eleva um campo a `CONFIRMADO`**.
+Consequência direta e assumida desta etapa: com a leitura direta bloqueada
+para todas as oito fontes prioritárias, **nenhuma afirmação externa a este
+repositório pôde ser elevada a `CONFIRMADO` nesta etapa** — apenas fatos
+evidenciados pelo próprio código e configuração deste repositório (que
+puderam ser lidos diretamente) recebem esse status. Isso não é uma escolha de
+rigor arbitrária: é o resultado honesto do teste de acesso acima, registrado
+para que uma etapa futura, rodando num ambiente sem esse bloqueio (ou com
+acesso liberado pelo usuário), possa concluir a verificação direta que esta
+etapa tentou e não conseguiu completar.
+
+## 33. Regra de verificação aplicada
+
+- `CONFIRMADO`: a afirmação está literalmente presente num documento que foi
+  aberto e lido diretamente nesta etapa (leitura de página, não busca) **ou**
+  num arquivo deste repositório lido diretamente nesta etapa (código,
+  configuração, `data.json`). Dado o bloqueio da seção 32, nenhuma fonte
+  externa prioritária pôde ser lida diretamente nesta etapa — todo
+  `CONFIRMADO` usado a partir daqui vem de arquivo deste repositório, nunca
+  de página institucional externa.
+- `NAO_VERIFICADO`: a afirmação apareceu apenas em resultado de busca,
+  resumo, snippet, ou não apareceu em nenhuma fonte consultada nesta etapa.
+  Cobre licença, redistribuição, armazenamento, limite de requisições,
+  gratuidade, uso comercial, abrangência histórica, frequência, método de
+  revisão e estabilidade de API sempre que a única evidência disponível foi
+  busca — que é o caso de toda fonte externa nesta etapa (seção 32).
+- `NAO_APLICAVEL`: o campo da matriz não se aplica à fonte em questão (ex.:
+  "chave" para uma fonte que não usa nenhum mecanismo de credencial).
+- `RESTRITO_CONFIRMADO` / `PROIBIDO_CONFIRMADO`: reservados para quando uma
+  restrição ou proibição está confirmada por leitura direta. Não usados nesta
+  etapa para nenhuma fonte externa, pelo mesmo motivo — sem leitura direta,
+  não há confirmação, só indício.
+
+Nenhuma coluna de status usa "provavelmente", "aparentemente" ou equivalente.
+Comentários explicativos fora das colunas de status podem registrar indícios
+de busca com linguagem cautelosa, sempre rotulados como indício, nunca como
+prova.
+
+## 34. Correções em relação à Etapa 6 (classificações excessivamente conclusivas revisadas)
+
+A pesquisa da Etapa 6 usou exclusivamente WebSearch (nunca uma leitura direta
+de página) — o mesmo método hoje insuficiente pela regra da seção 33. Por
+isso, vários campos que a Etapa 6 apresentou com redação afirmativa são
+rebaixados aqui para `NAO_VERIFICADO`, mantendo o achado como indício de
+busca, não como fato confirmado:
+
+- **World Bank / Pink Sheet** — a Etapa 6 escreveu que a página do catálogo de
+  dados "confirma" a licença CC-BY 4.0 para os datasets do Banco Mundial.
+  Sem leitura direta nesta etapa, isso é revisto para `NAO_VERIFICADO`: o
+  indício de busca continua registrado (seção 40), mas não sustenta mais uma
+  recomendação de contingência tão favorável quanto a anterior.
+- **Baltic Exchange** — a Etapa 6 descreveu nomes de licença ("Full Baltic
+  Data Licence", "Restricted Baltic Data Licence") como se a página tivesse
+  sido lida diretamente. Não foi — era resultado de busca. O campo de
+  licença/redistribuição é rebaixado a `NAO_VERIFICADO`; a **decisão**
+  (seção 43) continua cautelosa (`EXIGE_LICENCA`) porque um índice comercial
+  de frete marítimo mantido por uma bolsa privada é, por natureza do setor,
+  um caso em que a ausência de confirmação de gratuidade **não deve** ser
+  lida como indício de acesso livre — a decisão cautelosa não depende de a
+  citação da licença estar confirmada, só de não haver nenhuma indicação de
+  acesso público gratuito.
+- **BCB SGS** — a Etapa 6 escreveu "Status de acesso: `GRATUITO_SEM_CADASTRO`,
+  segundo a documentação encontrada". Não era documentação, era busca.
+  Rebaixado a `NAO_VERIFICADO`.
+- **ComexStat (cobertura desde 1989)** e **EIA (cobertura desde 1997)** — a
+  Etapa 6 tratou esses números como confirmados pela pesquisa. Rebaixados a
+  `NAO_VERIFICADO` quanto à profundidade histórica exata; o que permanece
+  `CONFIRMADO` é que os **mesmos domínios** (`api-comexstat.mdic.gov.br`,
+  `api.eia.gov`) já são usados com sucesso pela pipeline de produção deste
+  repositório — isso vem do código e do `data.json`, não de busca (seção 44).
+- **CEPEA** — a Etapa 6 já havia marcado o acesso como não confirmado; mantido
+  assim, reforçado pela regra mais estrita.
+- **CONAB** — a Etapa 6 já havia marcado a redistribuição como não confirmada
+  (citando apenas um resumo de busca); mantido, e a distinção entre o produto
+  de **preço agropecuário** e o produto de **custo de produção** da CONAB é
+  reforçada explicitamente na seção 41, por exigência desta etapa.
+
+## 35. Verificação aprofundada — Banco Central do Brasil (BCB)
+
+| Item | Status | Observação |
+|---|---|---|
+| Produto/API adequado (PTAX venda) | `CONFIRMADO` | Confirmado por leitura direta de `fetch-data.mjs` (função `getCambio`), que já consome `olinda.bcb.gov.br/.../CotacaoDolarPeriodo` e usa `cotacaoVenda`. Fonte: código deste repositório. |
+| Série SGS equivalente para reconstrução histórica | `NAO_VERIFICADO` | A correspondência exata entre um código de série do SGS e a métrica `cotacaoVenda` da PTAX hoje usada não foi confirmada por leitura direta nesta etapa. |
+| Tipo de taxa | `CONFIRMADO` (para o que já é usado) | O código usa explicitamente `cotacaoVenda` da PTAX — não taxa de compra, não taxa comercial, não taxa média. Qualquer fonte candidata precisa confirmar o mesmo tipo de taxa antes de qualquer uso conjunto (ver seção 27). |
+| Periodicidade/calendário da PTAX | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Cobertura histórica do SGS | `NAO_VERIFICADO` | Indício de busca (Etapa 6) descrevia limite de 10 anos por consulta desde 26/03/2025 — não confirmado por leitura direta. |
+| Data de referência retornada | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Unidade | `CONFIRMADO` (para o que já é usado) | R$ por US$, evidenciado no cálculo do código (`Math.round(v * 100) / 100`, valor de `cotacaoVenda`). |
+| Acesso/limites/chave | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Armazenamento interno | `NAO_APLICAVEL` | Nenhum valor foi armazenado nesta etapa. |
+| Redistribuição | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Publicação em repositório público | `NAO_APLICAVEL` | Não avaliada — nenhuma publicação proposta nesta etapa. |
+| Situação técnica de acesso ao domínio `bcb.gov.br` | `CONFIRMADO` | `data.json` (lido diretamente nesta etapa) registra `"cambio": "ok (BCB PTAX)"` em 2026-09-16 — evidência de que a pipeline de produção (GitHub Actions) alcança esse domínio com sucesso, mesmo que este sandbox de desenvolvimento esteja bloqueado para o mesmo domínio (seção 32). |
+
+**Não misturado nesta verificação:** PTAX compra, taxa média, taxa de
+fechamento, câmbio comercial de balcão ou série de outro provedor — nenhum
+desses foi mencionado como equivalente à PTAX venda hoje usada.
+
+## 36. Verificação aprofundada — ComexStat/MDIC
+
+| Item | Status | Observação |
+|---|---|---|
+| Documentação oficial da API | `NAO_VERIFICADO` | A existência de uma página `api-comexstat.mdic.gov.br/docs` foi apenas um resultado de busca na Etapa 6; não foi lida diretamente nesta etapa (bloqueio da seção 32). |
+| Cobertura histórica (ex.: desde 1989) | `NAO_VERIFICADO` | Rebaixado — era só resultado de busca (seção 34). |
+| Granularidade mensal | `CONFIRMADO` | Confirmado por leitura direta de `fetch-fertilizers.mjs`: a consulta usa `period: { from: mes, to: mes }`, um mês por chamada — comportamento também documentado como armadilha conhecida em `CLAUDE.md`. |
+| Campos FOB e peso líquido (kg) | `CONFIRMADO` | Confirmado no código: `metrics: ["metricFOB", "metricKG"]`, e o preço final é `fob / (kg / 1000)`. |
+| Revisão de dados publicados | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| NCM usados | `CONFIRMADO` | `31021010` (ureia), `31054000` (MAP), `31042010`+`31042090` (KCl) — evidenciados em `NCM_PRODUTO` no código. |
+| Limite de acesso | `CONFIRMADO` (parcial) | O código já trata explicitamente HTTP 429 com retentativa (`postar()`), evidência direta de limite de requisições observado operacionalmente — não uma página de termos, mas comportamento real já enfrentado pela pipeline. |
+| Armazenamento interno | `NAO_APLICAVEL` | Nenhum valor foi armazenado nesta etapa. |
+| Redistribuição | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Situação técnica de acesso | `CONFIRMADO` | `data.json` registra `"ureia": "ok (ComexStat 2026-08)"`, `"map": "ok (ComexStat 2026-08)"`, `"kcl": "ok (ComexStat 2026-08)"` em 2026-09-16 — evidência de sucesso operacional real na pipeline de produção. |
+
+**Documentado explicitamente, por exigência desta etapa:** o valor calculado
+pelo código (`FOB ÷ peso líquido`) é uma **média unitária declarada de
+comércio exterior** — isto é, o valor médio por tonelada resultante de somar
+todas as transações de importação daquele NCM no mês e dividir pelo peso
+total. Isso **não é**:
+
+- um preço spot de mercado num instante específico;
+- um preço CFR (que incluiria frete/seguro já embutido de forma diferente,
+  dependendo de como cada transação individual foi registrada);
+- um custo entregue (não inclui frete interno brasileiro, tributos internos
+  ou margem de distribuição);
+- o preço de um fornecedor específico (é uma média entre todas as
+  importações do NCM no mês, de todos os importadores e origens).
+
+## 37. Verificação aprofundada — EIA
+
+| Item | Status | Observação |
+|---|---|---|
+| Série exata (Henry Hub, `RNGWHHD`) | `CONFIRMADO` | Confirmado por leitura direta de `fetch-fertilizers.mjs` (`buscarGasNatural`): `facets[series][]=RNGWHHD`. |
+| Frequência da série usada no código | `CONFIRMADO` | O código pede `frequency=daily` e o último valor (`length=1`) — evidenciado no corpo da requisição. |
+| Unidade | `NAO_VERIFICADO` | O código não declara a unidade explicitamente (não há comentário/constante com "US$/MMBtu" no trecho relevante); tratar como não confirmada nesta etapa apesar de ser um dado amplamente conhecido do setor. |
+| Data de referência retornada pela API | `NAO_VERIFICADO` | O código não armazena/loga a data de referência do valor da EIA (diferente do BDI, que loga a data extraída do texto). |
+| Cobertura histórica (ex.: desde 1997) | `NAO_VERIFICADO` | Rebaixado — era só resultado de busca (seção 34). |
+| Chave de API | `CONFIRMADO` | `EIA_API_KEY`, lida de `process.env`, confirmada também no workflow (`weekly-update.yml`, variável de ambiente do passo "Executar atualizacao"). |
+| Limites/termos de uso | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Armazenamento interno | `NAO_APLICAVEL` | Nenhum valor foi armazenado nesta etapa. |
+| Redistribuição | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Situação técnica de acesso | `CONFIRMADO` | `data.json` registra `"gas": "ok (EIA Henry Hub)"` em 2026-09-16 — sucesso operacional real na pipeline de produção, com chave configurada. |
+
+**Documentado explicitamente, por exigência desta etapa:** Henry Hub é uma
+referência de **preço regional** (o principal hub de gás natural dos EUA) —
+não é, e não deve ser tratada como, uma proxy perfeita para todos os mercados
+globais de gás natural (Europa, Ásia, ou o gás usado como insumo industrial
+fora dos EUA podem ter preços substancialmente diferentes e sujeitos a outras
+dinâmicas de oferta/demanda e contratos regionais).
+
+## 38. Verificação aprofundada — CEPEA/ESALQ
+
+| Item | Status | Observação |
+|---|---|---|
+| Indicador de soja usado hoje (CEPEA/ESALQ Paraná) | `CONFIRMADO` | Confirmado por leitura direta de `fetch-data.mjs` (`getSoja`), que consome a página do indicador CEPEA/ESALQ Paraná republicada pelo Notícias Agrícolas. |
+| Praça | `CONFIRMADO` (para o uso atual) | Paraná, evidenciado no próprio nome da página consultada pelo código (`indicador-cepea-esalq-soja-parana`). |
+| Unidade | `CONFIRMADO` (para o uso atual) | R$ por saca, evidenciado no parse do código (`v > 30 && v < 500`, faixa plausível para R$/saca de 60 kg). |
+| Metodologia publicada pelo próprio CEPEA | `NAO_VERIFICADO` | A existência de uma página de metodologia foi só um resultado de busca (Etapa 6); não lida diretamente nesta etapa. |
+| Frequência declarada pela própria fonte | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Série histórica própria do CEPEA | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Acesso automatizado ao domínio `cepea.org.br`/`cepea.esalq.usp.br` | `CONFIRMADO` (como **bloqueado**, não como liberado) | O próprio código (`fetch-data.mjs`, comentário da função `getSoja`) e `CLAUDE.md` documentam bloqueio conhecido a servidores de datacenter no acesso direto ao domínio do CEPEA — por isso a fonte primária usada é a republicação via Notícias Agrícolas, não o CEPEA direto. |
+| Armazenamento interno | `NAO_APLICAVEL` | Nenhum valor foi armazenado nesta etapa. |
+| Redistribuição | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Uso corporativo | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Publicação | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+
+Por exigência explícita desta etapa: **a página do CEPEA ser publicamente
+visível num navegador não é, e não foi tratada aqui como, aprovação de
+integração automática.** O acesso direto já está documentado como bloqueado
+para servidores de datacenter — isto é, mesmo a visibilidade pública não
+implica viabilidade de automação, e a licença/redistribuição continuam
+`NAO_VERIFICADO` de qualquer forma.
+
+## 39. Verificação aprofundada — Baltic Exchange
+
+| Item | Status | Observação |
+|---|---|---|
+| Natureza oficial do índice | `NAO_VERIFICADO` | O fato de o Baltic Exchange ser o mantenedor oficial do BDI é amplamente conhecido do setor, mas não foi confirmado por leitura direta de uma página institucional nesta etapa. |
+| Acesso a dados históricos | `NAO_VERIFICADO` | Rebaixado de uma redação mais afirmativa na Etapa 6 (ver seção 34) — indício de busca aponta exigência de assinatura, não confirmado por leitura direta. |
+| Licença | `NAO_VERIFICADO` | Idem — nomes de licença citados na Etapa 6 vieram de busca, não de leitura direta. |
+| Armazenamento interno | `NAO_APLICAVEL` | Nenhum valor foi armazenado nesta etapa. |
+| Redistribuição | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Publicação | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Uso em aplicação interna | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+
+Como nenhum indício aponta acesso público e gratuito ao BDI oficial — pelo
+contrário, todo indício de busca disponível (mesmo não confirmado por leitura
+direta) aponta para um modelo de associação/assinatura, prática comum para
+índices proprietários de frete marítimo — a decisão registrada na matriz
+(seção 43) é `EXIGE_LICENCA`, por instrução explícita desta etapa. **Nenhum
+contorno por agregador foi buscado ou proposto nesta etapa** — o fallback
+`stooq` já em uso hoje pelo código (seção 7) permanece como está, sem
+alteração e sem ser tratado como substituto equivalente ao índice oficial.
+
+## 40. Verificação aprofundada — World Bank Commodity Markets/Pink Sheet
+
+| Item | Status | Observação |
+|---|---|---|
+| Existência e formato do relatório "Pink Sheet" | `NAO_VERIFICADO` | Indício de busca (PDF mensal); não aberto diretamente nesta etapa. |
+| Cobertura de ureia/DAP/KCl/gás | `NAO_VERIFICADO` | Indício de busca; não confirmado por leitura direta. |
+| Periodicidade | `NAO_VERIFICADO` | Indício de busca sugere mensal; não confirmado por leitura direta. |
+| Unidade | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Metodologia | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Revisão | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+| Licença (CC-BY 4.0 do catálogo de dados do Banco Mundial) | `NAO_VERIFICADO` | Rebaixado da Etapa 6 (seção 34) — era resultado de busca, não leitura direta da página `datacatalog.worldbank.org/public-licenses`. |
+| Armazenamento interno | `NAO_APLICAVEL` | Nenhum valor foi armazenado nesta etapa. |
+| Redistribuição | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
+
+Mantida como candidata **apenas referencial nesta etapa** — nunca equivalente
+ao ComexStat: mesmo que a licença viesse a ser confirmada como permissiva, a
+Pink Sheet publica preços em praças/condições comerciais diferentes do FOB de
+importação brasileira medido pelo ComexStat (ver seção 27), o que por si só
+impede tratá-la como substituta, independentemente da situação jurídica.
+
+## 41. Verificação aprofundada — CONAB
+
+A busca desta etapa (mesma limitação de leitura direta da seção 32) encontrou
+**dois produtos distintos da CONAB**, que não devem ser confundidos:
+
+| Produto CONAB | Tipo de dado | Status |
+|---|---|---|
+| "Série Histórica — Preços Agropecuários" (`portaldeinformacoes.conab.gov.br`) | Preço de mercado agropecuário | `NAO_VERIFICADO` quanto a cobertura, unidade, metodologia, acesso e redistribuição — indício de busca apenas |
+| "Série Histórica de Custos de Produção — Soja" (`gov.br/conab`) | **Custo de produção**, não preço de mercado | `NAO_VERIFICADO` quanto aos mesmos itens; classificação de tipo de dado (custo × preço) confirmada pelo próprio título do produto encontrado na busca |
+
+Por exigência explícita desta etapa: **o produto de custo de produção da
+CONAB nunca deve ser apresentado, aqui ou em qualquer uso futuro, como preço
+de mercado.** Caso uma etapa futura confirme e integre algum produto da
+CONAB, os dois produtos exigem avaliação e decisão separadas — não podem ser
+tratados como uma única "fonte CONAB".
+
+## 42. Soja regional — busca por fonte institucional (Tocantins)
+
+Nesta etapa, uma nova busca (WebSearch, mesma limitação de leitura direta da
+seção 32) foi feita especificamente por fonte institucional para o estado do
+Tocantins — não encontrada na Etapa 6. O resultado aponta uma pista nova:
+
+- **SEAGRO-TO — Secretaria da Agricultura, Pecuária e Aquicultura do Estado
+  do Tocantins**, seção "Cotações Agropecuárias" no domínio oficial do
+  governo do estado (`to.gov.br/seagro/cotacoes-agropecuarias/...`).
+
+Esta é, nesta pesquisa, a única pista de fonte **institucional** (governo
+estadual) especificamente associada ao Tocantins. Ela **não foi aberta
+diretamente** nesta etapa (bloqueio da seção 32), então nada sobre ela é
+`CONFIRMADO`: não se sabe, a partir desta etapa, se a página cobre soja
+especificamente, qual a praça exata, a metodologia, a frequência, ou a
+situação de acesso/redistribuição. Tudo isso é `NAO_VERIFICADO`.
+
+Reforçando a instrução desta etapa: **nenhuma cotação de Bahia, Paraná ou
+Mato Grosso — nem um benchmark nacional — foi tratada como substituto do
+Tocantins.** O IMEA (Instituto Mato-Grossense de Economia Agropecuária),
+encontrado na mesma busca, é explicitamente **descartado** como candidata de
+soja regional para o Tocantins nesta avaliação, por ser especificamente do
+Mato Grosso.
+
+Decisão (seção 43): `SEM_DECISAO_POR_FALTA_DE_EVIDENCIA` — a lacuna
+permanece explícita, agora com uma pista institucional nomeada para uma etapa
+futura verificar por leitura direta, em vez de "nenhuma pista encontrada"
+como registrado na Etapa 6.
+
+## 43. Matriz final de evidências e decisão por fonte
+
+Enum de status de campo, usado em todas as colunas da matriz abaixo:
+`CONFIRMADO`, `NAO_VERIFICADO`, `NAO_APLICAVEL`, `RESTRITO_CONFIRMADO`,
+`PROIBIDO_CONFIRMADO`.
+
+Enum de decisão por fonte (coluna "recomendação"):
+`APROVADA_TECNICAMENTE_PENDENTE_GOVERNANCA`,
+`APROVADA_PARA_PROVA_DE_CONCEITO_LOCAL`, `APROVADA_PARA_ARMAZENAMENTO_INTERNO`,
+`APROVADA_PARA_PUBLICACAO`, `SOMENTE_REFERENCIAL`, `EXIGE_LICENCA`,
+`REJEITADA`, `SEM_DECISAO_POR_FALTA_DE_EVIDENCIA`.
+
+Nenhuma fonte abaixo recebe `APROVADA_PARA_PUBLICACAO` (nenhuma tem
+redistribuição confirmada) nem `APROVADA_PARA_ARMAZENAMENTO_INTERNO`
+(nenhuma tem avaliação de governança/armazenamento concluída nesta etapa).
+
+| Indicador | Fonte | Classificação | Finalidade proposta | Documentação oficial | Acesso | Cadastro | Chave | Custo | Cobertura histórica | Granularidade | referenceDate/Period | Unidade | Revisão de dados | Armazenamento interno | Redistribuição | Publicação em repo público | Situação técnica | Situação jurídica | Recomendação | Pendência |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Dólar | BCB PTAX (já em uso) | `OFICIAL_PRIMARIA` | Fonte já integrada; nenhuma mudança proposta | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` (código não usa chave) | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | diária (por execução) | `NAO_VERIFICADO` | `CONFIRMADO` (R$/US$, venda) | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `CONFIRMADO` (domínio já usado com sucesso na produção, `data.json`) | `NAO_VERIFICADO` | `APROVADA_TECNICAMENTE_PENDENTE_GOVERNANCA` (para uso complementar/histórico; uso atual já em produção) | Confirmar por leitura direta: série SGS equivalente, limites de consulta, licença |
+| Dólar (complementar) | BCB SGS (candidata) | `OFICIAL_PRIMARIA` | Reconstrução histórica retroativa | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` (nada armazenado) | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` (mesmo domínio-família do BCB, não testado especificamente) | `NAO_VERIFICADO` | `SEM_DECISAO_POR_FALTA_DE_EVIDENCIA` | Leitura direta da documentação do SGS |
+| Ureia/MAP/KCl | ComexStat/MDIC (já em uso) | `OFICIAL_PRIMARIA` | Fonte já integrada; candidata a aprofundamento histórico retroativo | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` (código não usa chave) | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `CONFIRMADO` (mensal, código) | `CONFIRMADO` (mês de referência, `refsFertilizantes`) | `CONFIRMADO` (US$/t FOB) | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `CONFIRMADO` (domínio já usado com sucesso na produção, `data.json`) | `NAO_VERIFICADO` | `APROVADA_TECNICAMENTE_PENDENTE_GOVERNANCA` | Confirmar por leitura direta: cobertura histórica real, limites, licença de redistribuição |
+| Gás natural | EIA Henry Hub (já em uso) | `OFICIAL_PRIMARIA` | Fonte já integrada; candidata a aprofundamento histórico retroativo | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `CONFIRMADO` (`EIA_API_KEY`) | `CONFIRMADO` (`EIA_API_KEY`) | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `CONFIRMADO` (diária, código) | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `CONFIRMADO` (domínio já usado com sucesso na produção, `data.json`) | `NAO_VERIFICADO` | `APROVADA_TECNICAMENTE_PENDENTE_GOVERNANCA` | Confirmar por leitura direta: unidade declarada, termos de uso, cobertura histórica |
+| Soja nacional | CEPEA/ESALQ direto (candidata) | `OFICIAL_PRIMARIA` | Reconstrução histórica retroativa | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `CONFIRMADO` **como bloqueado** para datacenter (código + `CLAUDE.md`) | `NAO_VERIFICADO` | `SEM_DECISAO_POR_FALTA_DE_EVIDENCIA` | Leitura direta de metodologia/termos; resolução do bloqueio técnico |
+| Soja nacional (referencial) | CONAB — Preços Agropecuários | `OFICIAL_PRIMARIA` | Apenas referência/checagem cruzada humana | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `SOMENTE_REFERENCIAL` | Confirmar se mede o mesmo indicador metodológico do CEPEA (provavelmente não, ver seção 41) |
+| BDI/frete marítimo | HANDYBULK (já em uso) | `PUBLICA_NAO_OFICIAL` | Fonte já integrada; nenhuma mudança proposta | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | diária (texto corrido) | `CONFIRMADO` (data extraída do texto, código) | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `CONFIRMADO` (domínio já usado com sucesso na produção, `data.json`) | `NAO_VERIFICADO` | `APROVADA_TECNICAMENTE_PENDENTE_GOVERNANCA` (uso atual); nenhuma mudança proposta | — |
+| BDI/frete marítimo | Baltic Exchange (candidata oficial) | `OFICIAL_PRIMARIA` (natureza oficial não confirmada por leitura direta) | Fonte oficial do índice, se aprovada no futuro | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `EXIGE_LICENCA` | Contato comercial/jurídico com o Baltic Exchange antes de qualquer avaliação técnica adicional |
+| Ureia/MAP/KCl (referencial) | World Bank Pink Sheet | `OFICIAL_PRIMARIA` | Apenas referência/checagem cruzada humana | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` (relatório público, sem chave conhecida) | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `SOMENTE_REFERENCIAL` | Praça/condição comercial diferente do ComexStat (seção 27) — nunca tratar como equivalente |
+| Soja regional (Tocantins) | Nenhuma confirmada; SEAGRO-TO como pista | `NAO_CLASSIFICADA` | Sem finalidade proposta — lacuna documentada | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `SEM_DECISAO_POR_FALTA_DE_EVIDENCIA` | Leitura direta de `to.gov.br/seagro/cotacoes-agropecuarias` para confirmar se cobre soja |
+
+## 44. Fontes atuais do código — auditoria e correção da divergência com o README
+
+Auditoria de código (`fetch-data.mjs`, `fetch-fertilizers.mjs`), confirmada
+por leitura direta nesta etapa, e comparação com o texto anterior da seção 6
+do `README.md`:
+
+| Indicador | README (texto anterior) | Código (real, confirmado) | Divergência? |
+|---|---|---|---|
+| Dólar | "AwesomeAPI, tempo real" | Primária: BCB PTAX. Fallback 1: Frankfurter. Fallback 2 (última opção): AwesomeAPI | Sim — AwesomeAPI é a **última** opção, não a única/primária |
+| Soja CEPEA | "CEPEA/ESALQ (scraping)" | Primária: Notícias Agrícolas (republica CEPEA/ESALQ Paraná). Fallback: CEPEA direto | Sim — a fonte primária real não é o domínio do CEPEA |
+| BDI | "stooq" | Primária: HANDYBULK. Fallback: stooq | Sim — stooq é fallback, não primária |
+| BDI ("O que continua manual") | "Apenas o BDI... a fonte passou a exigir JavaScript" | `fertilizers-override.json` tem `"fontesManuais": []` (vazio) — nenhum indicador travado como manual hoje | Sim — o texto descrevia um estado anterior; hoje o BDI é buscado automaticamente via HANDYBULK |
+| Ureia/MAP/KCl | "ComexStat — API oficial do MDIC, mensal" | Confere | Não |
+| Gás natural | "EIA (Henry Hub) ou stooq, diária" | Confere | Não |
+| Soja regional | Não mencionada | Primária: Notícias Agrícolas (praça Oeste da Bahia/AIBA). Sem fallback de fonte própria (aplica estimativa/última leitura) | Ausente — indicador existente no código, mas não documentado |
+
+O README (seção 6) foi corrigido nesta etapa **apenas nos pontos acima,
+comprovados por leitura direta do código**, sem alterar nenhuma linha de
+código e sem alterar a ordem real dos fallbacks. A distinção entre fonte
+primária atual, fallback atual, override, fonte candidata futura e fonte
+somente referencial é mantida explícita tanto na tabela do README quanto na
+matriz da seção 43 — nenhuma fonte candidata futura é descrita, em nenhum dos
+dois documentos, como já integrada.
