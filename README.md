@@ -847,3 +847,53 @@ para uma etapa futura — o desenho técnico já existe em
 [`docs/formulated-temporal-alignment-design.md`](docs/formulated-temporal-alignment-design.md)
 (diagnóstico da disponibilidade histórica e projeto de alinhamento temporal —
 **documento técnico, não uma implementação**: nada nele foi construído ainda).
+
+## 13. Extrator histórico dos direcionadores de mercado
+
+> Ferramenta **local e somente leitura**: reconstrói uma série temporal a partir
+> do histórico Git **local** de `data.json` (`git log`/`git show`, nunca
+> checkout/reset/rebase). Nunca consulta API externa, nunca baixa dado novo,
+> nunca é chamada pela esteira semanal e nunca é conectada ao histórico privado
+> de formulados nesta etapa.
+
+**Diferença entre "snapshot Git" e "observação econômica":** cada commit que
+tocou `data.json` é só uma fotografia da execução — não é, por si só, uma nova
+observação de mercado. Várias execuções (inclusive várias no mesmo dia, como
+aconteceu na configuração inicial do projeto) podem carregar o mesmo fechamento
+de ureia/MAP/KCl, ou nenhuma data identificável nenhuma (é o caso de câmbio e
+gás natural hoje — ver seção 8 do [documento de alinhamento temporal](docs/formulated-temporal-alignment-design.md)).
+O extrator deduplica por referência econômica quando ela existe, e nunca trata
+`commitDate`/`updatedAt` como se fosse a data real do mercado.
+
+**Como rodar:**
+
+```bash
+npm run extract:market-history                                   # dry-run: audita e mostra cobertura, nao grava nada
+npm run extract:market-history -- --output caminho/saida.json    # grava a serie (atomico), caminho sempre explicito
+```
+
+**Limitações:** câmbio, gás natural e soja Oeste BA nunca têm data de
+referência identificável no histórico atual — as observações desses
+indicadores ficam com `referenceDate`/`referencePeriod` nulos e
+`extractionConfidence` mais baixa, por desenho, não por bug. Conflitos entre
+snapshots (valor ou status divergentes para a mesma referência) nunca são
+resolvidos automaticamente — aparecem marcados na própria saída.
+
+**Esta ferramenta não deve ser usada para previsão** de preço, e **nesta etapa
+não cruza** o histórico de direcionadores com o histórico de formulados —
+esse cruzamento é trabalho de uma etapa futura, própria, depois de revisão
+humana dos dados aqui extraídos.
+
+### Separação de domínios (formulados × direcionadores)
+
+O histórico dos direcionadores de mercado (este extrator) é **independente**
+do catálogo técnico das formulações: preço/data/condição comercial de um
+formulado (histórico privado, Etapas 1–3) é um domínio; fórmula declarada,
+garantias de macro/micronutrientes e composição física conhecida de cada
+formulação são **outro** domínio, que será mantido futuramente num arquivo
+privado separado (`data/private/formulated-products-catalog.private.json`,
+ainda não criado). Esta etapa **não lê, não infere e não estima** nenhuma
+composição ou garantia de formulado — o vínculo técnico entre um preço
+comercial e a especificação de uma formulação (um identificador como
+`formulationId`) é decisão de uma etapa própria e futura, depois da revisão
+deste histórico extraído.

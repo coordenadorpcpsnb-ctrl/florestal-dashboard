@@ -537,6 +537,14 @@ Sugestão de escopo, **apenas indicado, não implementado aqui**:
 - sem cruzamento com formulados nesta etapa seguinte;
 - sem previsão.
 
+> **Nota (Etapa 5):** o extrator descrito acima foi implementado
+> (`extract-market-driver-history.mjs` + `schemas/market-driver-history.schema.json`)
+> numa etapa posterior a este documento — ver README, seção 13. A separação
+> em três domínios (histórico comercial privado dos formulados, catálogo
+> técnico privado das formulações — ainda não criado — e histórico público dos
+> direcionadores) foi decidida nessa mesma etapa; nenhum vínculo técnico entre
+> os domínios (`formulationId` ou equivalente) foi criado ainda.
+
 ## 20. Apêndice — comandos de auditoria executados
 
 Todos somente leitura, executados a partir da raiz do repositório:

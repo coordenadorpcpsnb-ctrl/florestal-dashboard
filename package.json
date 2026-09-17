@@ -8,6 +8,7 @@
     "validate:formulated-history": "node validate-formulated-history.mjs",
     "import:formulated-history": "node import-formulated-history.mjs",
     "profile:formulated-history": "node profile-formulated-history.mjs",
+    "extract:market-history": "node extract-market-driver-history.mjs",
     "test": "node --test"
   },
   "dependencies": { "cheerio": "^1.0.0", "docx": "^9.0.0" }

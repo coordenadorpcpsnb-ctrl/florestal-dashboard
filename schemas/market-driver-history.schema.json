@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/coordenadorpcpsnb-ctrl/florestal-dashboard/schemas/market-driver-history.schema.json",
+  "title": "Historico extraido dos direcionadores publicos de mercado",
+  "description": "Contrato formal da saida do extrator historico (extract-market-driver-history.mjs). Reconstroi, a partir do historico Git LOCAL de data.json, uma serie temporal estruturada dos direcionadores PUBLICOS de mercado (cambio, fertilizantes FOB, gas natural, frete, soja). Nao contem nenhum dado de formulados, fornecedor, preco comercial interno, volume comprado, condicao de pagamento ou contrato -- essas informacoes pertencem aos dominios privados separados (historico comercial de formulados e catalogo tecnico das formulacoes), que este schema nunca referencia. A validacao em tempo de execucao roda em JavaScript puro (market-driver-history.mjs), sem biblioteca de JSON Schema, para nao adicionar dependencia nova. Este arquivo e a referencia formal e deve ser mantido em sincronia com as regras implementadas naquele modulo.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "description", "generatedAt", "source", "observations"],
+  "properties": {
+    "schemaVersion": {
+      "description": "Versao do formato desta serie. Comeca em 1; incrementar so em mudanca incompativel de estrutura.",
+      "type": "integer",
+      "const": 1
+    },
+    "description": {
+      "description": "Descricao da serie: deve deixar claro que e uma reconstrucao historica dos direcionadores PUBLICOS, sem cruzamento com formulados, sem previsao, sem correlacao/peso calculado.",
+      "type": "string",
+      "minLength": 1
+    },
+    "generatedAt": {
+      "description": "Timestamp ISO 8601 de quando esta extracao foi gerada. Null so no contrato publico vazio (antes de qualquer extracao real).",
+      "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+    },
+    "source": {
+      "description": "Metadados da fonte da extracao -- sempre o historico Git local de data.json, nunca uma API externa.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "file", "commitCountAudited", "snapshotCountParsed", "snapshotCountRejected"],
+      "properties": {
+        "type": {
+          "description": "Tipo da fonte. Sempre GIT_HISTORY nesta etapa -- o extrator nunca consulta API externa.",
+          "type": "string",
+          "enum": ["GIT_HISTORY"]
+        },
+        "file": {
+          "description": "Nome do arquivo versionado auditado.",
+          "type": "string",
+          "enum": ["data.json"]
+        },
+        "commitCountAudited": {
+          "description": "Numero de commits que tocaram o arquivo, encontrados via git log --follow.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "snapshotCountParsed": {
+          "description": "Numero de snapshots (versoes do arquivo) que puderam ser lidos e interpretados como JSON valido com a estrutura minima esperada.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "snapshotCountRejected": {
+          "description": "Numero de snapshots rejeitados (JSON invalido, arquivo ausente naquele commit, ou estrutura minima nao reconhecida). Um snapshot rejeitado nao interrompe a extracao dos demais.",
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "observations": {
+      "description": "Observacoes economicas deduplicadas dos direcionadores. Uma base recem-criada (sem extracao ainda) tem observations: [].",
+      "type": "array",
+      "items": { "$ref": "#/$defs/observation" }
+    }
+  },
+  "$defs": {
+    "yyyyMmDd": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Data no formato ISO 8601 YYYY-MM-DD."
+    },
+    "yyyyMm": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}$",
+      "description": "Periodo no formato YYYY-MM (mes de referencia economica, sem inventar um dia)."
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "indicator",
+        "value",
+        "unit",
+        "referenceDate",
+        "referencePeriod",
+        "collectedAt",
+        "commitDate",
+        "commitHash",
+        "sourceStatus",
+        "sourceName",
+        "sourceMessage",
+        "extractionConfidence",
+        "deduplicationKey",
+        "metadata"
+      ],
+      "properties": {
+        "indicator": {
+          "description": "Direcionador de mercado observado. So indicadores comprovadamente presentes no codigo/historico atual do repositorio -- nunca inventado.",
+          "type": "string",
+          "enum": ["dolar", "ureia", "map", "kcl", "gas", "bdi", "soja", "sojaTO"]
+        },
+        "value": {
+          "description": "Valor numerico observado, sem arredondamento nem conversao de unidade. Null quando AUSENTE.",
+          "oneOf": [{ "type": "number" }, { "type": "null" }]
+        },
+        "unit": {
+          "description": "Unidade do valor. Derivada de uma tabela fixa indicador->unidade, evidenciada no codigo (patch-dashboard.mjs) -- data.json nao guarda unidade por campo. NAO_IDENTIFICADA quando a unidade nao puder ser confirmada por evidencia.",
+          "type": "string",
+          "enum": ["BRL_USD", "USD_TON", "USD_MMBTU", "BDI_PONTOS", "BRL_SACA_60KG", "NAO_IDENTIFICADA"]
+        },
+        "referenceDate": {
+          "description": "Dia economico real do valor, somente quando identificavel com evidencia estruturada ou por regra de extracao documentada. Nunca inventado a partir de commitDate/collectedAt.",
+          "oneOf": [{ "$ref": "#/$defs/yyyyMmDd" }, { "type": "null" }]
+        },
+        "referencePeriod": {
+          "description": "Periodo economico (mes) do valor, quando aplicavel (ureia/MAP/KCl via refsFertilizantes). Nunca um dia inventado dentro do mes.",
+          "oneOf": [{ "$ref": "#/$defs/yyyyMm" }, { "type": "null" }]
+        },
+        "collectedAt": {
+          "description": "updatedAt do snapshot de data.json de onde este valor veio (quando um ISO valido). Data da COLETA/execucao, nunca tratada como referencia economica.",
+          "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+        },
+        "commitDate": {
+          "description": "Data do commit Git que contem este snapshot. Nunca tratada como referencia economica.",
+          "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+        },
+        "commitHash": {
+          "description": "Hash do commit, truncado de forma FIXA e deterministica (10 caracteres hex do hash completo) -- nunca o %h do Git, que muda de tamanho com o crescimento do repositorio.",
+          "type": "string",
+          "pattern": "^[0-9a-f]{10}$"
+        },
+        "sourceStatus": {
+          "description": "Classificacao de rastreabilidade da observacao (nao e o texto de status de data.json). Um dos 5 valores fixos.",
+          "type": "string",
+          "enum": ["OBSERVADO", "FALLBACK_ULTIMO_CONHECIDO", "OVERRIDE_MANUAL", "AUSENTE", "NAO_IDENTIFICAVEL"]
+        },
+        "sourceName": {
+          "description": "Nome da fonte primaria reconhecida (ex.: BCB PTAX, HANDYBULK), extraido por casamento com uma lista fixa de nomes conhecidos -- nunca texto livre arbitrario. Null quando nao reconhecido.",
+          "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+        },
+        "sourceMessage": {
+          "description": "Categoria SANITIZADA e fixa derivada do texto de status (ex.: ok, falha_http, falha_parse) -- nunca o texto completo/bruto do campo status, que pode conter fragmentos de resposta HTTP.",
+          "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+        },
+        "extractionConfidence": {
+          "description": "Rastreabilidade da EXTRACAO (nao confianca estatistica, nao qualidade do preco, nao autoriza previsao). Um dos 4 valores fixos.",
+          "type": "string",
+          "enum": ["ESTRUTURADA", "PARCIAL", "INFERENCIA_TECNICA", "NAO_RASTREAVEL"]
+        },
+        "deduplicationKey": {
+          "description": "Chave deterministica usada para agrupar snapshots da mesma referencia economica antes de deduplicar.",
+          "type": "string",
+          "minLength": 1
+        },
+        "metadata": {
+          "description": "Metadados de suporte da deduplicacao/conflito. Nunca contem valor de preco de formulado, fornecedor ou qualquer dado privado.",
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["supportingSnapshotCount", "firstCollectedAt", "lastCollectedAt", "commitHashes", "conflict", "conflictType"],
+          "properties": {
+            "supportingSnapshotCount": {
+              "description": "Quantos snapshots sustentam esta observacao deduplicada (>=1).",
+              "type": "integer",
+              "minimum": 1
+            },
+            "firstCollectedAt": {
+              "description": "Primeiro collectedAt entre os snapshots que sustentam esta observacao.",
+              "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+            },
+            "lastCollectedAt": {
+              "description": "Ultimo collectedAt entre os snapshots que sustentam esta observacao.",
+              "oneOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+            },
+            "commitHashes": {
+              "description": "Hashes truncados (mesmo formato de commitHash) de todos os snapshots que sustentam esta observacao.",
+              "type": "array",
+              "items": { "type": "string", "pattern": "^[0-9a-f]{10}$" },
+              "minItems": 1
+            },
+            "conflict": {
+              "description": "true quando esta observacao faz parte de um grupo com valores ou status divergentes para a mesma referencia -- nunca resolvido silenciosamente.",
+              "type": "boolean"
+            },
+            "conflictType": {
+              "description": "Tipo de conflito, quando conflict=true. Null quando conflict=false.",
+              "oneOf": [{ "type": "string", "enum": ["VALORES_DIVERGENTES", "STATUS_DIVERGENTE"] }, { "type": "null" }]
+            }
+          }
+        }
+      }
+    }
+  }
+}
