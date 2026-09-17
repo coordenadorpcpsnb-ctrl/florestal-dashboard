@@ -691,3 +691,156 @@ matérias-primas, preço histórico corrigido, faixa estimada de negociação,
 regressão, previsão, comparação com ureia/MAP/KCl nem custo por hectare — e
 **não** apura o custo industrial do fabricante (ver seção 10). Tudo isso, se vier
 a existir, é trabalho de uma etapa futura, separada desta.
+
+## 12. Análise exploratória e de qualidade do histórico de formulados
+
+> Esta seção documenta uma ferramenta **local e somente leitura**: analisa uma
+> base **privada** já existente (seção 10/11), nunca grava nem altera a base de
+> entrada, nunca é chamada pela esteira semanal, e não conecta a base privada a
+> nenhum outro lugar do projeto. Ela descreve **o que já está na base** — nunca
+> estima, prevê, recomenda ou cruza com outra fonte.
+
+### O que esta análise NÃO faz
+
+Mesmo lista de proibições da seção 11, mais explícitas para esta etapa: **não**
+calcula índice de pressão de matérias-primas nem cruza com `data.json` (câmbio,
+ureia, MAP, KCl); **não** calcula um "preço histórico corrigido"; **não** estima
+um preço atual; **não** faz regressão, machine learning nem previsão; **não**
+define faixa de negociação nem recomenda compra; **não** apura custo industrial
+do fabricante nem custo por hectare; **não** altera dashboard, relatório ou
+workflows. Só descreve — cobertura, consistência, séries comparáveis e pontos que
+merecem revisão humana.
+
+### Identidade de "série" (`serieExata`)
+
+Uma **série** agrupa registros comparáveis entre si — não por nome parecido, mas
+por critério comercial exato. A chave usa só produto, fórmula, `modalidadeEntrega`
+e (só quando `modalidadeEntrega === "CIF_DESTINO"`) o destino, todos normalizados
+de forma conservadora (`trim` + espaços colapsados + caixa alta — nunca mexe em
+dígitos, zeros à esquerda ou hífens). Fora de `CIF_DESTINO` (inclusive
+`FOB_FABRICA`), o destino **não** participa da chave: o preço "na fábrica" não
+muda por causa de para onde o produto vai depois.
+
+`fornecedor`, `preço`, `volume`, `prazo`, `data` e `observações` **nunca** entram
+na identidade da série — dois registros só diferem de série se o produto, a
+fórmula, a modalidade ou (em CIF) o destino forem diferentes. `fonteRegistro`,
+`prazoPagamentoDias` e a presença de `dataCompra` também não fragmentam a série
+(isso destruiria a comparabilidade) — viram alertas de mistura
+(`MISTURA_DE_FONTES_NA_SERIE`, `MISTURA_DE_FORNECEDORES_NA_SERIE`,
+`MISTURA_DE_PRAZOS_NA_SERIE`) sobre a série já agrupada.
+
+A normalização é deliberadamente conservadora: `"06-30-06"` e `"6-30-6"`
+permanecem **séries diferentes** (dígitos/zeros à esquerda nunca são
+equiparados), e marcadores químicos como `MICRO`, `Zn`, `B`, `Cu`, `S` nunca são
+removidos ou reinterpretados. Cada série recebe um identificador anônimo e
+determinístico (`serie-001`, `serie-002`, ...), numerado em ordem alfabética da
+chave — a mesma base sempre produz a mesma numeração.
+
+### `possivelVariacaoNome` — alerta, nunca fusão automática
+
+Separado da identidade exata, uma segunda normalização mais agressiva (que
+também remove espaços ao redor de hífen, ex. `"06 - 30 - 06"` → `"06-30-06"`) é
+usada **só** para detectar pares de séries diferentes que podem ser o mesmo
+produto escrito de formas diferentes por causa de caixa/espaços/hífen. Isso gera
+o alerta `POSSIVEL_VARIACAO_NOME` — nunca uma fusão automática de séries, nunca
+usa biblioteca de similaridade fuzzy (Levenshtein ou equivalente), e nunca altera
+`serieExata`. A decisão de tratar duas séries como a mesma coisa é sempre humana.
+
+### Tipos de alerta
+
+| Tipo | Escopo | Significado |
+|---|---|---|
+| `BASE_VAZIA` | base | a base não tem nenhum registro |
+| `FORMULA_AUSENTE` | registro | `formula` ausente/`null` |
+| `CATEGORIA_AUSENTE` | registro | `categoriaFormula` ausente/`null` |
+| `MODALIDADE_NAO_INFORMADA` | registro | `modalidadeEntrega === "NAO_INFORMADO"` |
+| `DESTINO_AUSENTE_PARA_CIF` | registro | `CIF_DESTINO` sem `destino` |
+| `DATA_COMPRA_AUSENTE_EM_COMPRA` | registro | `fonteRegistro` é compra efetivada (`PEDIDO_COMPRA`/`NOTA_FISCAL`/`CONTRATO`) sem `dataCompra` |
+| `DATA_COMPRA_PRESENTE_EM_COTACAO` | registro | `fonteRegistro === "COTACAO"` mas tem `dataCompra` |
+| `COMPRA_ANTES_DA_COTACAO` | registro | `dataCompra < dataCotacao` |
+| `VALIDADE_ANTES_DA_COTACAO` | registro | `validadeProposta < dataCotacao` |
+| `VOLUME_AUSENTE` | registro | `volumeToneladas` ausente/`null` |
+| `PRAZO_PAGAMENTO_AUSENTE` | registro | `prazoPagamentoDias` ausente/`null` |
+| `POSSIVEL_VARIACAO_NOME` | par de séries | duas séries diferentes colapsam sob a normalização superficial |
+| `SERIE_COM_UM_REGISTRO` | série | só um registro na série |
+| `SERIE_COM_APENAS_UM_ANO` | série | todos os registros da série são do mesmo ano |
+| `MISTURA_DE_FONTES_NA_SERIE` | série | mais de um `fonteRegistro` na mesma série |
+| `MISTURA_DE_FORNECEDORES_NA_SERIE` | série | mais de um fornecedor na mesma série |
+| `MISTURA_DE_PRAZOS_NA_SERIE` | série | mais de um `prazoPagamentoDias` na mesma série |
+| `POSSIVEL_DUPLICIDADE_SEMANTICA` | par de registros | dois registros idênticos em data/produto/fórmula/fornecedor/preço/modalidade/destino/fonte — **nunca remove nem escolhe** um dos dois, só sinaliza |
+| `PRECO_POTENCIALMENTE_EXTREMO` | registro (dentro de uma série) | preço fora dos limites de Tukey (ver abaixo) |
+
+### Outliers de preço (método de Tukey / IQR)
+
+Só avalia dentro de cada série (nunca a base inteira) e só quando a série tem
+**pelo menos 4** preços válidos. Mediana e quartis seguem a convenção clássica
+(Moore-McCabe): para quantidade ímpar de valores, o elemento central (a própria
+mediana) é excluído das duas metades antes de calcular a mediana de cada uma
+(Q1 = mediana da metade inferior, Q3 = mediana da metade superior). Limites =
+`Q1 - 1.5×IQR` e `Q3 + 1.5×IQR`. Quando o IQR é zero (todos os preços iguais ou
+quase), **nenhum limite é calculado** — isso evitaria sinalizar qualquer desvio
+mínimo como extremo. "Potencialmente extremo" é só um convite à revisão humana,
+nunca uma correção ou remoção automática do registro.
+
+### Classificação de suficiência (puramente descritiva)
+
+Cada série recebe uma de três classificações, baseada só na quantidade de
+registros e de anos distintos — **nunca** um nível de confiança estatística e
+**nunca** uma autorização para previsão:
+
+| Classificação | Critério |
+|---|---|
+| `INSUFICIENTE` | menos de 4 registros, ou registros de um único ano |
+| `LIMITADA` | 4 a 11 registros, cobrindo 2+ anos |
+| `EXPLORATORIA` | 12+ registros, cobrindo 2+ anos |
+
+### Como rodar
+
+```bash
+# resumo no console, sem gravar nada
+npm run profile:formulated-history -- caminho/base.private.json
+
+# resumo + relatório privado opcional
+npm run profile:formulated-history -- caminho/base.private.json --output caminho/relatorio.profile.private.json
+```
+
+O caminho de entrada é **sempre explícito** — o CLI nunca procura um arquivo
+privado sozinho, nunca cai de volta para a base pública, e recusa tanto a base
+pública conhecida (`data/formulated-prices-history.json`) quanto qualquer
+caminho que não termine em `.private.json` (mesma regra de caminho já usada pela
+seção 11, reaproveitada — não reimplementada). Roda mesmo sem `--output`
+(análise "dry-run", só imprime o resumo).
+
+### Console: sempre redigido
+
+O console **nunca imprime** produto, fórmula, fornecedor, preço, volume,
+destino, prazo ou observações — nem o `id` de registro individual no resumo
+padrão. Só aparecem: contagens, datas globais, percentuais de cobertura,
+contagem por tipo de alerta, classificação de suficiência por contagem, e ids
+anônimos de série (`serie-NNN`). Trate a saída do terminal com a mesma cautela
+do arquivo privado que ela resume.
+
+### Relatório privado opcional (`--output`)
+
+Diferente do console, o relatório JSON gravado com `--output` **pode** conter
+produto/fórmula/destino de cada série (em `series[].criterios`) e as
+estatísticas de preço agregadas (mín/máx/média/mediana/quartis) — é o único
+lugar pensado para uso humano com a base já aberta, nunca para publicação. Ele
+nunca contém fornecedor nem observações (não entram na identidade de série nem
+nas estatísticas), nunca contém o caminho absoluto de entrada, usuário ou
+informação de ambiente. A escrita é atômica (arquivo temporário no mesmo
+diretório, validado, depois `rename`) e nunca sobrescreve silenciosamente um
+arquivo já existente que não pareça um relatório válido deste CLI — a mesma
+regra de segurança que já protege a saída da importação (seção 11) também
+recusa gravar a base pública ou um caminho fora de `.private.json`, e soma a
+restrição de nunca gravar dentro de `templates/`.
+
+### Próxima etapa sugerida (não implementada aqui)
+
+Esta etapa só analisa a base de formulados isoladamente. O próximo passo natural
+— ainda por **projetar**, não implementar — é um alinhamento temporal entre o
+histórico de preços de formulados e o histórico de matérias-primas
+(ureia/MAP/KCl/câmbio) já coletado pela esteira semanal: como comparar datas de
+cotação de calendários diferentes, que janela de defasagem faz sentido, e como
+lidar com séries de formulados com poucos pontos. Fica como decisão de projeto
+para uma etapa futura.
