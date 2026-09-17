@@ -40,13 +40,13 @@ test("o arquivo docs/market-history-sources-assessment.md existe", () => {
   assert.equal(existsSync(DOC_PATH), true);
 });
 
-test("o documento tem exatamente 44 seções numeradas de nível 2 (30 da Etapa 6 + 14 do adendo da Etapa 6.1)", () => {
-  assert.equal(secoes.length, 44);
+test("o documento tem exatamente 48 seções numeradas de nível 2 (30 da Etapa 6 + 14 da Etapa 6.1 + 4 da Etapa 6.2)", () => {
+  assert.equal(secoes.length, 48);
 });
 
-test("as seções estão numeradas de 1 a 44, em ordem, sem repetição nem salto", () => {
+test("as seções estão numeradas de 1 a 48, em ordem, sem repetição nem salto", () => {
   const numeros = secoes.map((s) => s.numero);
-  assert.deepEqual(numeros, Array.from({ length: 44 }, (_, i) => i + 1));
+  assert.deepEqual(numeros, Array.from({ length: 48 }, (_, i) => i + 1));
 });
 
 test("o documento começa com um título de nível 1 sobre avaliação de fontes históricas", () => {
@@ -506,9 +506,13 @@ test("[6.1-10] a seção 38 (CEPEA) declara que a visibilidade pública não imp
   assert.match(bloco, /publicamente\s+vis[ií]vel[\s\S]{0,60}n[aã]o [eé]/i);
 });
 
-test("[6.1-11] a seção 39 (Baltic Exchange) mantém a decisão EXIGE_LICENCA", () => {
+test("[6.1-11] a seção 39 (Baltic Exchange) NÃO declara EXIGE_LICENCA como a decisão ativa (corrigido na Etapa 6.2 — ver [6.2-1]/[6.2-3])", () => {
   const bloco = doc.slice(doc.indexOf("## 39."), doc.indexOf("## 40."));
-  assert.match(bloco, /EXIGE_LICENCA/);
+  // EXIGE_LICENCA só pode aparecer dentro de uma negação ("não `EXIGE_LICENCA`"),
+  // nunca como valor isolado de decisão ativa (ex.: "é `EXIGE_LICENCA`").
+  assert.doesNotMatch(bloco, /\bé\s+`EXIGE_LICENCA`/);
+  assert.doesNotMatch(bloco, /decis[aã]o[\s\S]{0,15}\(seç[aã]o 43\)[\s\S]{0,10}`EXIGE_LICENCA`/i);
+  assert.match(bloco, /n[aã]o\s+`EXIGE_LICENCA`/);
 });
 
 test("[6.1-12] a seção 40 (World Bank) declara que a Pink Sheet nunca é tratada como equivalente ao ComexStat", () => {
@@ -606,4 +610,254 @@ test("[6.1-25] a pista de soja regional (SEAGRO-TO) é citada com domínio insti
   const bloco = doc.slice(doc.indexOf("## 42."), doc.indexOf("## 43."));
   assert.match(bloco, /to\.gov\.br/);
   assert.match(bloco, /SEAGRO/);
+});
+
+// ===========================================================================
+// Etapa 6.2 — correção da inconsistência do Baltic Exchange e pacote de
+// aprovação humana (seções 45-48)
+// ===========================================================================
+
+function blocoSecao(inicio, fim) {
+  return doc.slice(doc.indexOf(inicio), fim ? doc.indexOf(fim) : doc.length);
+}
+
+test("[6.2-1] Baltic Exchange não está classificado como EXIGE_LICENCA em nenhuma linha da matriz (seção 43)", () => {
+  const linhas = extrairLinhasMatriz();
+  const linhaBaltic = linhas.find((l) => l.some((c) => /Baltic Exchange/.test(c)));
+  assert.ok(linhaBaltic, "linha do Baltic Exchange não encontrada na matriz");
+  assert.ok(!linhaBaltic.some((c) => c.includes("EXIGE_LICENCA")), linhaBaltic.join(" | "));
+});
+
+test("[6.2-2] o campo de licença do Baltic Exchange está NAO_VERIFICADO (seção 39)", () => {
+  const bloco = blocoSecao("## 39.", "## 40.");
+  assert.match(bloco, /\|\s*Licen[cç]a\s*\|\s*`NAO_VERIFICADO`/i);
+});
+
+test("[6.2-3] Baltic Exchange está com decisão SEM_DECISAO_POR_FALTA_DE_EVIDENCIA (seção 39 e matriz)", () => {
+  const bloco39 = blocoSecao("## 39.", "## 40.");
+  assert.match(bloco39, /SEM_DECISAO_POR_FALTA_DE_EVIDENCIA/);
+  const linhas = extrairLinhasMatriz();
+  const linhaBaltic = linhas.find((l) => l.some((c) => /Baltic Exchange/.test(c)));
+  assert.ok(linhaBaltic.some((c) => c.includes("SEM_DECISAO_POR_FALTA_DE_EVIDENCIA")));
+});
+
+test("[6.2-4] a seção 46 declara que snippet não é evidência externa", () => {
+  const bloco = blocoSecao("## 46.", "## 47.");
+  assert.match(bloco, /snippet/i);
+  assert.match(bloco, /[Nn]unca promovid[ao]\s+a\s+evid[eê]ncia\s+externa/);
+});
+
+test("[6.2-5] a seção 46 declara que resultado de busca não é evidência externa confirmada", () => {
+  const bloco = blocoSecao("## 46.", "## 47.");
+  assert.match(bloco, /resumo do mecanismo de\s+pesquisa/i);
+  assert.match(bloco, /pista para valida[cç][aã]o/i);
+});
+
+test("[6.2-6] a seção 46 separa evidência do repositório de evidência externa numa tabela por fonte", () => {
+  const bloco = blocoSecao("## 46.", "## 47.");
+  assert.match(bloco, /\|\s*Fonte\s*\|\s*Evid[eê]ncia do reposit[oó]rio\s*\|\s*Evid[eê]ncia externa/i);
+  const linhas = bloco.split("\n").filter((l) => l.trim().startsWith("|") && !/^\|\s*-+\s*\|/.test(l.trim()));
+  assert.ok(linhas.length >= 9, `esperadas ao menos 9 linhas de fonte, encontrado ${linhas.length - 1}`);
+});
+
+test("[6.2-7] o checklist do ComexStat declara que a aprovação técnica não implica autorização jurídica", () => {
+  const bloco = blocoSecao("#### Fonte: ComexStat", "#### Fonte: EIA");
+  assert.match(bloco, /n[aã]o implica[\s\S]{0,10}nenhuma autoriza[cç][aã]o jur[ií]dica|nenhuma autoriza[cç][aã]o jur[ií]dica implícita/i);
+});
+
+test("[6.2-8] o checklist do EIA declara que a aprovação técnica não implica autorização jurídica", () => {
+  const bloco = blocoSecao("#### Fonte: EIA Henry Hub", "#### Fonte: CEPEA");
+  assert.match(bloco, /nenhuma autoriza[cç][aã]o jur[ií]dica implícita/i);
+});
+
+test("[6.2-9] o checklist separa BCB PTAX (uso atual) de BCB SGS (histórico) em blocos distintos", () => {
+  assert.match(doc, /#### Fonte: BCB PTAX \(uso atual\)/);
+  assert.match(doc, /#### Fonte: BCB SGS \(hist[oó]rico, candidata\)/);
+});
+
+test("[6.2-9b] o checklist do BCB SGS declara que a adequação do endpoint atual não prova autorização do SGS", () => {
+  const bloco = blocoSecao("#### Fonte: BCB SGS", "#### Fonte: ComexStat");
+  assert.match(bloco, /adequa[cç][aã]o t[eé]cnica do endpoint PTAX atual n[aã]o [eé] prova/i);
+});
+
+test("[6.2-10] o checklist do CEPEA mantém a decisão técnica SEM_DECISAO_POR_FALTA_DE_EVIDENCIA", () => {
+  const bloco = blocoSecao("#### Fonte: CEPEA/ESALQ", "#### Fonte: Baltic Exchange");
+  assert.match(bloco, /decis[aã]o t[eé]cnica:\s*`SEM_DECISAO_POR_FALTA_DE_EVIDENCIA`/);
+});
+
+test("[6.2-11] o checklist do World Bank não confirma licença (redistribuição/permissões NAO_VERIFICADO)", () => {
+  const bloco = blocoSecao("#### Fonte: World Bank", "#### Fonte: CONAB — Preços");
+  assert.match(bloco, /permiss[aã]o de redistribui[cç][aã]o:\s*`NAO_VERIFICADO`/);
+  assert.match(bloco, /CC-BY 4\.0 n[aã]o deve ser mencionada como confirmada/i);
+});
+
+test("[6.2-12] o checklist da CONAB (Preços Agropecuários) não presume redistribuição", () => {
+  const bloco = blocoSecao("#### Fonte: CONAB — Preços Agropecuários", "#### Fonte: CONAB — Custos");
+  assert.match(bloco, /permiss[aã]o de redistribui[cç][aã]o:\s*`NAO_VERIFICADO`[\s\S]{0,40}n[aã]o presumida/i);
+});
+
+test("[6.2-13] SEAGRO-TO está classificada apenas como PISTA_PARA_VERIFICACAO, nunca fonte candidata aprovada", () => {
+  const bloco = blocoSecao("#### Fonte: Soja regional — SEAGRO-TO", null);
+  assert.match(bloco, /decis[aã]o t[eé]cnica:\s*`PISTA_PARA_VERIFICACAO`/);
+  assert.match(bloco, /n[aã]o afirma[\s\S]{0,60}que a SEAGRO-TO fornece pre[cç]o de soja/i);
+});
+
+test("[6.2-14] nenhuma linha da matriz (seção 43) ou do gate (seção 48) tem recomendação/status igual a APROVADA_PARA_PUBLICACAO", () => {
+  const linhasMatriz = extrairLinhasMatriz();
+  for (const linha of linhasMatriz) {
+    assert.ok(!linha.some((c) => c.includes("APROVADA_PARA_PUBLICACAO")), linha.join(" | "));
+  }
+  const bloco48 = blocoSecao("## 48.", null);
+  const linhasGate = bloco48
+    .split("\n")
+    .filter((l) => l.trim().startsWith("|") && !/^\|\s*-+\s*\|/.test(l.trim()) && !l.includes("Itens do gate"));
+  for (const linha of linhasGate) {
+    assert.doesNotMatch(linha, /\|\s*APROVADA_PARA_PUBLICACAO\s*\|/);
+  }
+});
+
+test("[6.2-15] nenhuma linha da matriz está APROVADA_PARA_ARMAZENAMENTO_INTERNO, e nenhuma linha do gate está APROVADA_PARA_USO_INTERNO", () => {
+  const linhasMatriz = extrairLinhasMatriz();
+  for (const linha of linhasMatriz) {
+    assert.ok(!linha.some((c) => c.includes("APROVADA_PARA_ARMAZENAMENTO_INTERNO")), linha.join(" | "));
+  }
+  const bloco48 = blocoSecao("## 48.", null);
+  const linhasGate = bloco48
+    .split("\n")
+    .filter((l) => l.trim().startsWith("|") && !/^\|\s*-+\s*\|/.test(l.trim()) && !l.includes("Itens do gate"));
+  for (const linha of linhasGate) {
+    assert.doesNotMatch(linha, /\|\s*APROVADA_PARA_USO_INTERNO\s*\|/);
+  }
+});
+
+test("[6.2-16] o checklist de aprovação humana por fonte existe (seção 47)", () => {
+  assert.match(doc, /^## 47\. Checklist de aprova[cç][aã]o humana por fonte$/m);
+});
+
+test("[6.2-17] o checklist possui os 20 campos obrigatórios (verificado no primeiro bloco de fonte)", () => {
+  const bloco = blocoSecao("#### Fonte: BCB PTAX (uso atual)", "#### Fonte: BCB SGS");
+  const camposObrigatorios = [
+    "documento oficial a abrir",
+    "termo ou política a localizar",
+    "série ou produto a confirmar",
+    "unidade",
+    "periodicidade",
+    "referência econômica",
+    "cobertura histórica",
+    "necessidade de cadastro",
+    "necessidade de chave",
+    "limite de requisições",
+    "permissão de automação",
+    "permissão de armazenamento interno",
+    "permissão de redistribuição",
+    "permissão de publicação",
+    "responsável pela validação",
+    "decisão técnica",
+    "decisão jurídica",
+    "data da decisão",
+    "evidência arquivada",
+    "observação",
+  ];
+  assert.equal(camposObrigatorios.length, 20);
+  for (const campo of camposObrigatorios) {
+    assert.match(bloco, new RegExp(`- ${campo.replace(/[çãéíóú]/g, (c) => c)}:`, "i"), `campo ausente: ${campo}`);
+  }
+});
+
+test("[6.2-18] o gate de integração existe (seção 48)", () => {
+  assert.match(doc, /^## 48\. Gate de integra[cç][aã]o$/m);
+});
+
+test("[6.2-19] o gate declara explicitamente que prova local não implica uso interno nem publicação", () => {
+  const bloco = blocoSecao("## 48.", null);
+  assert.match(bloco, /APROVADA_PARA_PROVA_LOCAL`\s+autoriza[\s\S]{0,250}n[aã]o\s+autoriza uso interno/i);
+});
+
+test("[6.2-20] o gate declara explicitamente que uso interno não implica publicação", () => {
+  const bloco = blocoSecao("## 48.", null);
+  assert.match(bloco, /APROVADA_PARA_USO_INTERNO`\s+autoriza[\s\S]{0,120}n[aã]o autoriza\s+publica[cç][aã]o/i);
+});
+
+test("[6.2-21] todo campo humano do checklist (responsável, decisão jurídica, data, evidência arquivada) está PENDENTE_DE_PREENCHIMENTO, nunca um nome/valor", () => {
+  const secao47 = blocoSecao("## 47.", "## 48.");
+  for (const campo of ["respons[aá]vel pela valida[cç][aã]o", "decis[aã]o jur[ií]dica", "data da decis[aã]o", "evid[eê]ncia arquivada"]) {
+    const regex = new RegExp(`- ${campo}:\\s*\`([^\`]+)\``, "gi");
+    const valores = [...secao47.matchAll(regex)].map((m) => m[1]);
+    assert.ok(valores.length >= 9, `esperado ao menos 9 ocorrências de "${campo}", encontrado ${valores.length}`);
+    for (const v of valores) assert.equal(v, "PENDENTE_DE_PREENCHIMENTO", `campo humano com valor não pendente: ${campo} = ${v}`);
+  }
+});
+
+test("[6.2-21b] nenhum nome de pessoa ou e-mail aparece no checklist humano", () => {
+  const secao47 = blocoSecao("## 47.", "## 48.");
+  assert.doesNotMatch(secao47, /@[\w.-]+\.\w+/);
+});
+
+test("[6.2-22] nenhuma coleta foi implementada: fetch-*.mjs continuam iguais ao commit anterior à Etapa 6.2", async () => {
+  const { execFileSync } = await import("node:child_process");
+  for (const arquivo of ["fetch-data.mjs", "fetch-fertilizers.mjs", "fetch-noticias.mjs"]) {
+    const diff = execFileSync("git", ["diff", "cb6a35c", "--", arquivo], { cwd: ROOT, encoding: "utf-8" });
+    assert.equal(diff.trim(), "", `${arquivo} foi alterado desde cb6a35c`);
+  }
+});
+
+test("[6.2-23] nenhum arquivo fora dos três permitidos foi alterado nesta etapa", async () => {
+  const { execFileSync } = await import("node:child_process");
+  const diff = execFileSync("git", ["diff", "cb6a35c", "--name-status"], { cwd: ROOT, encoding: "utf-8" });
+  const arquivosAlterados = diff.trim().split("\n").filter(Boolean).map((l) => l.split("\t").pop());
+  for (const arq of arquivosAlterados) {
+    assert.ok(
+      /^(README\.md|docs\/market-history-sources-assessment\.md|test\/market-history-sources-assessment\.test\.mjs)$/.test(arq),
+      `arquivo inesperado alterado nesta etapa: ${arq}`
+    );
+  }
+});
+
+test("[6.2-24] o adendo da Etapa 6.2 não descreve formulação, garantia ou composição de micronutriente", () => {
+  const adendo62 = blocoSecao("## 45.", null);
+  assert.doesNotMatch(adendo62, /garantia de (macro|micro)nutriente/i);
+  assert.doesNotMatch(adendo62, /composi[cç][aã]o f[ií]sica/i);
+});
+
+test("[6.2-25] nenhum catálogo técnico de formulações foi criado nesta etapa", () => {
+  assert.equal(existsSync(join(ROOT, "data", "private", "formulated-products-catalog.private.json")), false);
+});
+
+test("[6.2-26] o adendo da Etapa 6.2 não afirma cruzamento implementado com formulados", () => {
+  const adendo62 = blocoSecao("## 45.", null);
+  assert.doesNotMatch(adendo62, /cruzamento[\s\S]{0,30}foi implementado/i);
+});
+
+test("[6.2-27] o adendo da Etapa 6.2 não afirma nenhuma previsão implementada (só a nega, na frase de escopo)", () => {
+  const adendo62 = blocoSecao("## 45.", null);
+  const ocorrencias = [...adendo62.matchAll(/previs[aã]o/gi)];
+  assert.ok(ocorrencias.length >= 1, "esperada ao menos uma menção a 'previsão' no bloco de escopo do adendo 6.2");
+  for (const m of ocorrencias) {
+    const antes = adendo62.slice(0, m.index);
+    const inicioFrase = Math.max(antes.lastIndexOf(". "), antes.lastIndexOf(".\n"));
+    const frase = adendo62.slice(inicioFrase === -1 ? 0 : inicioFrase, m.index);
+    assert.match(frase, /nenhuma|sem\s|n[aã]o\s/i, `frase com "previsão" sem negação: "${frase}"`);
+  }
+});
+
+test("[6.2-28] o README contém o aviso de governança da Etapa 6.2", () => {
+  assert.match(readme, /Aviso de governan[cç]a \(Etapa 6\.2\)/);
+  assert.match(readme, /n[aã]o constituem aprova[cç][aã]o jur[ií]dica/i);
+});
+
+test("[6.2-29] o documento não contém dados privados (base pública de formulados continua vazia)", () => {
+  const historico = JSON.parse(readFileSync(join(ROOT, "data", "formulated-prices-history.json"), "utf-8"));
+  assert.deepEqual(historico.records, []);
+});
+
+test("[6.2-30] a matriz e o checklist continuam sem preços ou séries numéricas (valores do override não vazaram)", () => {
+  const overridePath = join(ROOT, "fertilizers-override.json");
+  const override = JSON.parse(readFileSync(overridePath, "utf-8"));
+  for (const chave of ["soja", "sojaTO", "bdi", "ureia", "map", "kcl", "gasNatural", "dolar"]) {
+    const valor = override[chave];
+    if (typeof valor !== "number") continue;
+    const texto = String(valor);
+    assert.doesNotMatch(doc, new RegExp(`(?<![\\d.])${texto.replace(".", "\\.")}(?![\\d])`),
+      `valor de override vazou no documento: ${chave}=${valor}`);
+  }
 });

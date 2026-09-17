@@ -970,3 +970,11 @@ reconstrução histórica retroativa dos direcionadores de mercado (câmbio,
 fertilizantes, gás natural, frete marítimo e soja), com critérios de
 avaliação, classificação de acesso/redistribuição e recomendação por
 indicador: [`docs/market-history-sources-assessment.md`](docs/market-history-sources-assessment.md).
+
+> **Aviso de governança (Etapa 6.2):** a matriz e o checklist desse documento
+> não constituem aprovação jurídica. Nenhuma fonte externa foi autorizada
+> para armazenamento interno ou publicação. Qualquer integração futura
+> depende do checklist de aprovação humana e do gate de integração
+> documentados lá (seções 47–48) — inclusive validação jurídica feita fora
+> deste ambiente, já que nenhum documento oficial externo pôde ser aberto
+> aqui.

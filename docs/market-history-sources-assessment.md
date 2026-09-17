@@ -765,13 +765,17 @@ busca, não como fato confirmado:
 - **Baltic Exchange** — a Etapa 6 descreveu nomes de licença ("Full Baltic
   Data Licence", "Restricted Baltic Data Licence") como se a página tivesse
   sido lida diretamente. Não foi — era resultado de busca. O campo de
-  licença/redistribuição é rebaixado a `NAO_VERIFICADO`; a **decisão**
-  (seção 43) continua cautelosa (`EXIGE_LICENCA`) porque um índice comercial
-  de frete marítimo mantido por uma bolsa privada é, por natureza do setor,
-  um caso em que a ausência de confirmação de gratuidade **não deve** ser
-  lida como indício de acesso livre — a decisão cautelosa não depende de a
-  citação da licença estar confirmada, só de não haver nenhuma indicação de
-  acesso público gratuito.
+  licença/redistribuição é rebaixado a `NAO_VERIFICADO`. **Correção da Etapa
+  6.2:** a Etapa 6.1 também errou ao registrar a **decisão** (seção 43) como
+  `EXIGE_LICENCA` de forma conclusiva — isso tratou um indício de busca como
+  se fosse prova suficiente para uma decisão, violando a própria regra da
+  seção 33 desta etapa ("resultado de busca nunca eleva um campo a
+  `CONFIRMADO`", e por extensão, nunca sustenta sozinho uma decisão
+  conclusiva). A decisão correta, mantida a partir daqui, é
+  `SEM_DECISAO_POR_FALTA_DE_EVIDENCIA` — não porque o acesso seja
+  necessariamente livre (não há evidência disso também), mas porque **nenhuma
+  decisão conclusiva, em qualquer direção, pode se apoiar em indício de
+  busca.** Detalhamento nas seções 39 e 46 (adendo da Etapa 6.2).
 - **BCB SGS** — a Etapa 6 escreveu "Status de acesso: `GRATUITO_SEM_CADASTRO`,
   segundo a documentação encontrada". Não era documentação, era busca.
   Rebaixado a `NAO_VERIFICADO`.
@@ -885,24 +889,33 @@ implica viabilidade de automação, e a licença/redistribuição continuam
 
 ## 39. Verificação aprofundada — Baltic Exchange
 
+*(Seção corrigida na Etapa 6.2 — ver seção 34 para o registro da
+inconsistência e da correção.)*
+
 | Item | Status | Observação |
 |---|---|---|
 | Natureza oficial do índice | `NAO_VERIFICADO` | O fato de o Baltic Exchange ser o mantenedor oficial do BDI é amplamente conhecido do setor, mas não foi confirmado por leitura direta de uma página institucional nesta etapa. |
-| Acesso a dados históricos | `NAO_VERIFICADO` | Rebaixado de uma redação mais afirmativa na Etapa 6 (ver seção 34) — indício de busca aponta exigência de assinatura, não confirmado por leitura direta. |
-| Licença | `NAO_VERIFICADO` | Idem — nomes de licença citados na Etapa 6 vieram de busca, não de leitura direta. |
+| Acesso a dados históricos | `NAO_VERIFICADO` | Não confirmado por leitura direta. |
+| Licença | `NAO_VERIFICADO` | Não confirmado por leitura direta. |
 | Armazenamento interno | `NAO_APLICAVEL` | Nenhum valor foi armazenado nesta etapa. |
 | Redistribuição | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
 | Publicação | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
 | Uso em aplicação interna | `NAO_VERIFICADO` | Não lido diretamente nesta etapa. |
 
-Como nenhum indício aponta acesso público e gratuito ao BDI oficial — pelo
-contrário, todo indício de busca disponível (mesmo não confirmado por leitura
-direta) aponta para um modelo de associação/assinatura, prática comum para
-índices proprietários de frete marítimo — a decisão registrada na matriz
-(seção 43) é `EXIGE_LICENCA`, por instrução explícita desta etapa. **Nenhum
-contorno por agregador foi buscado ou proposto nesta etapa** — o fallback
-`stooq` já em uso hoje pelo código (seção 7) permanece como está, sem
-alteração e sem ser tratado como substituto equivalente ao índice oficial.
+**Nota não conclusiva (evidência de busca, não promovida a evidência
+externa):** resultados de pesquisa indicam possível exigência de
+licenciamento, mas a documentação oficial não foi aberta neste ambiente.
+
+Por isso, a decisão registrada na matriz (seção 43) para o Baltic Exchange é
+`SEM_DECISAO_POR_FALTA_DE_EVIDENCIA`, não `EXIGE_LICENCA` — nenhuma decisão
+conclusiva pode se apoiar apenas em indício de busca, em qualquer direção
+(nem para liberar, nem para restringir). **Nenhum contorno por agregador foi
+buscado ou proposto nesta etapa** — o fallback `stooq` já em uso hoje pelo
+código (seção 7) permanece como está, sem alteração e sem ser tratado como
+substituto equivalente ao índice oficial. **Nenhuma nova pesquisa externa foi
+feita nesta etapa** sobre o Baltic Exchange, por instrução explícita da Etapa
+6.2 — a correção acima é só de classificação, sobre a evidência já registrada
+na Etapa 6.1.
 
 ## 40. Verificação aprofundada — World Bank Commodity Markets/Pink Sheet
 
@@ -994,7 +1007,7 @@ redistribuição confirmada) nem `APROVADA_PARA_ARMAZENAMENTO_INTERNO`
 | Soja nacional | CEPEA/ESALQ direto (candidata) | `OFICIAL_PRIMARIA` | Reconstrução histórica retroativa | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `CONFIRMADO` **como bloqueado** para datacenter (código + `CLAUDE.md`) | `NAO_VERIFICADO` | `SEM_DECISAO_POR_FALTA_DE_EVIDENCIA` | Leitura direta de metodologia/termos; resolução do bloqueio técnico |
 | Soja nacional (referencial) | CONAB — Preços Agropecuários | `OFICIAL_PRIMARIA` | Apenas referência/checagem cruzada humana | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `SOMENTE_REFERENCIAL` | Confirmar se mede o mesmo indicador metodológico do CEPEA (provavelmente não, ver seção 41) |
 | BDI/frete marítimo | HANDYBULK (já em uso) | `PUBLICA_NAO_OFICIAL` | Fonte já integrada; nenhuma mudança proposta | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | diária (texto corrido) | `CONFIRMADO` (data extraída do texto, código) | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `CONFIRMADO` (domínio já usado com sucesso na produção, `data.json`) | `NAO_VERIFICADO` | `APROVADA_TECNICAMENTE_PENDENTE_GOVERNANCA` (uso atual); nenhuma mudança proposta | — |
-| BDI/frete marítimo | Baltic Exchange (candidata oficial) | `OFICIAL_PRIMARIA` (natureza oficial não confirmada por leitura direta) | Fonte oficial do índice, se aprovada no futuro | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `EXIGE_LICENCA` | Contato comercial/jurídico com o Baltic Exchange antes de qualquer avaliação técnica adicional |
+| BDI/frete marítimo | Baltic Exchange (candidata oficial) | `NAO_CLASSIFICADA` (natureza oficial não confirmada por leitura direta) | Fonte possivelmente oficial do índice — sem decisão nesta etapa | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `SEM_DECISAO_POR_FALTA_DE_EVIDENCIA` | Abrir e ler a documentação oficial do Baltic Exchange (política de dados e licenciamento) antes de qualquer nova decisão — indício de busca (seção 39) não é suficiente |
 | Ureia/MAP/KCl (referencial) | World Bank Pink Sheet | `OFICIAL_PRIMARIA` | Apenas referência/checagem cruzada humana | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` (relatório público, sem chave conhecida) | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `SOMENTE_REFERENCIAL` | Praça/condição comercial diferente do ComexStat (seção 27) — nunca tratar como equivalente |
 | Soja regional (Tocantins) | Nenhuma confirmada; SEAGRO-TO como pista | `NAO_CLASSIFICADA` | Sem finalidade proposta — lacuna documentada | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_APLICAVEL` | `NAO_VERIFICADO` | `NAO_VERIFICADO` | `SEM_DECISAO_POR_FALTA_DE_EVIDENCIA` | Leitura direta de `to.gov.br/seagro/cotacoes-agropecuarias` para confirmar se cobre soja |
 
@@ -1021,3 +1034,357 @@ primária atual, fallback atual, override, fonte candidata futura e fonte
 somente referencial é mantida explícita tanto na tabela do README quanto na
 matriz da seção 43 — nenhuma fonte candidata futura é descrita, em nenhum dos
 dois documentos, como já integrada.
+
+---
+
+## 45. Adendo Etapa 6.2 — objetivo e escopo desta correção
+
+As seções 1–44 acima (Etapas 6 e 6.1) **não foram reescritas**, exceto pelas
+duas correções pontuais assinaladas nas seções 34 e 39 (Baltic Exchange —
+ver abaixo). Este segundo adendo (seções 45–48) tem três objetivos:
+
+1. Corrigir a inconsistência identificada entre a Etapa 6.1 e a sua própria
+   regra de verificação: a decisão `EXIGE_LICENCA` para o Baltic Exchange
+   havia sido registrada como se fosse conclusiva, apoiada apenas em indício
+   de busca — o que a própria seção 33 já proibia. Corrigido para
+   `SEM_DECISAO_POR_FALTA_DE_EVIDENCIA` (seções 34, 39 e 43).
+2. Formalizar, numa única seção de referência (seção 46), a separação entre
+   evidência do repositório, evidência externa (documento oficial aberto e
+   lido) e evidência de busca — para cada uma das fontes já discutidas nas
+   seções 35–42, deixando explícito que evidência de busca nunca é promovida
+   a evidência externa confirmada.
+3. Transformar a matriz da seção 43 num pacote objetivo de aprovação humana:
+   um checklist por fonte (seção 47) e um gate de integração (seção 48) que
+   nenhuma fonte pode contornar.
+
+**Nenhuma nova pesquisa externa foi feita nesta etapa.** O ambiente já havia
+demonstrado `EGRESS_BLOCKED` para todos os domínios institucionais prioritários
+na Etapa 6.1 (seção 32); esta etapa trabalha inteiramente sobre a evidência já
+registrada, sem repetir tentativas de abertura direta nem novas buscas.
+
+Nenhuma coleta, API, scraping, download, armazenamento de série, integração,
+alteração de coletor, catálogo técnico, `formulationId`, dado de
+formulação/micronutriente, cruzamento com formulados, correlação, regressão
+ou previsão foi implementada nesta etapa. Nenhum workflow, dashboard ou
+`package.json` foi alterado. Nenhum push foi feito.
+
+## 46. Separação formal das evidências (repositório × documentação externa × busca)
+
+Três categorias de evidência, nunca combinadas nem promovidas de uma para
+outra:
+
+- **Evidência do repositório** (`EVIDENCIA_DO_REPOSITORIO`): implementação
+  atual, endpoint já codificado, unidade usada pelo código, campo lido,
+  status registrado em `data.json`, fallback existente, variável de chave
+  citada no workflow. Lida diretamente nesta sessão, a partir de arquivos
+  deste repositório. Sustenta `CONFIRMADO` nas seções 35–43, mas **prova
+  apenas o que o código faz hoje — nunca uma autorização jurídica, uma
+  licença ou uma permissão de armazenamento/redistribuição/publicação
+  externa**, que dependem de uma fonte diferente de evidência (abaixo).
+- **Evidência externa** (`EVIDENCIA_DA_DOCUMENTACAO_EXTERNA`): documentação
+  oficial aberta e lida diretamente (termos de uso, política de dados,
+  licença, cobertura histórica declarada pela própria fonte, texto sobre
+  redistribuição/armazenamento). **Nenhuma fonte desta avaliação tem
+  evidência externa nesta categoria** — todas as tentativas de abertura
+  direta retornaram `EGRESS_BLOCKED` (seção 32), e esta etapa não tentou
+  novamente (instrução explícita da Etapa 6.2).
+- **Evidência de busca**: URL localizada, snippet, resumo do mecanismo de
+  pesquisa, pista para validação futura. **Nunca promovida a evidência
+  externa confirmada** — usada apenas para apontar o que uma etapa futura,
+  com acesso direto liberado, precisaria abrir e ler.
+
+| Fonte | Evidência do repositório | Evidência externa (documento oficial aberto) | Evidência de busca (pista, não promovida) |
+|---|---|---|---|
+| BCB PTAX (atual) | `cotacaoVenda` via `olinda.bcb.gov.br`, uso confirmado em `fetch-data.mjs` e sucesso operacional em `data.json` (seção 35) | Nenhuma | Nenhuma pesquisa nova nesta etapa |
+| BCB SGS (histórico, candidata) | Nenhuma — não é usada pelo código hoje | Nenhuma | URL de domínio (`api.bcb.gov.br/dados/serie/...`, `dadosabertos.bcb.gov.br`) e menção a limite de 10 anos por consulta, ambas só de busca (Etapa 6) |
+| ComexStat/MDIC | Granularidade mensal, campos FOB/KG, NCMs, tratamento de HTTP 429, sucesso operacional em `data.json` (seção 36) | Nenhuma | Existência de página de documentação e cobertura "desde 1989", só de busca (Etapa 6) |
+| EIA | Série `RNGWHHD`, frequência diária, `EIA_API_KEY` no workflow, sucesso operacional em `data.json` (seção 37) | Nenhuma | Cobertura "desde 1997" e unidade US$/MMBtu, só de busca (Etapa 6) |
+| CEPEA/ESALQ | Indicador/praça/unidade usados hoje, bloqueio a datacenter documentado no código e em `CLAUDE.md` (seção 38) | Nenhuma | Existência de página de metodologia e de séries históricas, só de busca (Etapa 6) |
+| Baltic Exchange | Nenhuma — não é usada pelo código hoje | Nenhuma | Nomes de licença e exigência de assinatura, só de busca (Etapa 6) — **não promovidos a decisão conclusiva nesta etapa (correção da seção 34/39)** |
+| World Bank/Pink Sheet | Nenhuma — não é usada pelo código hoje | Nenhuma | Existência do relatório, cobertura de produtos e licença CC-BY 4.0, só de busca (Etapa 6) |
+| CONAB (Preços Agropecuários) | Nenhuma — não é usada pelo código hoje | Nenhuma | Existência da página de série histórica, só de busca (Etapa 6) |
+| CONAB (Custos de Produção — Soja) | Nenhuma — não é usada pelo código hoje | Nenhuma | Existência do produto, e sua natureza de custo (não preço), só de busca (Etapa 6) |
+| SEAGRO-TO (soja regional) | Nenhuma — não é usada pelo código hoje | Nenhuma | Existência de seção "Cotações Agropecuárias" no domínio `to.gov.br`, só de busca (Etapa 6.1) — **não afirma que a página cobre soja** |
+
+## 47. Checklist de aprovação humana por fonte
+
+Cada bloco abaixo é o pacote de decisão para uma fonte. Os quatro campos
+finais (`responsável pela validação`, `decisão jurídica`, `data da decisão`,
+`evidência arquivada`) são **exclusivamente humanos** e estão marcados
+`PENDENTE_DE_PREENCHIMENTO` — nenhum nome, data ou valor foi inventado. Nenhum
+dado pessoal aparece neste checklist.
+
+#### Fonte: BCB PTAX (uso atual)
+- documento oficial a abrir: metodologia/termos de uso da PTAX no domínio `bcb.gov.br`
+- termo ou política a localizar: termos de uso e política de redistribuição de dados do Banco Central
+- série ou produto a confirmar: uso atual já confirmado por evidência do repositório (seção 35) — sem candidata nova aqui
+- unidade: `CONFIRMADO` (R$/US$, venda) via evidência do repositório
+- periodicidade: `NAO_VERIFICADO`
+- referência econômica: `NAO_VERIFICADO`
+- cobertura histórica: `NAO_APLICAVEL` (uso atual não depende de histórico)
+- necessidade de cadastro: `NAO_VERIFICADO`
+- necessidade de chave: `NAO_APLICAVEL` (código não usa chave, evidência do repositório)
+- limite de requisições: `NAO_VERIFICADO`
+- permissão de automação: `NAO_APLICAVEL` (já em produção; decisão original de uso não revisada aqui)
+- permissão de armazenamento interno: `NAO_VERIFICADO`
+- permissão de redistribuição: `NAO_VERIFICADO`
+- permissão de publicação: `NAO_VERIFICADO`
+- responsável pela validação: `PENDENTE_DE_PREENCHIMENTO`
+- decisão técnica: `APROVADA_TECNICAMENTE_PENDENTE_GOVERNANCA` (uso atual, sem mudança proposta)
+- decisão jurídica: `PENDENTE_DE_PREENCHIMENTO`
+- data da decisão: `PENDENTE_DE_PREENCHIMENTO`
+- evidência arquivada: `PENDENTE_DE_PREENCHIMENTO`
+- observação: uso já em produção; este checklist cobre apenas o que ainda falta para qualquer ampliação (armazenamento/publicação de histórico), não o uso corrente da cotação do dia.
+
+#### Fonte: BCB SGS (histórico, candidata)
+- documento oficial a abrir: documentação do SGS/API de Dados Abertos do BCB
+- termo ou política a localizar: termos de uso, licença e limite de período por consulta
+- série ou produto a confirmar: código de série equivalente à PTAX venda hoje usada
+- unidade: `NAO_VERIFICADO`
+- periodicidade: `NAO_VERIFICADO`
+- referência econômica: `NAO_VERIFICADO`
+- cobertura histórica: `NAO_VERIFICADO`
+- necessidade de cadastro: `NAO_VERIFICADO`
+- necessidade de chave: `NAO_VERIFICADO`
+- limite de requisições: `NAO_VERIFICADO`
+- permissão de automação: `NAO_VERIFICADO`
+- permissão de armazenamento interno: `NAO_VERIFICADO`
+- permissão de redistribuição: `NAO_VERIFICADO`
+- permissão de publicação: `NAO_VERIFICADO`
+- responsável pela validação: `PENDENTE_DE_PREENCHIMENTO`
+- decisão técnica: `SEM_DECISAO_POR_FALTA_DE_EVIDENCIA`
+- decisão jurídica: `PENDENTE_DE_PREENCHIMENTO`
+- data da decisão: `PENDENTE_DE_PREENCHIMENTO`
+- evidência arquivada: `PENDENTE_DE_PREENCHIMENTO`
+- observação: a adequação técnica do endpoint PTAX atual não é prova de que o SGS esteja autorizado para armazenamento ou publicação — são avaliações separadas.
+
+#### Fonte: ComexStat/MDIC (histórico retroativo)
+- documento oficial a abrir: documentação oficial da API ComexStat
+- termo ou política a localizar: termos de uso, política de revisão de dados, licença de redistribuição
+- série ou produto a confirmar: cobertura histórica real (não presumir "desde 1989")
+- unidade: `CONFIRMADO` (US$/t FOB) via evidência do repositório
+- periodicidade: `CONFIRMADO` (mensal) via evidência do repositório
+- referência econômica: `CONFIRMADO` (mês de referência, `refsFertilizantes`) via evidência do repositório
+- cobertura histórica: `NAO_VERIFICADO`
+- necessidade de cadastro: `NAO_VERIFICADO`
+- necessidade de chave: `NAO_APLICAVEL` (código não usa chave, evidência do repositório)
+- limite de requisições: parcialmente evidenciado pelo repositório (tratamento de HTTP 429), mas o limite oficial documentado é `NAO_VERIFICADO`
+- permissão de automação: `NAO_APLICAVEL` (já em produção para o uso corrente; ampliação de histórico não avaliada)
+- permissão de armazenamento interno: `NAO_VERIFICADO`
+- permissão de redistribuição: `NAO_VERIFICADO`
+- permissão de publicação: `NAO_VERIFICADO`
+- responsável pela validação: `PENDENTE_DE_PREENCHIMENTO`
+- decisão técnica: `APROVADA_TECNICAMENTE_PENDENTE_GOVERNANCA` — significa apenas que a integração atual está comprovada pelo código, a estrutura técnica é conhecida e a execução foi observada (seção 36); **não implica nenhuma autorização jurídica**
+- decisão jurídica: `PENDENTE_DE_PREENCHIMENTO`
+- data da decisão: `PENDENTE_DE_PREENCHIMENTO`
+- evidência arquivada: `PENDENTE_DE_PREENCHIMENTO`
+- observação: uso corrente (preço do mês) já em produção; pendência é sobre aprofundamento retroativo/armazenamento de histórico.
+
+#### Fonte: EIA Henry Hub (histórico retroativo)
+- documento oficial a abrir: termos de uso da API de dados abertos da EIA
+- termo ou política a localizar: termos de uso, licença de redistribuição
+- série ou produto a confirmar: `RNGWHHD` já confirmado por evidência do repositório; unidade ainda não
+- unidade: `NAO_VERIFICADO`
+- periodicidade: `CONFIRMADO` (diária) via evidência do repositório
+- referência econômica: `NAO_VERIFICADO`
+- cobertura histórica: `NAO_VERIFICADO`
+- necessidade de cadastro: `NAO_VERIFICADO` quanto à política externa (o uso de `EIA_API_KEY` no workflow é evidência do repositório de que o código exige uma chave, não uma confirmação da política de cadastro da EIA)
+- necessidade de chave: `CONFIRMADO` **apenas como evidência do repositório** (`EIA_API_KEY` no workflow) — não confirma se a EIA proíbe uso sem chave em outros contextos
+- limite de requisições: `NAO_VERIFICADO`
+- permissão de automação: `NAO_APLICAVEL` (já em produção para o uso corrente; ampliação de histórico não avaliada)
+- permissão de armazenamento interno: `NAO_VERIFICADO`
+- permissão de redistribuição: `NAO_VERIFICADO`
+- permissão de publicação: `NAO_VERIFICADO`
+- responsável pela validação: `PENDENTE_DE_PREENCHIMENTO`
+- decisão técnica: `APROVADA_TECNICAMENTE_PENDENTE_GOVERNANCA` — apenas integração atual comprovada, estrutura conhecida, execução observada; **nenhuma autorização jurídica implícita**
+- decisão jurídica: `PENDENTE_DE_PREENCHIMENTO`
+- data da decisão: `PENDENTE_DE_PREENCHIMENTO`
+- evidência arquivada: `PENDENTE_DE_PREENCHIMENTO`
+- observação: mesma ressalva do ComexStat — uso corrente em produção, pendência é sobre histórico/armazenamento.
+
+#### Fonte: CEPEA/ESALQ (direto, candidata)
+- documento oficial a abrir: metodologia e termos de uso do CEPEA/ESALQ
+- termo ou política a localizar: licença, redistribuição, uso corporativo
+- série ou produto a confirmar: indicador equivalente ao já usado (soja Paraná)
+- unidade: `NAO_VERIFICADO` para a fonte direta (o uso atual, via Notícias Agrícolas, tem unidade confirmada por repositório — seção 38)
+- periodicidade: `NAO_VERIFICADO`
+- referência econômica: `NAO_VERIFICADO`
+- cobertura histórica: `NAO_VERIFICADO`
+- necessidade de cadastro: `NAO_VERIFICADO`
+- necessidade de chave: `NAO_VERIFICADO`
+- limite de requisições: `NAO_VERIFICADO`
+- permissão de automação: `NAO_VERIFICADO` — e mesmo que fosse permitida, o acesso direto já está tecnicamente bloqueado para datacenter (evidência do repositório, seção 38)
+- permissão de armazenamento interno: `NAO_VERIFICADO`
+- permissão de redistribuição: `NAO_VERIFICADO`
+- permissão de publicação: `NAO_VERIFICADO`
+- responsável pela validação: `PENDENTE_DE_PREENCHIMENTO`
+- decisão técnica: `SEM_DECISAO_POR_FALTA_DE_EVIDENCIA`
+- decisão jurídica: `PENDENTE_DE_PREENCHIMENTO`
+- data da decisão: `PENDENTE_DE_PREENCHIMENTO`
+- evidência arquivada: `PENDENTE_DE_PREENCHIMENTO`
+- observação: visibilidade pública da página não implica, e não foi tratada aqui como, aprovação de automação, armazenamento ou redistribuição.
+
+#### Fonte: Baltic Exchange
+- documento oficial a abrir: política de dados e termos de licenciamento do Baltic Exchange
+- termo ou política a localizar: tipos de licença, exigência de assinatura, permissão de redistribuição
+- série ou produto a confirmar: Baltic Dry Index (BDI) oficial
+- unidade: `NAO_VERIFICADO`
+- periodicidade: `NAO_VERIFICADO`
+- referência econômica: `NAO_VERIFICADO`
+- cobertura histórica: `NAO_VERIFICADO`
+- necessidade de cadastro: `NAO_VERIFICADO`
+- necessidade de chave: `NAO_VERIFICADO`
+- limite de requisições: `NAO_VERIFICADO`
+- permissão de automação: `NAO_VERIFICADO`
+- permissão de armazenamento interno: `NAO_VERIFICADO`
+- permissão de redistribuição: `NAO_VERIFICADO`
+- permissão de publicação: `NAO_VERIFICADO`
+- responsável pela validação: `PENDENTE_DE_PREENCHIMENTO`
+- decisão técnica: `SEM_DECISAO_POR_FALTA_DE_EVIDENCIA`
+- decisão jurídica: `PENDENTE_DE_PREENCHIMENTO`
+- data da decisão: `PENDENTE_DE_PREENCHIMENTO`
+- evidência arquivada: `PENDENTE_DE_PREENCHIMENTO`
+- observação: resultados de pesquisa indicam possível exigência de licenciamento, mas a documentação oficial não foi aberta neste ambiente — não usar como decisão confirmada em nenhuma direção.
+
+#### Fonte: World Bank Commodity Markets/Pink Sheet
+- documento oficial a abrir: relatório "Pink Sheet" e página de licenciamento do catálogo de dados do Banco Mundial
+- termo ou política a localizar: licença (CC-BY 4.0 é, até aqui, só indício de busca), redistribuição
+- série ou produto a confirmar: cobertura de ureia/DAP/KCl/gás natural e praça/condição comercial de cada uma
+- unidade: `NAO_VERIFICADO`
+- periodicidade: `NAO_VERIFICADO`
+- referência econômica: `NAO_VERIFICADO`
+- cobertura histórica: `NAO_VERIFICADO`
+- necessidade de cadastro: `NAO_VERIFICADO`
+- necessidade de chave: `NAO_APLICAVEL` (indício de busca aponta relatório público, mas não confirmado por leitura direta)
+- limite de requisições: `NAO_VERIFICADO`
+- permissão de automação: `NAO_VERIFICADO`
+- permissão de armazenamento interno: `NAO_VERIFICADO`
+- permissão de redistribuição: `NAO_VERIFICADO`
+- permissão de publicação: `NAO_VERIFICADO`
+- responsável pela validação: `PENDENTE_DE_PREENCHIMENTO`
+- decisão técnica: `SOMENTE_REFERENCIAL` — mantida apenas pela diferença metodológica já registrada (seção 27: praças/condições comerciais diferentes do FOB de importação do ComexStat), não por qualquer confirmação de licença
+- decisão jurídica: `PENDENTE_DE_PREENCHIMENTO`
+- data da decisão: `PENDENTE_DE_PREENCHIMENTO`
+- evidência arquivada: `PENDENTE_DE_PREENCHIMENTO`
+- observação: licença CC-BY 4.0 não deve ser mencionada como confirmada em nenhum uso futuro deste documento enquanto a página oficial não for aberta e lida.
+
+#### Fonte: CONAB — Preços Agropecuários
+- documento oficial a abrir: página oficial da série histórica de preços agropecuários da CONAB
+- termo ou política a localizar: termos de reprodução/redistribuição
+- série ou produto a confirmar: se mede o mesmo indicador metodológico do CEPEA (provavelmente não — ver seção 41)
+- unidade: `NAO_VERIFICADO`
+- periodicidade: `NAO_VERIFICADO`
+- referência econômica: `NAO_VERIFICADO`
+- cobertura histórica: `NAO_VERIFICADO`
+- necessidade de cadastro: `NAO_VERIFICADO`
+- necessidade de chave: `NAO_VERIFICADO`
+- limite de requisições: `NAO_VERIFICADO`
+- permissão de automação: `NAO_VERIFICADO`
+- permissão de armazenamento interno: `NAO_VERIFICADO`
+- permissão de redistribuição: `NAO_VERIFICADO` (não presumida a partir de resumo de busca)
+- permissão de publicação: `NAO_VERIFICADO`
+- responsável pela validação: `PENDENTE_DE_PREENCHIMENTO`
+- decisão técnica: `SOMENTE_REFERENCIAL`
+- decisão jurídica: `PENDENTE_DE_PREENCHIMENTO`
+- data da decisão: `PENDENTE_DE_PREENCHIMENTO`
+- evidência arquivada: `PENDENTE_DE_PREENCHIMENTO`
+- observação: produto de preço de mercado — não confundir com o produto de custos de produção abaixo.
+
+#### Fonte: CONAB — Custos de Produção (Soja)
+- documento oficial a abrir: página oficial da série histórica de custos de produção da CONAB
+- termo ou política a localizar: termos de reprodução/redistribuição
+- série ou produto a confirmar: **este produto é custo de produção, não preço de mercado** — nunca apresentar como preço
+- unidade: `NAO_VERIFICADO`
+- periodicidade: `NAO_VERIFICADO`
+- referência econômica: `NAO_VERIFICADO`
+- cobertura histórica: `NAO_VERIFICADO`
+- necessidade de cadastro: `NAO_VERIFICADO`
+- necessidade de chave: `NAO_VERIFICADO`
+- limite de requisições: `NAO_VERIFICADO`
+- permissão de automação: `NAO_VERIFICADO`
+- permissão de armazenamento interno: `NAO_VERIFICADO`
+- permissão de redistribuição: `NAO_VERIFICADO`
+- permissão de publicação: `NAO_VERIFICADO`
+- responsável pela validação: `PENDENTE_DE_PREENCHIMENTO`
+- decisão técnica: `REJEITADA` para uso como preço de mercado (é custo de produção); poderia, em tese, ser referencial para outra finalidade, não avaliada aqui
+- decisão jurídica: `PENDENTE_DE_PREENCHIMENTO`
+- data da decisão: `PENDENTE_DE_PREENCHIMENTO`
+- evidência arquivada: `PENDENTE_DE_PREENCHIMENTO`
+- observação: rejeitada especificamente para o uso de "preço de mercado" que este documento avalia — não uma rejeição geral do produto para todo e qualquer uso futuro.
+
+#### Fonte: Soja regional — SEAGRO-TO (pista)
+- documento oficial a abrir: seção "Cotações Agropecuárias" em `to.gov.br/seagro`
+- termo ou política a localizar: existência de cotação de soja, metodologia, termos de uso
+- série ou produto a confirmar: **não confirmado que a página cobre soja** — isso é a primeira coisa a checar
+- unidade: `NAO_VERIFICADO`
+- periodicidade: `NAO_VERIFICADO`
+- referência econômica: `NAO_VERIFICADO`
+- cobertura histórica: `NAO_VERIFICADO`
+- necessidade de cadastro: `NAO_VERIFICADO`
+- necessidade de chave: `NAO_VERIFICADO`
+- limite de requisições: `NAO_VERIFICADO`
+- permissão de automação: `NAO_VERIFICADO`
+- permissão de armazenamento interno: `NAO_VERIFICADO`
+- permissão de redistribuição: `NAO_VERIFICADO`
+- permissão de publicação: `NAO_VERIFICADO`
+- responsável pela validação: `PENDENTE_DE_PREENCHIMENTO`
+- decisão técnica: `PISTA_PARA_VERIFICACAO` — não é uma fonte candidata aprovada, é uma pista de busca a verificar
+- decisão jurídica: `PENDENTE_DE_PREENCHIMENTO`
+- data da decisão: `PENDENTE_DE_PREENCHIMENTO`
+- evidência arquivada: `PENDENTE_DE_PREENCHIMENTO`
+- observação: nenhuma cotação de Bahia, Paraná, Mato Grosso ou benchmark nacional substitui esta lacuna (seção 42). Esta pista não afirma, e não deve ser lida como afirmando, que a SEAGRO-TO fornece preço de soja.
+
+## 48. Gate de integração
+
+**Nenhuma fonte desta avaliação pode avançar para integração** (implementação
+de coleta, armazenamento ou publicação) **até possuir, no mínimo**, todos os
+itens abaixo confirmados — não apenas alguns:
+
+1. série exata identificada;
+2. unidade confirmada;
+3. `referenceDate` ou `referencePeriod` definido;
+4. granularidade confirmada;
+5. cobertura histórica confirmada;
+6. acesso técnico confirmado;
+7. permissão de automação avaliada;
+8. armazenamento interno avaliado;
+9. redistribuição avaliada;
+10. publicação avaliada;
+11. decisão humana registrada (não `PENDENTE_DE_PREENCHIMENTO`).
+
+Enum de status do gate, usado para cada fonte: `APROVADA_PARA_PROVA_LOCAL`,
+`APROVADA_PARA_USO_INTERNO`, `APROVADA_PARA_PUBLICACAO`, `REJEITADA`,
+`PENDENTE`.
+
+**Os três níveis de aprovação não se implicam.** `APROVADA_PARA_PROVA_LOCAL`
+autoriza, no máximo, um experimento técnico isolado, sem persistência
+integrada ao pipeline de produção e sem uso pelo dashboard/relatório — **não
+autoriza uso interno continuado nem publicação**. `APROVADA_PARA_USO_INTERNO`
+autoriza armazenamento/uso dentro da organização — **não autoriza
+publicação** em repositório público ou GitHub Pages. `APROVADA_PARA_PUBLICACAO`
+é o único nível que autoriza tornar o dado público, e exige adicionalmente
+permissão de redistribuição confirmada por evidência externa (nunca por
+indício de busca). Cada nível exige sua própria decisão humana registrada —
+uma aprovação de nível mais baixo nunca é lida como cobrindo o nível
+seguinte.
+
+Estado do gate para todas as fontes desta avaliação, nesta etapa:
+
+| Fonte | Itens do gate confirmados | Status do gate |
+|---|---|---|
+| BCB PTAX (uso atual) | Parcial (série/unidade/acesso técnico do uso corrente; não do histórico) | `PENDENTE` |
+| BCB SGS (histórico) | Nenhum | `PENDENTE` |
+| ComexStat/MDIC (histórico) | Parcial (série/unidade/granularidade/referencePeriod/acesso técnico do uso corrente; não do histórico) | `PENDENTE` |
+| EIA (histórico) | Parcial (série/granularidade/acesso técnico do uso corrente; não do histórico) | `PENDENTE` |
+| CEPEA/ESALQ direto | Nenhum | `PENDENTE` |
+| Baltic Exchange | Nenhum | `PENDENTE` |
+| World Bank/Pink Sheet | Nenhum | `PENDENTE` |
+| CONAB — Preços Agropecuários | Nenhum | `PENDENTE` |
+| CONAB — Custos de Produção | Nenhum (e rejeitada para uso como preço de mercado — seção 47) | `PENDENTE` |
+| Soja regional — SEAGRO-TO | Nenhum (nem confirmado que cobre soja) | `PENDENTE` |
+
+Nenhuma fonte desta avaliação está, nesta etapa, `APROVADA_PARA_PROVA_LOCAL`,
+`APROVADA_PARA_USO_INTERNO` ou `APROVADA_PARA_PUBLICACAO`. Isso é esperado e
+correto: esta etapa é documental, não decide por aprovação humana ainda
+pendente (seção 47), e nenhuma decisão jurídica foi tomada dentro deste
+ambiente.
