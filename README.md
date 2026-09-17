@@ -843,4 +843,7 @@ histórico de preços de formulados e o histórico de matérias-primas
 (ureia/MAP/KCl/câmbio) já coletado pela esteira semanal: como comparar datas de
 cotação de calendários diferentes, que janela de defasagem faz sentido, e como
 lidar com séries de formulados com poucos pontos. Fica como decisão de projeto
-para uma etapa futura.
+para uma etapa futura — o desenho técnico já existe em
+[`docs/formulated-temporal-alignment-design.md`](docs/formulated-temporal-alignment-design.md)
+(diagnóstico da disponibilidade histórica e projeto de alinhamento temporal —
+**documento técnico, não uma implementação**: nada nele foi construído ainda).
