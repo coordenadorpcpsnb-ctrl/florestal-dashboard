@@ -948,3 +948,14 @@ composição ou garantia de formulado — o vínculo técnico entre um preço
 comercial e a especificação de uma formulação (um identificador como
 `formulationId`) é decisão de uma etapa própria e futura, depois da revisão
 deste histórico extraído.
+
+---
+
+## 14. Avaliação de fontes históricas complementares
+
+Documento de pesquisa e governança — sem implementação, sem coleta, sem
+cruzamento com formulados — sobre possíveis fontes complementares para
+reconstrução histórica retroativa dos direcionadores de mercado (câmbio,
+fertilizantes, gás natural, frete marítimo e soja), com critérios de
+avaliação, classificação de acesso/redistribuição e recomendação por
+indicador: [`docs/market-history-sources-assessment.md`](docs/market-history-sources-assessment.md).
