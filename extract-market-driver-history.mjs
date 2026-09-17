@@ -143,11 +143,78 @@ export function analisarSnapshot(commitMeta, conteudoBruto) {
 }
 
 // ---------------------------------------------------------------------------
+// TABELA DE PADROES DE STATUS COMPROVADOS (Etapa 5.1 -- re-auditada linha a
+// linha em fetch-data.mjs e fetch-fertilizers.mjs; nada aqui foi inventado).
+//
+// Sucesso (sempre comeca literalmente com "ok ("):
+//   cambio: "ok (BCB PTAX)" | "ok (Frankfurter)" | "ok (AwesomeAPI)"
+//   soja:   "ok (Noticias Agricolas / CEPEA-PR <data>)" | "ok (CEPEA direto)"
+//   sojaRegional: "ok (<praca>)" (texto da praca vem da tabela raspada, nao e
+//                 uma lista fechada -- so a forma "ok (...)" e evidencia)
+//   bdi:    "ok (HANDYBULK)" | "ok (HANDYBULK, <ref>)" [+ sufixo ATENCAO] | "ok (stooq)"
+//   gas:    "ok (EIA Henry Hub)" | "ok (stooq — futuro NG)"
+//   ureia/map/kcl: "ok (ComexStat <ref>)"
+//
+// Falha (sempre comeca literalmente com "falha", MAS NEM TODA falha comeca
+// assim -- ver excecao de gas abaixo):
+//   cambio/soja/sojaRegional/bdi: "falha: " + erros.join(" | ")
+//   ureia/map/kcl: "falha: <motivo>" | "falha: NCM ausente..." | "falha: valor implausivel (...)"
+//   gas: "falha EIA: <msg>" | "falha stooq: <msg>" | "falha EIA: <msg> | falha stooq: <msg>"
+//   EXCECAO COMPROVADA: quando EIA_API_KEY nao esta configurada E o fallback
+//   stooq tambem falha, o status vira "SEM EIA_API_KEY configurada | falha
+//   stooq: <msg>" -- NAO comeca com "falha". Tratado como status nao
+//   reconhecido (NAO_IDENTIFICAVEL), de proposito: nao alargamos o regex so
+//   para cobrir esse caso, porque isso reabriria a porta para "busca textual
+//   vaga" que esta etapa foi pedida para eliminar.
+//
+// Evidencia DIRETA de fallback/override (mensagem controlada, reconhecida,
+// escrita pelo proprio codigo) -- comprovada SOMENTE para sojaTO, em
+// fetch-data.mjs linhas ~272-284:
+//   status.sojaRegional += " -> usando valor manual do override"   (OVERRIDE)
+//   status.sojaRegional += " -> usando estimativa (95,7% do CEPEA)" (nem um nem outro -- estimativa derivada)
+//   status.sojaRegional += " -> usando leitura anterior"            (FALLBACK)
+// Nenhum outro indicador tem um marcador equivalente no codigo hoje -- por
+// isso FALLBACK_ULTIMO_CONHECIDO so pode ser atribuido para sojaTO nesta
+// etapa (ver classificarProveniencia). Forcar essa categoria para os outros
+// indicadores via igualdade de valor seria exatamente o erro que a Etapa 5.1
+// foi pedida para corrigir.
+//
+// fertilizers-override.json cobre TODOS os 8 indicadores (nao so
+// fertilizantes): chaves dolar/ureia/map/kcl/gasNatural/bdi/soja/sojaTO. A
+// funcao escolher() de fetch-data.mjs decide a precedencia:
+//   nao-forcado: auto ?? manual ?? anterior
+//   forceManual=true: manual ?? auto ?? anterior
+// Ou seja, quando forceManual esta ativo E o override tem valor para aquele
+// indicador, o override VENCE mesmo que a busca automatica tenha tido
+// sucesso -- por isso um status "ok" sozinho NAO basta como prova quando essa
+// condicao se aplica (ver classificarProveniencia, passo 1).
+//
+// check-status.mjs (so leitura, nao alterado) compara `valor === "ok"`
+// (igualdade estrita) para decidir "fonte OK" -- como nenhum status real e
+// literalmente "ok" (sempre tem o "(<fonte>)" junto), essa comparacao nunca
+// bate na pratica. E uma inconsistencia pre-existente do proprio
+// check-status.mjs, fora do escopo desta etapa; nao serviu de modelo aqui.
+// ---------------------------------------------------------------------------
+
+/** Categorias fixas e sanitizadas de sourceMessage -- nunca o texto bruto do
+ *  status (que pode ter fragmento de HTML/URL de uma resposta de erro real). */
+export const CATEGORIA_MENSAGEM = Object.freeze({
+  VALOR_AUSENTE: "VALOR_AUSENTE",
+  STATUS_AUSENTE: "STATUS_AUSENTE",
+  STATUS_OBSERVADO_ESTRUTURADO: "STATUS_OBSERVADO_ESTRUTURADO",
+  STATUS_FALLBACK_EXPLICITO: "STATUS_FALLBACK_EXPLICITO",
+  STATUS_OVERRIDE_COMPROVADO: "STATUS_OVERRIDE_COMPROVADO",
+  STATUS_AMBIGUO: "STATUS_AMBIGUO",
+  VALOR_REPETIDO_SEM_PROVA_DE_ORIGEM: "VALOR_REPETIDO_SEM_PROVA_DE_ORIGEM",
+  CORRESPONDE_A_OVERRIDE_SEM_PROVA_DE_USO: "CORRESPONDE_A_OVERRIDE_SEM_PROVA_DE_USO",
+});
+
+// ---------------------------------------------------------------------------
 // Interpretacao SANITIZADA do texto de status: nunca devolve o texto bruto.
-// sourceName vem de uma lista fixa de fontes conhecidas (evidenciadas no
-// codigo de fetch-data.mjs/fetch-fertilizers.mjs); sourceMessage e sempre uma
-// categoria fixa, nunca o texto completo (que pode conter fragmento de HTML de
-// uma resposta de erro, como ja aconteceu em status.gas no historico real).
+// sourceName vem de uma lista fixa de fontes conhecidas (tabela acima).
+// comecaOk/comecaFalha usam os padroes literais comprovados: "ok (" e
+// "falha" -- nunca includes("falha")/includes("erro")/includes("ultimo") sem
+// ancorar no inicio do texto, para nao promover status ambiguo.
 // ---------------------------------------------------------------------------
 const FONTES_CONHECIDAS = Object.freeze([
   "BCB PTAX", "Frankfurter", "AwesomeAPI",
@@ -158,62 +225,118 @@ const FONTES_CONHECIDAS = Object.freeze([
 
 export function interpretarStatusTexto(statusTexto) {
   if (typeof statusTexto !== "string" || statusTexto.trim() === "") {
-    return { sourceName: null, sourceMessage: null, comecaOk: false, comecaFalha: false };
+    return { sourceName: null, comecaOk: false, comecaFalha: false };
   }
   const texto = statusTexto.trim();
   const sourceName = FONTES_CONHECIDAS.find((f) => texto.includes(f)) ?? null;
-  const comecaOk = /^ok\b/i.test(texto);
+  const comecaOk = /^ok \(/.test(texto); // forma literal comprovada, nunca "ok" sozinho
   const comecaFalha = /^falha/i.test(texto);
+  return { sourceName, comecaOk, comecaFalha };
+}
 
-  let sourceMessage;
-  if (comecaOk) sourceMessage = "ok";
-  else if (comecaFalha) {
-    if (/http\s*\d/i.test(texto)) sourceMessage = "falha_http";
-    else if (/pars/i.test(texto)) sourceMessage = "falha_parse";
-    else if (/implausivel/i.test(texto)) sourceMessage = "falha_valor_implausivel";
-    else if (/timeout|abort/i.test(texto)) sourceMessage = "falha_timeout";
-    else if (/eia_api_key/i.test(texto)) sourceMessage = "falha_sem_chave_configurada";
-    else sourceMessage = "falha_outro";
-  } else {
-    sourceMessage = "status_nao_reconhecido";
-  }
-  return { sourceName, sourceMessage, comecaOk, comecaFalha };
+/** Evidencia DIRETA de fallback no proprio texto de status -- hoje, so
+ *  sojaTO tem essa mensagem controlada e reconhecida (ver tabela acima). */
+function temEvidenciaExplicitaDeFallback(indicator, statusTexto) {
+  return indicator === "sojaTO" && typeof statusTexto === "string" && statusTexto.includes("-> usando leitura anterior");
+}
+
+/** Evidencia DIRETA de override no proprio texto de status -- hoje, so
+ *  sojaTO tem essa mensagem controlada e reconhecida. */
+function temEvidenciaExplicitaDeOverride(indicator, statusTexto) {
+  return indicator === "sojaTO" && typeof statusTexto === "string" && statusTexto.includes("-> usando valor manual do override");
 }
 
 // ---------------------------------------------------------------------------
-// Classificacao de sourceStatus (5 valores fixos). So promove alem de
-// NAO_IDENTIFICAVEL/AUSENTE quando ha evidencia estrutural real:
-//   - OBSERVADO: status comeca com "ok".
-//   - OVERRIDE_MANUAL: o valor bate com fertilizers-override.json NESSE MESMO
-//     commit (forceManual explicito, ou valor igual ao override quando a busca
-//     falhou) -- nunca so por o override "existir" hoje.
-//   - FALLBACK_ULTIMO_CONHECIDO: a busca falhou E o valor bate com
-//     `previous` do PROPRIO snapshot (evidencia auto-contida, reflete
-//     exatamente a funcao escolher() de fetch-data.mjs).
-//   - AUSENTE: value === null.
-//   - NAO_IDENTIFICAVEL: qualquer outro caso (inclusive status ausente/
-//     nao reconhecido, ou falha sem nenhuma das duas evidencias acima).
+// Classificacao de proveniencia (Etapa 5.1): decide sourceStatus (5 valores
+// fixos) E sourceMessage (categoria fixa) juntos, porque os dois dependem da
+// mesma evidencia. Tambem calcula os metadados de repeticao/coincidencia
+// (repeatedFromPrevious, matchesOverrideValue), que SAO REGISTRADOS SEMPRE,
+// independente do resultado de sourceStatus -- servem so para auditoria,
+// nunca como prova por si sos.
+//
+// Regra central (o que a Etapa 5.1 corrigiu): igualdade de valor
+// (current === previous, ou current === override) NUNCA e suficiente
+// sozinha. FALLBACK_ULTIMO_CONHECIDO exige uma mensagem de status EXPLICITA e
+// reconhecida (hoje, so existe para sojaTO); para os demais indicadores, uma
+// falha com valor repetido fica NAO_IDENTIFICAVEL, com
+// metadata.repeatedFromPrevious=true registrando a coincidencia sem
+// apresenta-la como prova.
+//
+// OVERRIDE_MANUAL e menos restritivo porque o proprio codigo de
+// fetch-data.mjs permite reconstruir com certeza quando o override venceu:
+//   - forceManual ativo NESSE commit + override presente para o indicador =>
+//     o override sempre vence, mesmo com status "ok" (ver escolher()).
+//   - status "falha" (a busca automatica comprovadamente nao forneceu valor)
+//     + override presente e igual ao valor gravado => so resta a hipotese do
+//     override na propria funcao escolher() (auto ?? manual ?? anterior).
+// Fora desses dois casos, uma coincidencia de valor com o override vira
+// NAO_IDENTIFICAVEL, com metadata.matchesOverrideValue=true registrando a
+// coincidencia sem apresenta-la como prova.
 // ---------------------------------------------------------------------------
-export function classificarStatusFonte({ value, statusInfo, anterior, overrideNesseCommit, chaveOverride }) {
-  if (value === null) return STATUS_OBSERVACAO.AUSENTE;
+export function classificarProveniencia({ indicator, value, statusTexto, anterior, overrideNesseCommit, chaveOverride }) {
+  const repeatedFromPrevious = naoNuloNumero(value) && naoNuloNumero(anterior) && value === anterior;
+  const overrideValor = overrideNesseCommit && naoNuloNumero(overrideNesseCommit[chaveOverride]) ? overrideNesseCommit[chaveOverride] : null;
+  const matchesOverrideValue = naoNuloNumero(value) && overrideValor !== null && value === overrideValor;
 
-  const overrideValor = overrideNesseCommit && naoNuloNumero(overrideNesseCommit[chaveOverride])
-    ? overrideNesseCommit[chaveOverride] : null;
-  const overrideForcado = overrideNesseCommit?.forceManual === true;
-
-  // forceManual ativo nesse commit e o valor bate com o override desse commit:
-  // a esteira usaria o override mesmo que a busca automatica tivesse ido bem.
-  if (overrideForcado && overrideValor !== null && value === overrideValor) {
-    return STATUS_OBSERVACAO.OVERRIDE_MANUAL;
+  if (value === null) {
+    return { sourceStatus: STATUS_OBSERVACAO.AUSENTE, sourceMessage: CATEGORIA_MENSAGEM.VALOR_AUSENTE, sourceName: null, repeatedFromPrevious, matchesOverrideValue };
   }
 
-  if (!statusInfo.comecaOk && !statusInfo.comecaFalha) return STATUS_OBSERVACAO.NAO_IDENTIFICAVEL;
-  if (statusInfo.comecaOk) return STATUS_OBSERVACAO.OBSERVADO;
+  const statusInfo = interpretarStatusTexto(statusTexto);
+  const overrideForcado = overrideNesseCommit?.forceManual === true;
 
-  // comecaFalha:
-  if (overrideValor !== null && value === overrideValor) return STATUS_OBSERVACAO.OVERRIDE_MANUAL;
-  if (naoNuloNumero(anterior) && value === anterior) return STATUS_OBSERVACAO.FALLBACK_ULTIMO_CONHECIDO;
-  return STATUS_OBSERVACAO.NAO_IDENTIFICAVEL;
+  // 1) forceManual ativo NESSE commit com override presente para este
+  //    indicador: escolher() usa o override antes do automatico, mesmo que o
+  //    automatico tenha tido sucesso -- status "ok" deixa de ser prova
+  //    confiavel sozinho nesse caso especifico.
+  if (overrideForcado && overrideValor !== null) {
+    if (matchesOverrideValue) {
+      return { sourceStatus: STATUS_OBSERVACAO.OVERRIDE_MANUAL, sourceMessage: CATEGORIA_MENSAGEM.STATUS_OVERRIDE_COMPROVADO, sourceName: statusInfo.sourceName, repeatedFromPrevious, matchesOverrideValue };
+    }
+    // forceManual ativo mas o valor gravado NAO bate com o override lido nesse
+    // commit -- nao da pra explicar com confianca (override pode ter mudado
+    // entre a leitura e a gravacao, ou nosso mapeamento de chave nao se
+    // aplica); nunca supor.
+    return { sourceStatus: STATUS_OBSERVACAO.NAO_IDENTIFICAVEL, sourceMessage: CATEGORIA_MENSAGEM.STATUS_AMBIGUO, sourceName: statusInfo.sourceName, repeatedFromPrevious, matchesOverrideValue };
+  }
+
+  // 2) evidencia DIRETA e reconhecida no proprio texto de status (hoje, so sojaTO).
+  if (temEvidenciaExplicitaDeFallback(indicator, statusTexto)) {
+    return { sourceStatus: STATUS_OBSERVACAO.FALLBACK_ULTIMO_CONHECIDO, sourceMessage: CATEGORIA_MENSAGEM.STATUS_FALLBACK_EXPLICITO, sourceName: statusInfo.sourceName, repeatedFromPrevious, matchesOverrideValue };
+  }
+  if (temEvidenciaExplicitaDeOverride(indicator, statusTexto)) {
+    return { sourceStatus: STATUS_OBSERVACAO.OVERRIDE_MANUAL, sourceMessage: CATEGORIA_MENSAGEM.STATUS_OVERRIDE_COMPROVADO, sourceName: statusInfo.sourceName, repeatedFromPrevious, matchesOverrideValue };
+  }
+
+  // 3) status nao reconhecido (nem "ok (" nem "falha", ex.: a excecao do gas
+  //    documentada na tabela acima, ou status ausente).
+  if (!statusInfo.comecaOk && !statusInfo.comecaFalha) {
+    return { sourceStatus: STATUS_OBSERVACAO.NAO_IDENTIFICAVEL, sourceMessage: CATEGORIA_MENSAGEM.STATUS_AUSENTE, sourceName: statusInfo.sourceName, repeatedFromPrevious, matchesOverrideValue };
+  }
+
+  // 4) sucesso comprovado da busca automatica (o caso de forceManual+override
+  //    presente ja foi tratado no passo 1 -- aqui, "ok" e prova valida para
+  //    sourceStatus, que permanece OBSERVADO sempre). Uma coincidencia com o
+  //    override aqui e so ruido informativo para auditoria -- nunca rebaixa
+  //    nem "prova" nada (matchesOverrideValue ja carrega esse fato sozinho);
+  //    sourceMessage so sinaliza a coincidencia de forma mais especifica.
+  if (statusInfo.comecaOk) {
+    const mensagem = matchesOverrideValue ? CATEGORIA_MENSAGEM.CORRESPONDE_A_OVERRIDE_SEM_PROVA_DE_USO : CATEGORIA_MENSAGEM.STATUS_OBSERVADO_ESTRUTURADO;
+    return { sourceStatus: STATUS_OBSERVACAO.OBSERVADO, sourceMessage: mensagem, sourceName: statusInfo.sourceName, repeatedFromPrevious, matchesOverrideValue };
+  }
+
+  // 5) comecaFalha=true, sem evidencia direta de fallback/override (passo 2):
+  //    a busca automatica comprovadamente nao forneceu valor. Se o valor bate
+  //    com o override desse commit, a propria funcao escolher() so pode ter
+  //    usado o override (unica fonte no-nula restante) -- OVERRIDE_MANUAL.
+  //    Repeticao com o valor anterior NUNCA e promovida a fallback sozinha.
+  if (matchesOverrideValue) {
+    return { sourceStatus: STATUS_OBSERVACAO.OVERRIDE_MANUAL, sourceMessage: CATEGORIA_MENSAGEM.STATUS_OVERRIDE_COMPROVADO, sourceName: statusInfo.sourceName, repeatedFromPrevious, matchesOverrideValue };
+  }
+  if (repeatedFromPrevious) {
+    return { sourceStatus: STATUS_OBSERVACAO.NAO_IDENTIFICAVEL, sourceMessage: CATEGORIA_MENSAGEM.VALOR_REPETIDO_SEM_PROVA_DE_ORIGEM, sourceName: statusInfo.sourceName, repeatedFromPrevious, matchesOverrideValue };
+  }
+  return { sourceStatus: STATUS_OBSERVACAO.NAO_IDENTIFICAVEL, sourceMessage: CATEGORIA_MENSAGEM.STATUS_AMBIGUO, sourceName: statusInfo.sourceName, repeatedFromPrevious, matchesOverrideValue };
 }
 
 // ---------------------------------------------------------------------------
@@ -291,11 +414,11 @@ export function extrairCandidatas(snapshotValido, overrideNesseCommit) {
     const value = naoNuloNumero(dados.current?.[indicator]) ? dados.current[indicator] : null;
     const statusKey = INDICADOR_STATUS_KEY[indicator];
     const statusTexto = typeof dados.status?.[statusKey] === "string" ? dados.status[statusKey] : null;
-    const statusInfo = interpretarStatusTexto(statusTexto);
     const anterior = naoNuloNumero(dados.previous?.[indicator]) ? dados.previous[indicator] : null;
     const chaveOverride = INDICADOR_OVERRIDE_KEY[indicator];
 
-    const sourceStatus = classificarStatusFonte({ value, statusInfo, anterior, overrideNesseCommit, chaveOverride });
+    const proveniencia = classificarProveniencia({ indicator, value, statusTexto, anterior, overrideNesseCommit, chaveOverride });
+    const { sourceStatus, sourceMessage, sourceName, repeatedFromPrevious, matchesOverrideValue } = proveniencia;
     const { referenceDate, referencePeriod, viaInferenciaTexto } = calcularReferencia(indicator, dados, statusTexto);
     const unit = INDICADOR_UNIDADE[indicator];
     const extractionConfidence = classificarConfianca({ referenceDate, referencePeriod, viaInferenciaTexto, sourceStatus, collectedAt });
@@ -303,8 +426,9 @@ export function extrairCandidatas(snapshotValido, overrideNesseCommit) {
 
     candidatas.push({
       indicator, value, unit, referenceDate, referencePeriod, collectedAt, commitDate, commitHash,
-      sourceStatus, sourceName: statusInfo.sourceName, sourceMessage: statusInfo.sourceMessage,
+      sourceStatus, sourceName, sourceMessage,
       extractionConfidence, deduplicationKey,
+      repeatedFromPrevious, matchesOverrideValue,
     });
   }
   return candidatas;
@@ -348,6 +472,15 @@ function mesclarSubgrupo(subgrupo, conflict, conflictType) {
   const collectedAtsValidos = ordenado.map((o) => o.collectedAt).filter((v) => v != null).sort();
   const statusEscolhido = maisConservador(new Set(ordenado.map((o) => o.sourceStatus)), ORDEM_STATUS_CONSERVADOR);
   const confiancaEscolhida = maisConservador(new Set(ordenado.map((o) => o.extractionConfidence)), ORDEM_CONFIANCA_CONSERVADORA);
+  // sourceMessage/sourceName precisam vir do MESMO membro cujo sourceStatus foi
+  // escolhido (o mais conservador) -- nao do representante por tempo, senao os
+  // dois poderiam descrever evidencias de membros diferentes do grupo.
+  const membroDoStatusEscolhido = ordenado.find((o) => o.sourceStatus === statusEscolhido);
+  // repeatedFromPrevious/matchesOverrideValue sao so auditoria (nunca provam
+  // nada sozinhos) -- OR entre o grupo inteiro, para nao esconder uma
+  // coincidencia so porque o membro representante nao a tinha.
+  const repeatedFromPrevious = ordenado.some((o) => o.repeatedFromPrevious === true);
+  const matchesOverrideValue = ordenado.some((o) => o.matchesOverrideValue === true);
   return {
     indicator: representante.indicator,
     value: representante.value,
@@ -358,8 +491,8 @@ function mesclarSubgrupo(subgrupo, conflict, conflictType) {
     commitDate: representante.commitDate,
     commitHash: representante.commitHash,
     sourceStatus: statusEscolhido,
-    sourceName: representante.sourceName,
-    sourceMessage: representante.sourceMessage,
+    sourceName: membroDoStatusEscolhido.sourceName,
+    sourceMessage: membroDoStatusEscolhido.sourceMessage,
     extractionConfidence: confiancaEscolhida,
     deduplicationKey: representante.deduplicationKey,
     metadata: {
@@ -369,6 +502,8 @@ function mesclarSubgrupo(subgrupo, conflict, conflictType) {
       commitHashes: [...new Set(ordenado.map((o) => o.commitHash))].sort(),
       conflict,
       conflictType: conflict ? conflictType : null,
+      repeatedFromPrevious,
+      matchesOverrideValue,
     },
   };
 }

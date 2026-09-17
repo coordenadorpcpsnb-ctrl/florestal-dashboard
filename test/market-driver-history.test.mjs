@@ -62,6 +62,8 @@ function observacaoFicticia(overrides = {}) {
       commitHashes: ["abc1234567"],
       conflict: false,
       conflictType: null,
+      repeatedFromPrevious: false,
+      matchesOverrideValue: false,
     },
     ...overrides,
   };
@@ -225,6 +227,23 @@ test("validateObservation: metadata.conflictType valido quando conflict=true", (
 test("validateObservation: metadata.commitHashes rejeita hash mal formado", () => {
   const erros = validateObservation(observacaoFicticia({ metadata: { ...observacaoFicticia().metadata, commitHashes: ["xyz"] } }), 0);
   assert.ok(erros.some((e) => e.field === "metadata.commitHashes"));
+});
+
+// === Etapa 5.1: metadata.repeatedFromPrevious / matchesOverrideValue ===
+
+test("validateObservation: metadata.repeatedFromPrevious e matchesOverrideValue sao obrigatorios e booleanos", () => {
+  const semRepetido = observacaoFicticia();
+  delete semRepetido.metadata.repeatedFromPrevious;
+  assert.ok(validateObservation(semRepetido, 0).some((e) => e.type === "CAMPO_OBRIGATORIO_AUSENTE" && e.field === "metadata.repeatedFromPrevious"));
+
+  const semOverride = observacaoFicticia();
+  delete semOverride.metadata.matchesOverrideValue;
+  assert.ok(validateObservation(semOverride, 0).some((e) => e.type === "CAMPO_OBRIGATORIO_AUSENTE" && e.field === "metadata.matchesOverrideValue"));
+
+  assert.ok(validateObservation(observacaoFicticia({ metadata: { ...observacaoFicticia().metadata, repeatedFromPrevious: "sim" } }), 0).some((e) => e.field === "metadata.repeatedFromPrevious"));
+  assert.ok(validateObservation(observacaoFicticia({ metadata: { ...observacaoFicticia().metadata, matchesOverrideValue: 1 } }), 0).some((e) => e.field === "metadata.matchesOverrideValue"));
+
+  assert.deepEqual(validateObservation(observacaoFicticia({ metadata: { ...observacaoFicticia().metadata, repeatedFromPrevious: true, matchesOverrideValue: true } }), 0), []);
 });
 
 test("validateObservation: metadata precisa ser objeto (nao array, nao null)", () => {

@@ -879,6 +879,31 @@ indicadores ficam com `referenceDate`/`referencePeriod` nulos e
 snapshots (valor ou status divergentes para a mesma referência) nunca são
 resolvidos automaticamente — aparecem marcados na própria saída.
 
+### Proveniência exige evidência explícita (Etapa 5.1)
+
+- **Repetição não prova fallback.** `current === previous` no mesmo snapshot
+  pode significar uma nova observação sem variação, repetição legítima de
+  mercado, valor congelado, falha, ou simplesmente nada identificável — nunca
+  é, sozinha, prova de que o valor foi reaproveitado. `sourceStatus` só vira
+  `FALLBACK_ULTIMO_CONHECIDO` quando o próprio texto de status do indicador
+  traz uma mensagem explícita e reconhecida de fallback — hoje isso só existe
+  no código para `sojaTO` (`"-> usando leitura anterior"`, em
+  `fetch-data.mjs`). Para os demais 7 indicadores, uma falha com valor
+  repetido fica `NAO_IDENTIFICAVEL`, com `metadata.repeatedFromPrevious: true`
+  registrando a coincidência sem apresentá-la como prova.
+- **Igualdade com o override não prova uso.** Um valor que coincide com
+  `fertilizers-override.json` do mesmo commit só vira `OVERRIDE_MANUAL` quando
+  há evidência de que a busca automática falhou, foi ignorada (`forceManual`)
+  ou não forneceu valor — nunca só pela coincidência. Quando a coincidência
+  existe sem essa evidência, fica `NAO_IDENTIFICAVEL`, com
+  `metadata.matchesOverrideValue: true` registrando a coincidência.
+- **`NAO_IDENTIFICAVEL` é o resultado correto**, não uma falha do extrator,
+  sempre que a proveniência não puder ser comprovada com o que o repositório
+  guarda hoje. `OVERRIDE_MANUAL`, em particular, pode nunca ocorrer em
+  algumas extrações do histórico real — isso é esperado, não um bug.
+- **`repeatedFromPrevious` e `matchesOverrideValue` são metadados de
+  auditoria**, nunca prova: nenhum dos dois altera `sourceStatus` sozinho.
+
 **Esta ferramenta não deve ser usada para previsão** de preço, e **nesta etapa
 não cruza** o histórico de direcionadores com o histórico de formulados —
 esse cruzamento é trabalho de uma etapa futura, própria, depois de revisão

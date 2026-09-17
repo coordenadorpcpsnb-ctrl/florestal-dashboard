@@ -67,6 +67,7 @@ export const CAMPOS_OBSERVACAO_PERMITIDOS = CAMPOS_OBSERVACAO_OBRIGATORIOS;
 
 export const CAMPOS_METADATA_OBRIGATORIOS = Object.freeze([
   "supportingSnapshotCount", "firstCollectedAt", "lastCollectedAt", "commitHashes", "conflict", "conflictType",
+  "repeatedFromPrevious", "matchesOverrideValue",
 ]);
 export const CAMPOS_METADATA_PERMITIDOS = CAMPOS_METADATA_OBRIGATORIOS;
 
@@ -253,6 +254,12 @@ function validateMetadata(meta, index) {
   }
   if ("conflict" in meta && typeof meta.conflict !== "boolean") {
     add(TIPOS_ERRO.VALOR_INVALIDO, "conflict", "conflict deve ser booleano");
+  }
+  if ("repeatedFromPrevious" in meta && typeof meta.repeatedFromPrevious !== "boolean") {
+    add(TIPOS_ERRO.VALOR_INVALIDO, "repeatedFromPrevious", "repeatedFromPrevious deve ser booleano -- registra so a coincidencia de valor, nunca prova proveniencia sozinho");
+  }
+  if ("matchesOverrideValue" in meta && typeof meta.matchesOverrideValue !== "boolean") {
+    add(TIPOS_ERRO.VALOR_INVALIDO, "matchesOverrideValue", "matchesOverrideValue deve ser booleano -- registra so a coincidencia com o override, nunca prova uso sozinho");
   }
   if ("conflictType" in meta) {
     const valoresAceitos = [...Object.values(TIPOS_CONFLITO), null];

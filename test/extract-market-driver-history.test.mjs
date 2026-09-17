@@ -16,7 +16,8 @@ import {
   truncarHash,
   analisarSnapshot,
   interpretarStatusTexto,
-  classificarStatusFonte,
+  classificarProveniencia,
+  CATEGORIA_MENSAGEM,
   calcularReferencia,
   classificarConfianca,
   calcularChaveDeduplicacao,
@@ -233,35 +234,50 @@ test("19. unidade nao identificada (indicador hipotetico fora da tabela) nunca e
 
 // ============================================================================
 // 20-24. status OBSERVADO / fallback / override
+//
+// Etapa 5.1: classificarStatusFonte(statusInfo, ...) foi substituida por
+// classificarProveniencia({indicator, statusTexto, ...}) -- o teste 21 abaixo
+// foi CORRIGIDO (nao so migrado de API): a versao anterior afirmava que
+// "falha + valor==previous" prova FALLBACK_ULTIMO_CONHECIDO para qualquer
+// indicador, que era exatamente a regra incorreta que esta etapa corrige.
 // ============================================================================
 
-test("20. status OBSERVADO com evidencia (status comeca com 'ok')", () => {
-  const okInfo = interpretarStatusTexto("ok (ComexStat 2026-01)");
-  assert.equal(classificarStatusFonte({ value: 400, statusInfo: okInfo, anterior: null, overrideNesseCommit: null, chaveOverride: "ureia" }), STATUS_OBSERVACAO.OBSERVADO);
+test("20. status OBSERVADO com evidencia (status comeca com 'ok (')", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: "ok (ComexStat 2026-01)", anterior: null, overrideNesseCommit: null, chaveOverride: "ureia" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.OBSERVADO);
+  assert.equal(r.sourceMessage, CATEGORIA_MENSAGEM.STATUS_OBSERVADO_ESTRUTURADO);
 });
 
-test("21. fallback com evidencia (falha + valor igual ao previous do proprio snapshot)", () => {
-  const falhaInfo = interpretarStatusTexto("falha: timeout");
-  assert.equal(classificarStatusFonte({ value: 400, statusInfo: falhaInfo, anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" }), STATUS_OBSERVACAO.FALLBACK_ULTIMO_CONHECIDO);
+test("21. [CORRIGIDO] falha + valor igual ao previous, SEM marcador explicito, NAO prova fallback (vira NAO_IDENTIFICAVEL)", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: "falha: timeout", anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
+  assert.equal(r.sourceMessage, CATEGORIA_MENSAGEM.VALOR_REPETIDO_SEM_PROVA_DE_ORIGEM);
+  assert.equal(r.repeatedFromPrevious, true); // a coincidencia e registrada, mas nao vira prova
 });
 
-test("22. fallback SEM evidencia (falha, valor nao bate com previous nem override) vira NAO_IDENTIFICAVEL", () => {
-  const falhaInfo = interpretarStatusTexto("falha: timeout");
-  assert.equal(classificarStatusFonte({ value: 999, statusInfo: falhaInfo, anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" }), STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
+test("21b. FALLBACK_ULTIMO_CONHECIDO exige o marcador explicito -- hoje, so sojaTO o tem", () => {
+  const r = classificarProveniencia({ indicator: "sojaTO", value: 124, statusTexto: "falha: e.message -> usando leitura anterior", anterior: 124, overrideNesseCommit: null, chaveOverride: "sojaTO" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.FALLBACK_ULTIMO_CONHECIDO);
+  assert.equal(r.sourceMessage, CATEGORIA_MENSAGEM.STATUS_FALLBACK_EXPLICITO);
 });
 
-test("23. override com evidencia (falha + valor igual ao override NESSE commit)", () => {
-  const falhaInfo = interpretarStatusTexto("falha: timeout");
-  assert.equal(
-    classificarStatusFonte({ value: 555, statusInfo: falhaInfo, anterior: 400, overrideNesseCommit: { ureia: 555 }, chaveOverride: "ureia" }),
-    STATUS_OBSERVACAO.OVERRIDE_MANUAL
-  );
+test("22. falha SEM nenhuma evidencia (valor nao bate com previous nem override) vira NAO_IDENTIFICAVEL", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 999, statusTexto: "falha: timeout", anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
+  assert.equal(r.sourceMessage, CATEGORIA_MENSAGEM.STATUS_AMBIGUO);
+});
+
+test("23. override com evidencia (falha comprovada + valor igual ao override NESSE commit)", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 555, statusTexto: "falha: timeout", anterior: 400, overrideNesseCommit: { ureia: 555 }, chaveOverride: "ureia" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+  assert.equal(r.sourceMessage, CATEGORIA_MENSAGEM.STATUS_OVERRIDE_COMPROVADO);
 });
 
 test("24. override SEM vinculo (nao disponivel nesse commit, ou nao bate) vira NAO_IDENTIFICAVEL", () => {
-  const falhaInfo = interpretarStatusTexto("falha: timeout");
-  assert.equal(classificarStatusFonte({ value: 999, statusInfo: falhaInfo, anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" }), STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
-  assert.equal(classificarStatusFonte({ value: 999, statusInfo: falhaInfo, anterior: 400, overrideNesseCommit: { ureia: 111 }, chaveOverride: "ureia" }), STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
+  const r1 = classificarProveniencia({ indicator: "ureia", value: 999, statusTexto: "falha: timeout", anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" });
+  assert.equal(r1.sourceStatus, STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
+  const r2 = classificarProveniencia({ indicator: "ureia", value: 999, statusTexto: "falha: timeout", anterior: 400, overrideNesseCommit: { ureia: 111 }, chaveOverride: "ureia" });
+  assert.equal(r2.sourceStatus, STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
 });
 
 // ============================================================================
@@ -339,9 +355,10 @@ test("31. commit mais recente NAO vence automaticamente (representante e o mais 
 });
 
 test("32. valor repetido em snapshots sucessivos NAO prova fallback por si so (status ok permanece OBSERVADO)", () => {
-  const okInfo = interpretarStatusTexto("ok (ComexStat 2026-01)");
-  // valor igual ao anterior, mas status comeca com "ok" -- OBSERVADO, nao FALLBACK
-  assert.equal(classificarStatusFonte({ value: 400, statusInfo: okInfo, anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" }), STATUS_OBSERVACAO.OBSERVADO);
+  // valor igual ao anterior, mas status comeca com "ok (" -- OBSERVADO, nao FALLBACK
+  const r = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: "ok (ComexStat 2026-01)", anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.OBSERVADO);
+  assert.equal(r.repeatedFromPrevious, true); // registrado, mas nao decide sourceStatus
 });
 
 // ============================================================================
@@ -501,4 +518,210 @@ test("resumo do console (formatarResumoCobertura) nunca inclui valor de indicado
   const resumo = formatarResumoCobertura(cobertura);
   assert.doesNotMatch(resumo, /aaaaaaaaaa/);
   assert.doesNotMatch(resumo, /\b5\.0\b|\b400\b|\b600\b|\b2000\b/); // valores ficticios usados nos testes
+});
+
+// ============================================================================
+// ETAPA 5.1 -- endurecimento da classificacao de proveniencia. Numeracao
+// propria (5.1-N), separada da numeracao da Etapa 5 acima, para nao colidir.
+// Os itens 33-45 da lista da Etapa 5.1 (compatibilidade preservada: dedup
+// deterministica, conflitos, console sanitizado, dry-run/--output, schema
+// sincronizado) ja estao cobertos pelos testes 25-50/68-74 acima e no arquivo
+// .cli.test.mjs -- nao duplicados aqui.
+// ============================================================================
+
+test("5.1-1/3. current==previous sem status reconhecido NAO prova nada (nem fallback, nem observado)", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: null, anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.OBSERVADO);
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.FALLBACK_ULTIMO_CONHECIDO);
+});
+
+test("5.1-2. current==previous com sucesso comprovado (status ok) PODE ser OBSERVADO", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: "ok (ComexStat 2026-01)", anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.OBSERVADO);
+});
+
+test("5.1-3b. current!=previous com status nao reconhecido NAO prova OBSERVADO", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 405, statusTexto: "texto qualquer nao reconhecido", anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
+});
+
+test("5.1-4/5. metadata.repeatedFromPrevious reflete a igualdade (true quando repete, false quando muda)", () => {
+  const commits = [{
+    hash: HASH_A, commitDate: "2026-01-10T10:00:05+00:00",
+    dataJson: snapshotTexto({ current: { dolar: 5.0, ureia: 400, map: 601, kcl: 300, gas: 2.5, bdi: 2000, soja: 130, sojaTO: 124 }, previous: { dolar: 5.0, ureia: 400, map: 600, kcl: 300, gas: 2.5, bdi: 2000, soja: 130, sojaTO: 124 } }),
+  }];
+  const { serie } = extrairSerieTemporal({ adapterGit: adapterFicticio(commits) });
+  const ureiaObs = serie.observations.find((o) => o.indicator === "ureia"); // 400 == 400
+  const mapObs = serie.observations.find((o) => o.indicator === "map"); // 601 != 600
+  assert.equal(ureiaObs.metadata.repeatedFromPrevious, true);
+  assert.equal(mapObs.metadata.repeatedFromPrevious, false);
+});
+
+test("5.1-6. repeatedFromPrevious nao altera sourceStatus sozinho (mesmo status, com e sem repeticao)", () => {
+  const comRepeticao = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: "falha: timeout", anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" });
+  const semRepeticao = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: "falha: timeout", anterior: 999, overrideNesseCommit: null, chaveOverride: "ureia" });
+  assert.equal(comRepeticao.sourceStatus, STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
+  assert.equal(semRepeticao.sourceStatus, STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
+  assert.equal(comRepeticao.repeatedFromPrevious, true);
+  assert.equal(semRepeticao.repeatedFromPrevious, false);
+});
+
+test("5.1-7. repeticao do mesmo valor em VARIOS snapshots (sem marcador explicito) continua NAO_IDENTIFICAVEL apos deduplicar, nunca fallback", () => {
+  const commits = ["10", "11", "12"].map((dia, i) => ({
+    hash: [HASH_A, HASH_B, HASH_C][i], commitDate: `2026-01-${dia}T10:00:05+00:00`,
+    dataJson: snapshotTexto({
+      updatedAt: `2026-01-${dia}T10:00:00.000Z`,
+      current: { dolar: 5.0, ureia: 400, map: 600, kcl: 300, gas: 2.5, bdi: 2000, soja: 130, sojaTO: 124 },
+      previous: { dolar: 5.0, ureia: 400, map: 600, kcl: 300, gas: 2.5, bdi: 2000, soja: 130, sojaTO: 124 },
+      status: { ...JSON.parse(snapshotTexto()).status, ureia: "falha: timeout" },
+    }),
+  }));
+  const { serie } = extrairSerieTemporal({ adapterGit: adapterFicticio(commits) });
+  const ureiaObs = serie.observations.filter((o) => o.indicator === "ureia");
+  assert.ok(ureiaObs.every((o) => o.sourceStatus === STATUS_OBSERVACAO.NAO_IDENTIFICAVEL));
+  assert.ok(!ureiaObs.some((o) => o.sourceStatus === STATUS_OBSERVACAO.FALLBACK_ULTIMO_CONHECIDO));
+});
+
+test("5.1-8. status explicito de fallback (sojaTO) gera FALLBACK_ULTIMO_CONHECIDO", () => {
+  const r = classificarProveniencia({ indicator: "sojaTO", value: 124, statusTexto: "falha: x -> usando leitura anterior", anterior: 124, overrideNesseCommit: null, chaveOverride: "sojaTO" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.FALLBACK_ULTIMO_CONHECIDO);
+});
+
+test("5.1-9. status ambiguo contendo a palavra 'falha' (sem o marcador exato) NAO prova fallback", () => {
+  const r = classificarProveniencia({ indicator: "sojaTO", value: 124, statusTexto: "falha: alguma coisa deu errado", anterior: 124, overrideNesseCommit: null, chaveOverride: "sojaTO" });
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.FALLBACK_ULTIMO_CONHECIDO);
+});
+
+test("5.1-10. status contendo a palavra 'ultimo'/'último' fora do marcador exato NAO prova fallback (nunca busca textual vaga)", () => {
+  const r = classificarProveniencia({ indicator: "sojaTO", value: 124, statusTexto: "falha: usando o ultimo dado disponivel, mas nao da forma esperada", anterior: 124, overrideNesseCommit: null, chaveOverride: "sojaTO" });
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.FALLBACK_ULTIMO_CONHECIDO);
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
+});
+
+test("5.1-11. texto de erro com fragmento de HTML nao e interpretado como fallback, e nunca vaza para sourceMessage", () => {
+  const statusTexto = 'falha stooq: valor implausivel :: resposta="<!DOCTYPE html><html><body>erro</body></html>"';
+  const r = classificarProveniencia({ indicator: "bdi", value: 2000, statusTexto, anterior: 2000, overrideNesseCommit: null, chaveOverride: "bdi" });
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.FALLBACK_ULTIMO_CONHECIDO);
+  assert.ok(Object.values(CATEGORIA_MENSAGEM).includes(r.sourceMessage));
+  assert.doesNotMatch(String(r.sourceMessage), /<!DOCTYPE|<html>/i);
+});
+
+test("5.1-12. status de sucesso exato comprovado gera OBSERVADO (repete o caso 20 com foco na palavra 'exato')", () => {
+  const r = classificarProveniencia({ indicator: "bdi", value: 2000, statusTexto: "ok (HANDYBULK, 09/01/2026)", anterior: null, overrideNesseCommit: null, chaveOverride: "bdi" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.OBSERVADO);
+});
+
+test("5.1-13. prefixo parecido com 'ok' (sem o formato exato 'ok (') NAO gera OBSERVADO", () => {
+  for (const textoParecido of ["oklahoma (fonte ficticia)", "OK (fonte ficticia)", "okay", "ok, tudo certo", "OK"]) {
+    const info = interpretarStatusTexto(textoParecido);
+    assert.equal(info.comecaOk, false, `"${textoParecido}" nao deveria bater no padrao de sucesso`);
+  }
+});
+
+test("5.1-14. status de um indicador nao contamina outro indicador do mesmo snapshot", () => {
+  const commits = [{
+    hash: HASH_A, commitDate: "2026-01-10T10:00:05+00:00",
+    dataJson: snapshotTexto({ status: { ...JSON.parse(snapshotTexto()).status, ureia: "ok (ComexStat 2026-01)", map: "falha: timeout" } }),
+  }];
+  const { serie } = extrairSerieTemporal({ adapterGit: adapterFicticio(commits) });
+  const ureiaObs = serie.observations.find((o) => o.indicator === "ureia");
+  const mapObs = serie.observations.find((o) => o.indicator === "map");
+  assert.equal(ureiaObs.sourceStatus, STATUS_OBSERVACAO.OBSERVADO);
+  assert.notEqual(mapObs.sourceStatus, STATUS_OBSERVACAO.OBSERVADO);
+});
+
+test("5.1-15. existencia de numero (value != null) sozinha NAO gera OBSERVADO quando o status nao comprova nada", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: "texto nao reconhecido qualquer", anterior: null, overrideNesseCommit: null, chaveOverride: "ureia" });
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.OBSERVADO);
+});
+
+test("5.1-16. ausencia de status (null) com valor presente gera NAO_IDENTIFICAVEL", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: null, anterior: null, overrideNesseCommit: null, chaveOverride: "ureia" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.NAO_IDENTIFICAVEL);
+  assert.equal(r.sourceMessage, CATEGORIA_MENSAGEM.STATUS_AUSENTE);
+});
+
+test("5.1-17. valor null continua AUSENTE (nao regride)", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: null, statusTexto: "ok (ComexStat 2026-01)", anterior: 400, overrideNesseCommit: { ureia: 400 }, chaveOverride: "ureia" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.AUSENTE);
+});
+
+test("5.1-18. override presente e valor DIFERENTE nunca gera override", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: "falha: timeout", anterior: 999, overrideNesseCommit: { ureia: 111 }, chaveOverride: "ureia" });
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+});
+
+test("5.1-19/21/22. override presente e valor igual, MAS a fonte teve sucesso (status ok): fica OBSERVADO, nunca OVERRIDE_MANUAL -- matchesOverrideValue fica true mas nao decide nada sozinho", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: "ok (ComexStat 2026-01)", anterior: 999, overrideNesseCommit: { ureia: 400 }, chaveOverride: "ureia" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.OBSERVADO);
+  assert.equal(r.matchesOverrideValue, true);
+});
+
+test("5.1-20. override presente, valor igual, E uso comprovado (fonte falhou) gera OVERRIDE_MANUAL", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: "falha: timeout", anterior: 999, overrideNesseCommit: { ureia: 400 }, chaveOverride: "ureia" });
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+});
+
+test("5.1-23. override lido de um commit DIFERENTE (nao o do snapshot) nunca e usado -- aqui simulado com overrideNesseCommit=null mesmo havendo 'algum' override em outro lugar", () => {
+  // o adaptador so entrega o override do MESMO commit (ver extrairSerieTemporal);
+  // aqui testamos diretamente que overrideNesseCommit=null nunca produz OVERRIDE_MANUAL,
+  // mesmo que o valor coincida com algo que só existiria em outro commit.
+  const r = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: "falha: timeout", anterior: 999, overrideNesseCommit: null, chaveOverride: "ureia" });
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+});
+
+test("5.1-24. override de OUTRO indicador no mesmo commit nao contamina o indicador atual", () => {
+  // override tem so "map", nao "ureia" -- overrideValor para ureia fica null mesmo com o objeto presente
+  const r = classificarProveniencia({ indicator: "ureia", value: 640, statusTexto: "falha: timeout", anterior: 400, overrideNesseCommit: { map: 640 }, chaveOverride: "ureia" });
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+});
+
+test("5.1-25. chaveOverride ausente do objeto de override nunca casa por coincidencia", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: "falha: timeout", anterior: 999, overrideNesseCommit: {}, chaveOverride: "ureia" });
+  assert.notEqual(r.sourceStatus, STATUS_OBSERVACAO.OVERRIDE_MANUAL);
+});
+
+test("5.1-26. igualdade de valor (repeatedFromPrevious) nunca produz extractionConfidence ESTRUTURADA", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: "falha: timeout", anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" });
+  const conf = classificarConfianca({ referenceDate: null, referencePeriod: null, viaInferenciaTexto: false, sourceStatus: r.sourceStatus, collectedAt: "2026-01-10T00:00:00Z" });
+  assert.notEqual(conf, CONFIANCA_EXTRACAO.ESTRUTURADA);
+});
+
+test("5.1-27. override sem prova de uso (coincidencia) nunca produz extractionConfidence ESTRUTURADA", () => {
+  const r = classificarProveniencia({ indicator: "ureia", value: 400, statusTexto: "ok (ComexStat 2026-01)", anterior: 999, overrideNesseCommit: { ureia: 400 }, chaveOverride: "ureia" });
+  // aqui sourceStatus=OBSERVADO (estruturado), mas a CONFIANCA vem so de referencia+status,
+  // nunca da coincidencia com override -- confirmamos que matchesOverrideValue nao
+  // e nem parametro de classificarConfianca.
+  assert.equal(r.sourceStatus, STATUS_OBSERVACAO.OBSERVADO);
+  const conf = classificarConfianca({ referenceDate: null, referencePeriod: "2026-01", viaInferenciaTexto: false, sourceStatus: r.sourceStatus, collectedAt: "2026-01-10T00:00:00Z" });
+  assert.equal(conf, CONFIANCA_EXTRACAO.ESTRUTURADA); // legitimo aqui: veio da referencePeriod+status, nao do override
+});
+
+test("5.1-28. status explicito (ok) + referencia estruturada produz ESTRUTURADA; so status sem referencia produz PARCIAL", () => {
+  const comReferencia = classificarConfianca({ referenceDate: null, referencePeriod: "2026-01", viaInferenciaTexto: false, sourceStatus: STATUS_OBSERVACAO.OBSERVADO, collectedAt: "x" });
+  const semReferencia = classificarConfianca({ referenceDate: null, referencePeriod: null, viaInferenciaTexto: false, sourceStatus: STATUS_OBSERVACAO.OBSERVADO, collectedAt: "x" });
+  assert.equal(comReferencia, CONFIANCA_EXTRACAO.ESTRUTURADA);
+  assert.equal(semReferencia, CONFIANCA_EXTRACAO.PARCIAL);
+});
+
+test("5.1-29. sourceMessage e sempre uma das categorias fixas de CATEGORIA_MENSAGEM", () => {
+  const cenarios = [
+    { indicator: "ureia", value: 400, statusTexto: "ok (ComexStat 2026-01)", anterior: null, overrideNesseCommit: null, chaveOverride: "ureia" },
+    { indicator: "ureia", value: null, statusTexto: null, anterior: null, overrideNesseCommit: null, chaveOverride: "ureia" },
+    { indicator: "ureia", value: 400, statusTexto: "falha: timeout", anterior: 400, overrideNesseCommit: null, chaveOverride: "ureia" },
+    { indicator: "sojaTO", value: 124, statusTexto: "falha: x -> usando leitura anterior", anterior: 124, overrideNesseCommit: null, chaveOverride: "sojaTO" },
+  ];
+  for (const cenario of cenarios) {
+    const r = classificarProveniencia(cenario);
+    assert.ok(Object.values(CATEGORIA_MENSAGEM).includes(r.sourceMessage), `sourceMessage "${r.sourceMessage}" nao e uma categoria fixa`);
+  }
+});
+
+test("5.1-30/31/32. sourceMessage nunca contem o status bruto, um valor numerico especifico, ou HTML", () => {
+  const statusTexto = 'falha: HTTP 500 :: "Something unexpected happened." valor=999999.87';
+  const r = classificarProveniencia({ indicator: "bdi", value: 999999.87, statusTexto, anterior: 999999.87, overrideNesseCommit: null, chaveOverride: "bdi" });
+  assert.doesNotMatch(String(r.sourceMessage), /HTTP 500/);
+  assert.doesNotMatch(String(r.sourceMessage), /999999\.87/);
+  assert.doesNotMatch(String(r.sourceMessage), /<|>/);
 });

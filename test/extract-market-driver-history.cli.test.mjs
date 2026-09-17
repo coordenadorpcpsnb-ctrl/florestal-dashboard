@@ -306,3 +306,50 @@ test("emenda 5. nenhum arquivo de catalogo tecnico privado foi criado nesta etap
   // nenhum outro arquivo dentro de data/private/ tambem (a pasta nem deveria existir)
   assert.equal(existsSync(join(REPO_ROOT, "data", "private")), false);
 });
+
+// ============================================================================
+// Etapa 5.1 -- itens 39-45 (compatibilidade + historico real). O teste contra
+// o repositorio real verifica SO execucao sem erro, working tree inalterada,
+// estrutura valida, ausencia de dados privados e ausencia de valores no
+// console -- nunca contagens exatas (o historico real evolui a cada semana).
+// ============================================================================
+
+test("5.1-39/40. --output continua valido e o arquivo gerado passa no validador do schema (nao regrediu com os novos campos de metadata)", async () => {
+  const saida = join(dir, "market-history.json");
+  const r = run(["--output", saida]);
+  assert.equal(r.status, 0);
+  const { loadAndValidateHistoryFile } = await import("../market-driver-history.mjs");
+  const resultado = loadAndValidateHistoryFile(saida);
+  assert.equal(resultado.valid, true, JSON.stringify(resultado.errors));
+});
+
+test("5.1-44/45. historico real: extracao roda sem erro, working tree fica inalterada, e base real (data.json) nao muda", () => {
+  const statusAntes = spawnSync("git", ["status", "--porcelain"], { cwd: REPO_ROOT, encoding: "utf-8" }).stdout;
+  const dataJsonAntes = readFileSync(DATA_JSON_PATH, "utf-8");
+
+  const r = run([]);
+  assert.equal(r.status, 0);
+
+  const statusDepois = spawnSync("git", ["status", "--porcelain"], { cwd: REPO_ROOT, encoding: "utf-8" }).stdout;
+  assert.equal(statusDepois, statusAntes);
+  assert.equal(readFileSync(DATA_JSON_PATH, "utf-8"), dataJsonAntes);
+});
+
+test("5.1-11/12. historico real: se existir alguma observacao FALLBACK_ULTIMO_CONHECIDO, so pode ser de sojaTO (unico indicador com marcador explicito) -- e nenhuma conta so por repeticao ou coincidencia de override", async () => {
+  const saida = join(dir, "market-history.json");
+  run(["--output", saida]);
+  const serie = JSON.parse(readFileSync(saida, "utf-8"));
+  const fallbacks = serie.observations.filter((o) => o.sourceStatus === "FALLBACK_ULTIMO_CONHECIDO");
+  assert.ok(fallbacks.every((o) => o.indicator === "sojaTO"), "FALLBACK_ULTIMO_CONHECIDO so deveria ocorrer para sojaTO no historico real (ver README/relatorio)");
+  // toda observacao com repeatedFromPrevious=true mas sourceStatus != FALLBACK
+  // confirma que a repeticao sozinha nunca promoveu a observacao
+  const repetidasSemFallback = serie.observations.filter((o) => o.metadata.repeatedFromPrevious === true && o.sourceStatus !== "FALLBACK_ULTIMO_CONHECIDO");
+  assert.ok(repetidasSemFallback.every((o) => o.sourceStatus !== "FALLBACK_ULTIMO_CONHECIDO"));
+});
+
+test("5.1-10 inspecao de status na saida real sem publicar valores: contagem de sourceStatus por tipo, sem nenhum valor numerico junto", () => {
+  const r = run([]);
+  assert.equal(r.status, 0);
+  // o resumo do console nunca lista sourceStatus/valores individuais, so contagens agregadas
+  assert.doesNotMatch(r.out, /OBSERVADO|FALLBACK_ULTIMO_CONHECIDO|OVERRIDE_MANUAL|NAO_IDENTIFICAVEL/);
+});

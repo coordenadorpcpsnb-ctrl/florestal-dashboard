@@ -544,6 +544,13 @@ Sugestão de escopo, **apenas indicado, não implementado aqui**:
 > técnico privado das formulações — ainda não criado — e histórico público dos
 > direcionadores) foi decidida nessa mesma etapa; nenhum vínculo técnico entre
 > os domínios (`formulationId` ou equivalente) foi criado ainda.
+>
+> **Nota (Etapa 5.1):** a classificação de proveniência (`sourceStatus`) foi
+> endurecida — igualdade de valor com `previous` ou com o override deixou de
+> ser, sozinha, prova de `FALLBACK_ULTIMO_CONHECIDO`/`OVERRIDE_MANUAL`; passou
+> a exigir evidência explícita no texto de status (hoje, só comprovada para
+> `sojaTO`) ou nas regras determinísticas de `fetch-data.mjs`. Ver README,
+> seção 13, subseção "Proveniência exige evidência explícita".
 
 ## 20. Apêndice — comandos de auditoria executados
 
