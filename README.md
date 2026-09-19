@@ -978,3 +978,18 @@ indicador: [`docs/market-history-sources-assessment.md`](docs/market-history-sou
 > documentados lá (seções 47–48) — inclusive validação jurídica feita fora
 > deste ambiente, já que nenhum documento oficial externo pôde ser aberto
 > aqui.
+
+---
+
+## 15. Checklist de substituição de fontes de mercado
+
+Instrumento operacional de contingência — não substitui parecer jurídico,
+avaliação de segurança ou aprovação formal da organização — para avaliar uma
+fonte candidata quando a fonte atual de um indicador ficar indisponível,
+bloqueada, descontinuada, ou apresentar mudança de metodologia, licença ou
+qualidade: [`docs/market-source-replacement-checklist.md`](docs/market-source-replacement-checklist.md).
+
+Nenhuma fonte candidata listada ali está automaticamente aprovada. O
+preenchimento só ocorre quando surgir a necessidade real de avaliar uma
+troca, e qualquer alteração de código correspondente é sempre feita numa
+etapa separada, depois de aprovação humana registrada.
