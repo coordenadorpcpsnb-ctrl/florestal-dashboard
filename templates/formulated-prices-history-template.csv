@@ -1,0 +1,3 @@
+id;dataCotacao;dataCompra;anoReferencia;produto;formula;categoriaFormula;fornecedor;preco;moeda;unidadePreco;modalidadeEntrega;destino;volumeToneladas;prazoPagamentoDias;validadeProposta;fonteRegistro;observacoes
+fp-exemplo-000001;2026-01-10;;2026;FORMULADO_FICTICIO_A;00-00-00;plantio;FORNECEDOR_FICTICIO_A;1000,00;BRL;BRL_TON;CIF_DESTINO;DESTINO_FICTICIO;10;30;2026-01-20;COTACAO;Exemplo ficticio de cotacao - modelo de preenchimento, nao e um dado real.
+fp-exemplo-000002;2026-01-12;2026-01-15;2026;FORMULADO_FICTICIO_A;00-00-00;plantio;FORNECEDOR_FICTICIO_A;980,50;BRL;BRL_TON;FOB_FABRICA;;;;;PEDIDO_COMPRA;Exemplo ficticio de compra efetivada - nao e um dado real.
