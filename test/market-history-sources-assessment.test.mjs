@@ -10,6 +10,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, existsSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -30,6 +31,69 @@ function extrairSecoes(texto) {
     if (m) secoes.push({ numero: Number(m[1]), titulo: m[2].trim() });
   }
   return secoes;
+}
+
+/**
+ * Etapa 6.3.1 — auditoria de escopo de uma etapa histórica JÁ CONCLUÍDA.
+ *
+ * Um teste que audita "o que uma etapa passada alterou" nunca pode comparar
+ * `commit-base..HEAD`: HEAD avança a cada etapa futura, então arquivos
+ * legítimos de etapas posteriores (ex.: a Etapa 6.3, que criou
+ * docs/market-source-replacement-checklist.md) passariam a aparecer nesse
+ * diff e fariam o teste falhar por um motivo que nada tem a ver com o que
+ * ele deveria medir. A comparação correta é um intervalo FECHADO e imutável
+ * entre os dois commits que já delimitam essa etapa no histórico:
+ * `commit-base-da-etapa..commit-final-da-etapa` — nunca contra o HEAD atual,
+ * a branch corrente, nem a working tree.
+ *
+ * `git diff <base> <fim> --name-status` já ignora a working tree (compara
+ * duas árvores de commit já existentes) e não acessa rede — mas só é seguro
+ * se os dois commits realmente existirem no clone local. Por isso, antes de
+ * comparar, confirmamos com `git cat-file -e <hash>^{commit}` (leitura local
+ * pura, sem rede) que cada extremidade existe; se não existir, o teste falha
+ * com uma mensagem que nomeia exatamente qual intervalo não pôde ser
+ * auditado — nunca silenciosamente uma lista vazia (que pareceria "nada
+ * mudou", um falso positivo).
+ */
+function auditarIntervaloFechado(commitBase, commitFim) {
+  const intervalo = `${commitBase}..${commitFim}`;
+
+  for (const hash of [commitBase, commitFim]) {
+    try {
+      execFileSync("git", ["cat-file", "-e", `${hash}^{commit}`], {
+        cwd: ROOT,
+        stdio: ["ignore", "ignore", "pipe"],
+      });
+    } catch (e) {
+      throw new Error(
+        `Não foi possível auditar o intervalo ${intervalo}: commit ${hash} não está ` +
+          `disponível neste clone local (nenhuma tentativa de busca no remoto foi feita). ` +
+          `Detalhe: ${e.stderr?.toString().trim() || e.message}`
+      );
+    }
+  }
+
+  let saida;
+  try {
+    saida = execFileSync("git", ["diff", commitBase, commitFim, "--name-status"], {
+      cwd: ROOT,
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+  } catch (e) {
+    throw new Error(
+      `Não foi possível auditar o intervalo ${intervalo}: o comando ` +
+        `"git diff ${commitBase} ${commitFim} --name-status" falhou ` +
+        `(código de saída ${e.status ?? "desconhecido"}). ` +
+        `stderr: ${e.stderr?.toString().trim() || "(vazio)"}`
+    );
+  }
+
+  return saida
+    .trim()
+    .split("\n")
+    .filter(Boolean)
+    .map((linha) => linha.split("\t").pop());
 }
 
 const secoes = extrairSecoes(doc);
@@ -560,14 +624,16 @@ test("[6.1-18] nenhum endpoint novo foi adicionado ao código de coleta (nenhum 
   assert.equal(diff.trim(), "");
 });
 
-test("[6.1-19] nenhum valor histórico foi armazenado: nenhum arquivo de dado novo (*.json de série) foi criado nesta etapa", async () => {
-  const { execFileSync } = await import("node:child_process");
-  const diff = execFileSync("git", ["diff", "aa7f03b", "--name-status"], { cwd: ROOT, encoding: "utf-8" });
-  const arquivosAlterados = diff.trim().split("\n").filter(Boolean).map((l) => l.split("\t").pop());
+test("[6.1-19] nenhum valor histórico foi armazenado: nenhum arquivo de dado novo (*.json de série) foi criado nesta etapa", () => {
+  // Intervalo fechado e imutável da própria Etapa 6.1 — nunca contra a ponta
+  // corrente do histórico (ver comentário de auditarIntervaloFechado).
+  // Arquivos de qualquer etapa posterior (ex.: a 6.3) ficam fora deste
+  // intervalo e nunca aparecem aqui.
+  const arquivosAlterados = auditarIntervaloFechado("aa7f03b", "cb6a35c");
   for (const arq of arquivosAlterados) {
     assert.ok(
       /^(README\.md|docs\/market-history-sources-assessment\.md|test\/market-history-sources-assessment\.test\.mjs)$/.test(arq),
-      `arquivo inesperado alterado nesta etapa: ${arq}`
+      `arquivo inesperado alterado dentro do intervalo aa7f03b..cb6a35c (Etapa 6.1): ${arq}`
     );
   }
 });
@@ -801,14 +867,14 @@ test("[6.2-22] nenhuma coleta foi implementada: fetch-*.mjs continuam iguais ao 
   }
 });
 
-test("[6.2-23] nenhum arquivo fora dos três permitidos foi alterado nesta etapa", async () => {
-  const { execFileSync } = await import("node:child_process");
-  const diff = execFileSync("git", ["diff", "cb6a35c", "--name-status"], { cwd: ROOT, encoding: "utf-8" });
-  const arquivosAlterados = diff.trim().split("\n").filter(Boolean).map((l) => l.split("\t").pop());
+test("[6.2-23] nenhum arquivo fora dos três permitidos foi alterado nesta etapa", () => {
+  // Intervalo fechado e imutável da própria Etapa 6.2 — mesmo raciocínio do
+  // [6.1-19] acima.
+  const arquivosAlterados = auditarIntervaloFechado("cb6a35c", "d582bff");
   for (const arq of arquivosAlterados) {
     assert.ok(
       /^(README\.md|docs\/market-history-sources-assessment\.md|test\/market-history-sources-assessment\.test\.mjs)$/.test(arq),
-      `arquivo inesperado alterado nesta etapa: ${arq}`
+      `arquivo inesperado alterado dentro do intervalo cb6a35c..d582bff (Etapa 6.2): ${arq}`
     );
   }
 });
@@ -859,5 +925,71 @@ test("[6.2-30] a matriz e o checklist continuam sem preços ou séries numérica
     const texto = String(valor);
     assert.doesNotMatch(doc, new RegExp(`(?<![\\d.])${texto.replace(".", "\\.")}(?![\\d])`),
       `valor de override vazou no documento: ${chave}=${valor}`);
+  }
+});
+
+// ===========================================================================
+// Etapa 6.3.1 — os dois testes de escopo histórico usam intervalo fechado,
+// nunca HEAD/branch/working tree, e uma falha de Git nunca vira lista vazia.
+// ===========================================================================
+
+const PROPRIO_ARQUIVO_FONTE = readFileSync(fileURLToPath(import.meta.url), "utf-8");
+
+function trechoDoTeste(nomeDoTeste) {
+  const inicio = PROPRIO_ARQUIVO_FONTE.indexOf(`test("${nomeDoTeste}`);
+  assert.ok(inicio !== -1, `teste não encontrado no próprio arquivo: ${nomeDoTeste}`);
+  const fimChave = PROPRIO_ARQUIVO_FONTE.indexOf("\n});", inicio);
+  return PROPRIO_ARQUIVO_FONTE.slice(inicio, fimChave);
+}
+
+test("[6.3.1-1] o teste [6.1-19] usa literalmente o intervalo fechado aa7f03b..cb6a35c", () => {
+  const trecho = trechoDoTeste("[6.1-19]");
+  assert.match(trecho, /auditarIntervaloFechado\(\s*"aa7f03b"\s*,\s*"cb6a35c"\s*\)/);
+});
+
+test("[6.3.1-2] o teste [6.2-23] usa literalmente o intervalo fechado cb6a35c..d582bff", () => {
+  const trecho = trechoDoTeste("[6.2-23]");
+  assert.match(trecho, /auditarIntervaloFechado\(\s*"cb6a35c"\s*,\s*"d582bff"\s*\)/);
+});
+
+test("[6.3.1-3] nenhum dos dois testes de escopo histórico referencia HEAD", () => {
+  assert.doesNotMatch(trechoDoTeste("[6.1-19]"), /HEAD/);
+  assert.doesNotMatch(trechoDoTeste("[6.2-23]"), /HEAD/);
+});
+
+test("[6.3.1-4] nenhum dos dois testes de escopo histórico usa a branch atual, working tree ou um diff de um só argumento como limite", () => {
+  for (const nome of ["[6.1-19]", "[6.2-23]"]) {
+    const trecho = trechoDoTeste(nome);
+    assert.doesNotMatch(trecho, /--show-current|rev-parse\s+HEAD|git status/);
+    // "git diff <algo>" com um único commit (sem segundo commit) compara
+    // implicitamente contra a working tree — os dois testes devem chamar
+    // apenas o helper de intervalo fechado, nunca `execFileSync("git", ["diff", ...`.
+    assert.doesNotMatch(trecho, /execFileSync\(\s*"git"\s*,\s*\[\s*"diff"/);
+  }
+});
+
+test("[6.3.1-5] uma falha real do Git (commit inexistente) nunca vira lista vazia — o helper lança erro nomeando o intervalo", () => {
+  assert.throws(
+    () => auditarIntervaloFechado("0000000000000000000000000000000000000000", "cb6a35c"),
+    /N[aã]o foi poss[ií]vel auditar o intervalo 0000000000000000000000000000000000000000\.\.cb6a35c/
+  );
+});
+
+test("[6.3.1-6] o escopo fechado real da Etapa 6.1 (aa7f03b..cb6a35c) continua restrito aos três arquivos esperados", () => {
+  const arquivos = auditarIntervaloFechado("aa7f03b", "cb6a35c").sort();
+  assert.deepEqual(arquivos, ["README.md", "docs/market-history-sources-assessment.md", "test/market-history-sources-assessment.test.mjs"].sort());
+});
+
+test("[6.3.1-7] o escopo fechado real da Etapa 6.2 (cb6a35c..d582bff) continua restrito aos três arquivos esperados", () => {
+  const arquivos = auditarIntervaloFechado("cb6a35c", "d582bff").sort();
+  assert.deepEqual(arquivos, ["README.md", "docs/market-history-sources-assessment.md", "test/market-history-sources-assessment.test.mjs"].sort());
+});
+
+test("[6.3.1-8] arquivos da Etapa 6.3 não aparecem em nenhum dos dois intervalos históricos fechados", () => {
+  const arquivos61 = auditarIntervaloFechado("aa7f03b", "cb6a35c");
+  const arquivos62 = auditarIntervaloFechado("cb6a35c", "d582bff");
+  for (const arq of [...arquivos61, ...arquivos62]) {
+    assert.notEqual(arq, "docs/market-source-replacement-checklist.md");
+    assert.notEqual(arq, "test/market-source-replacement-checklist.test.mjs");
   }
 });
