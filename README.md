@@ -993,3 +993,78 @@ Nenhuma fonte candidata listada ali está automaticamente aprovada. O
 preenchimento só ocorre quando surgir a necessidade real de avaliar uma
 troca, e qualquer alteração de código correspondente é sempre feita numa
 etapa separada, depois de aprovação humana registrada.
+
+---
+
+## 16. Catálogo técnico de formulações (contrato) e modelo Excel de entrada
+
+**Finalidade.** Esta etapa cria só o *contrato* técnico do catálogo de
+formulações — schema, validador, CLI e um modelo Excel público fictício de
+preenchimento. Ela não cria nenhum dado real nem o arquivo operacional.
+
+**Separação do histórico comercial.** O catálogo técnico
+(`formulated-products-catalog.mjs`, `schemas/formulated-products-catalog.schema.json`)
+é um domínio **diferente** do histórico comercial de preços (seção 10):
+aqui não há preço, custo, fornecedor comercial ou condição de compra — só
+especificação técnica (garantias nutricionais, nutrientes secundários,
+micronutrientes, composição física quando conhecida, e a proveniência dessa
+informação). Nenhum vínculo (`formulationId` no histórico de preços) foi
+criado nesta etapa.
+
+**Caminho privado futuro.** O catálogo operacional real será gravado em
+`data/private/formulated-products-catalog.private.json` — **este arquivo não
+é criado nesta etapa** e, quando existir, **nunca deve ser versionado**. O
+`.gitignore` já protege `/data/private/` e `*.private.json`.
+
+**Princípio central: garantia não é composição.** Uma fórmula declarada como
+`06-30-06` representa apenas garantias de N, P₂O₅ e K₂O — ela **não** prova
+nem permite calcular automaticamente percentual físico de ureia, MAP, KCl,
+cargas, revestimentos, aditivos, perdas, custo do fabricante, margem,
+logística ou preço estimado. Nenhuma função deste módulo deriva um campo a
+partir de outro.
+
+**Ausência, `null` e `[]` têm sentidos diferentes.** Em `secondaryNutrientGuarantees`,
+`micronutrients` e (com semântica equivalente) `physicalComposition`: campo
+**ausente** = informação não coletada; **`null`** = coletada como
+desconhecida/não divulgada; **`[]`** (ou `physicalComposition` com
+`completenessStatus: "UNKNOWN"`) = foi explicitamente registrado que não há
+o que declarar. Nenhuma normalização deste módulo apaga essa diferença.
+
+**Como validar um catálogo (JSON):**
+
+```bash
+npm run validate:formulated-catalog -- caminho/para/catalogo.private.json
+npm run validate:formulated-catalog -- templates/formulated-products-catalog-template.json
+```
+
+O caminho é sempre explícito e obrigatório — o CLI nunca procura um catálogo
+sozinho, nunca olha para `data/private/` por conta própria, e só aceita um
+caminho terminado em `.private.json` ou o template público exato acima.
+
+**Template JSON.** `templates/formulated-products-catalog-template.json` é
+inequivocamente fictício (`FORMULADO_FICTICIO_A`/`B`), com no máximo duas
+formulações, demonstrando as diferenças semânticas acima (uma usa `null` em
+micronutrientes/composição; a outra usa lista/`PARTIAL`).
+
+**Modelo Excel.** `templates/formulated-products-data-entry-template.xlsx` é
+uma **interface de preenchimento**, não o contrato formal — o JSON Schema
+continua sendo a autoridade. Tem 8 abas (`00_INSTRUCOES` a `99_LISTAS`,
+detalhadas na própria aba de instruções), com cabeçalhos congelados,
+autofiltro e menus suspensos alinhados às mesmas listas do schema/JS. **Não
+há importação automática de XLSX para JSON nesta etapa** — isso é trabalho
+de uma etapa futura, separada, depois de revisão humana do modelo. O Excel
+foi gerado por `tools/generate-formulated-products-data-entry-template.py`
+(Python puro, biblioteca padrão apenas — `openpyxl` não estava disponível
+neste ambiente e a etapa proíbe instalar pacote pela rede ou adicionar
+dependência Node só para isso); rodar esse script de novo produz o mesmo
+arquivo, byte a byte.
+
+**Exemplos são fictícios.** Todo nome, ID e valor nos dois templates (JSON e
+Excel) é inequivocamente de exemplo — sem preço real, fornecedor real,
+empresa, contrato ou credencial. Exclua ou substitua as linhas de exemplo
+antes de registrar dados reais.
+
+**Vínculo com preços é etapa futura.** Esta etapa não cruza o catálogo
+técnico com o histórico comercial de preços nem com os direcionadores de
+mercado (seção 13) — isso é trabalho de uma etapa própria e futura, depois de
+revisão humana.

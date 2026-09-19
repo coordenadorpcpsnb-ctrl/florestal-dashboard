@@ -1,0 +1,194 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/coordenadorpcpsnb-ctrl/florestal-dashboard/schemas/formulated-products-catalog.schema.json",
+  "title": "Catálogo técnico de formulações",
+  "description": "Contrato formal do catálogo técnico privado das formulações (data/private/formulated-products-catalog.private.json, ainda não criado nesta etapa). Este é um domínio DIFERENTE do histórico comercial de preços (data/formulated-prices-history.json): aqui não há preço, custo, fornecedor comercial ou condição de compra -- apenas especificação técnica (garantias nutricionais declaradas, nutrientes secundários, micronutrientes, composição física quando conhecida, e a proveniência dessas informações). Um arquivo real deste catálogo NUNCA deve ser versionado neste repositório público. Garantias nutricionais (N-P2O5-K2O) NÃO permitem inferir automaticamente matéria-prima física (ureia, MAP, KCl, cargas, revestimentos) nem custo industrial do fabricante. Este contrato não contém, e não deve ser usado para calcular, recomendação de compra ou previsão de preço. A validação em tempo de execução roda em JavaScript puro (formulated-products-catalog.mjs), sem depender de biblioteca de JSON Schema, replicando as regras deste arquivo -- os dois devem ser mantidos em sincronia (ver test/formulated-products-catalog.contract.test.mjs).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "description", "formulations"],
+  "properties": {
+    "schemaVersion": {
+      "description": "Versão do formato deste catálogo. Começa em 1; incrementar só em mudança incompatível de estrutura.",
+      "type": "integer",
+      "const": 1
+    },
+    "description": {
+      "description": "Descrição do catálogo. Deve deixar claro que este é um catálogo técnico privado, que não representa preço nem custo industrial, que não deve ser versionado quando contiver dados reais, que a composição física pode ser desconhecida, que garantias nutricionais não permitem inferir matérias-primas, e que este arquivo não contém recomendação de compra nem previsão.",
+      "type": "string",
+      "minLength": 1
+    },
+    "formulations": {
+      "description": "Formulações cadastradas. Um catálogo vazio (formulations: []) é válido.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/formulation" }
+    }
+  },
+  "$defs": {
+    "isoDate": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "description": "Data no formato ISO 8601 YYYY-MM-DD. A validade calendar (ex.: rejeitar 2024-02-30) é checada em JavaScript, não apenas pelo padrão regex."
+    },
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nonNegativeNumberOrNull": {
+      "oneOf": [{ "type": "number", "minimum": 0 }, { "type": "null" }]
+    },
+    "macronutrientGuarantees": {
+      "description": "Garantias de macronutrientes primários declaradas (N, P2O5, K2O). Um valor null representa garantia não disponível -- nunca deve ser lido como zero. A soma dos três não precisa ser 100. Estes valores NUNCA são derivados de declaredFormula nem usados para calcular componentes físicos.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unit", "n", "p2o5", "k2o"],
+      "properties": {
+        "unit": { "type": "string", "enum": ["PERCENT"] },
+        "n": { "$ref": "#/$defs/nonNegativeNumberOrNull" },
+        "p2o5": { "$ref": "#/$defs/nonNegativeNumberOrNull" },
+        "k2o": { "$ref": "#/$defs/nonNegativeNumberOrNull" }
+      }
+    },
+    "secondaryNutrientGuarantee": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["nutrient", "value", "unit"],
+      "properties": {
+        "nutrient": { "type": "string", "enum": ["CA", "MG", "S", "OUTRO"] },
+        "value": { "$ref": "#/$defs/nonNegativeNumberOrNull" },
+        "unit": { "type": "string", "enum": ["PERCENT", "G_KG", "MG_KG", "NAO_INFORMADA"] },
+        "sourceNote": { "type": "string" }
+      }
+    },
+    "micronutrient": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["element", "value", "unit"],
+      "properties": {
+        "element": { "type": "string", "enum": ["B", "ZN", "CU", "MN", "FE", "MO", "CO", "NI", "OUTRO"] },
+        "value": { "$ref": "#/$defs/nonNegativeNumberOrNull" },
+        "unit": { "type": "string", "enum": ["PERCENT", "G_KG", "MG_KG", "PPM", "NAO_INFORMADA"] },
+        "sourceNote": { "type": "string" }
+      }
+    },
+    "physicalComponent": {
+      "description": "Um componente físico conhecido da formulação. componentName NÃO é restrito a ureia/MAP/KCl -- pode ser qualquer matéria-prima ou carga. percentage nunca é calculado a partir da fórmula NPK declarada.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["componentId", "componentName", "percentage", "unit", "sourceType"],
+      "properties": {
+        "componentId": { "$ref": "#/$defs/nonEmptyString" },
+        "componentName": { "$ref": "#/$defs/nonEmptyString" },
+        "percentage": { "type": "number", "exclusiveMinimum": 0 },
+        "unit": { "type": "string", "enum": ["PERCENT_MASS"] },
+        "sourceType": {
+          "type": "string",
+          "enum": ["SUPPLIER_DECLARED", "INTERNAL_ESTIMATE", "LAB_ANALYSIS", "OTHER", "NOT_INFORMED"]
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "physicalComposition": {
+      "description": "Composição física conhecida, separada da completude (completenessStatus) e da origem de cada componente (sourceType). UNKNOWN nunca aceita componentes nem totalPercent. COMPLETE exige soma 100 dentro de tolerância técnica (0,01 ponto percentual); a diferença nunca é completada automaticamente com um componente residual.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["completenessStatus", "totalPercent", "components"],
+      "properties": {
+        "completenessStatus": { "type": "string", "enum": ["COMPLETE", "PARTIAL", "UNKNOWN"] },
+        "totalPercent": {
+          "oneOf": [{ "type": "number", "minimum": 0, "maximum": 100 }, { "type": "null" }]
+        },
+        "sourceNote": { "type": "string" },
+        "components": { "type": "array", "items": { "$ref": "#/$defs/physicalComponent" } }
+      }
+    },
+    "informationSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sourceId", "isPrimary", "type"],
+      "properties": {
+        "sourceId": { "$ref": "#/$defs/nonEmptyString" },
+        "isPrimary": { "type": "boolean" },
+        "type": {
+          "type": "string",
+          "enum": [
+            "TECHNICAL_DATASHEET", "PRODUCT_LABEL", "CONTRACT", "SUPPLIER_DECLARATION",
+            "INTERNAL_RECORD", "LAB_ANALYSIS", "OTHER", "NOT_INFORMED"
+          ]
+        },
+        "documentReference": { "type": "string" },
+        "effectiveDate": { "$ref": "#/$defs/isoDate" },
+        "sourceNote": { "type": "string" }
+      }
+    },
+    "formulation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "formulationId", "productName", "revision", "validFrom", "status",
+        "macronutrientGuarantees", "informationSources", "informationQuality"
+      ],
+      "properties": {
+        "formulationId": {
+          "description": "Identificador técnico único no catálogo. Não gerado automaticamente. Padrão recomendado (não obrigatório, para não travar evolução futura): form-<slug>-<numero>-rev-<numero>, ex. form-exemplo-000001-rev-01.",
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "productName": {
+          "description": "Nome técnico, interno ou comercial. Nunca usado para inferir fórmula ou composição.",
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "declaredFormula": {
+          "description": "Fórmula NPK declarada (ex.: '06-30-06'). Texto opaco: nunca normalizada, interpretada quimicamente, ou usada para derivar garantias ou componentes físicos.",
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "category": { "$ref": "#/$defs/nonEmptyString" },
+        "revision": {
+          "description": "Identificador técnico de revisão (texto, nunca número). Revisões distintas representam especificações distintas.",
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "validFrom": { "$ref": "#/$defs/isoDate" },
+        "validTo": {
+          "description": "Ausente ou null = vigência aberta ou ainda não informada. Nunca inferido a partir da próxima revisão.",
+          "$ref": "#/$defs/isoDate"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ACTIVE", "INACTIVE", "DRAFT", "UNDER_REVIEW", "SUPERSEDED"]
+        },
+        "macronutrientGuarantees": { "$ref": "#/$defs/macronutrientGuarantees" },
+        "secondaryNutrientGuarantees": {
+          "description": "Ausente = não coletado. null = desconhecido/não informado. [] = explicitamente informado que não há nutrientes secundários declarados. Lista = nutrientes conhecidos.",
+          "oneOf": [
+            { "type": "array", "items": { "$ref": "#/$defs/secondaryNutrientGuarantee" } },
+            { "type": "null" }
+          ]
+        },
+        "micronutrients": {
+          "description": "Mesma semântica de secondaryNutrientGuarantees: ausente = não coletado; null = desconhecido; [] = explicitamente sem micronutrientes declarados; lista = conhecidos.",
+          "oneOf": [
+            { "type": "array", "items": { "$ref": "#/$defs/micronutrient" } },
+            { "type": "null" }
+          ]
+        },
+        "physicalComposition": {
+          "description": "Ausente = não coletada. null = desconhecida/não divulgada. Objeto = informação explícita (ver $defs/physicalComposition).",
+          "oneOf": [{ "$ref": "#/$defs/physicalComposition" }, { "type": "null" }]
+        },
+        "informationSources": {
+          "description": "Ao menos uma fonte, para permitir múltiplas evidências. Exatamente uma deve ter isPrimary: true (checado em JavaScript).",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/informationSource" }
+        },
+        "informationQuality": {
+          "description": "Não representa confiança estatística. Nunca inferido automaticamente como VERIFIED só por existir um documento referenciado.",
+          "type": "string",
+          "enum": ["VERIFIED", "PARTIALLY_VERIFIED", "UNVERIFIED", "NOT_AVAILABLE"]
+        },
+        "notes": {
+          "type": "string",
+          "description": "Texto livre sanitizado. Nunca deve conter preço, condição comercial, nome pessoal ou credencial."
+        }
+      }
+    }
+  }
+}

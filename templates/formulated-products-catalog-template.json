@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "description": "MODELO FICTÍCIO -- catálogo técnico privado das formulações. Este arquivo é público e demonstrativo (nenhum dado real). O catálogo operacional real deve ser gravado em data/private/formulated-products-catalog.private.json e NUNCA versionado neste repositório. Este catálogo não representa preço nem custo industrial do fabricante. Composição física pode ser desconhecida. Garantias nutricionais (N-P2O5-K2O) não permitem inferir matérias-primas físicas (ureia, MAP, KCl, cargas, revestimentos). Este arquivo não contém recomendação de compra nem previsão de preço.",
+  "formulations": [
+    {
+      "formulationId": "form-exemplo-000001-rev-01",
+      "productName": "FORMULADO_FICTICIO_A",
+      "declaredFormula": "00-00-00",
+      "category": "PLANTIO_FICTICIO",
+      "revision": "REV-01",
+      "validFrom": "2026-01-01",
+      "validTo": null,
+      "status": "ACTIVE",
+      "macronutrientGuarantees": {
+        "unit": "PERCENT",
+        "n": 0,
+        "p2o5": 0,
+        "k2o": 0
+      },
+      "secondaryNutrientGuarantees": [],
+      "micronutrients": null,
+      "physicalComposition": null,
+      "informationSources": [
+        {
+          "sourceId": "src-exemplo-A-01",
+          "isPrimary": true,
+          "type": "TECHNICAL_DATASHEET",
+          "documentReference": "DOC_FICTICIO_001",
+          "effectiveDate": "2026-01-01",
+          "sourceNote": "Exemplo fictício sem valor técnico -- demonstra apenas a estrutura do catálogo."
+        },
+        {
+          "sourceId": "src-exemplo-A-02",
+          "isPrimary": false,
+          "type": "OTHER",
+          "documentReference": "DOC_FICTICIO_001",
+          "sourceNote": "Segunda fonte fictícia, não primária -- demonstra isPrimary com múltiplas evidências."
+        }
+      ],
+      "informationQuality": "NOT_AVAILABLE",
+      "notes": "Registro inequivocamente fictício. micronutrients e physicalComposition estão null (desconhecidos), e secondaryNutrientGuarantees está [] (explicitamente informado que não há nutrientes secundários declarados) -- as três situações têm significados diferentes e não devem ser confundidas."
+    },
+    {
+      "formulationId": "form-exemplo-000002-rev-01",
+      "productName": "FORMULADO_FICTICIO_B",
+      "declaredFormula": "00-00-00",
+      "category": "MANUTENCAO_FICTICIA",
+      "revision": "REV-01",
+      "validFrom": "2026-02-01",
+      "validTo": null,
+      "status": "DRAFT",
+      "macronutrientGuarantees": {
+        "unit": "PERCENT",
+        "n": null,
+        "p2o5": 0,
+        "k2o": null
+      },
+      "micronutrients": [
+        {
+          "element": "ZN",
+          "value": 0,
+          "unit": "PERCENT",
+          "sourceNote": "Valor fictício sem significado técnico -- apenas exemplo de preenchimento."
+        },
+        {
+          "element": "B",
+          "value": null,
+          "unit": "NAO_INFORMADA",
+          "sourceNote": "Exemplo de presença conhecida sem quantidade informada (value null)."
+        }
+      ],
+      "physicalComposition": {
+        "completenessStatus": "PARTIAL",
+        "totalPercent": null,
+        "sourceNote": "Exemplo fictício -- composição parcialmente conhecida, sem valor técnico real.",
+        "components": [
+          {
+            "componentId": "comp-exemplo-B-01",
+            "componentName": "COMPONENTE_FICTICIO_1",
+            "percentage": 0.01,
+            "unit": "PERCENT_MASS",
+            "sourceType": "NOT_INFORMED",
+            "notes": "Percentual de exemplo, sem valor técnico -- não representa nenhuma matéria-prima real."
+          }
+        ]
+      },
+      "informationSources": [
+        {
+          "sourceId": "src-exemplo-B-01",
+          "isPrimary": true,
+          "type": "NOT_INFORMED",
+          "sourceNote": "Fonte fictícia única desta formulação de exemplo."
+        }
+      ],
+      "informationQuality": "PARTIALLY_VERIFIED",
+      "notes": "Registro inequivocamente fictício. macronutrientGuarantees demonstra n e k2o como null (garantia não disponível) ao lado de p2o5 = 0 (valor conhecido igual a zero) -- null nunca deve ser lido como zero. micronutrients é uma lista (conhecidos) e physicalComposition é PARTIAL (parcialmente conhecida, soma não completada automaticamente) -- ambos ao contrário do outro registro de exemplo, que usa null nos dois campos."
+    }
+  ]
+}
